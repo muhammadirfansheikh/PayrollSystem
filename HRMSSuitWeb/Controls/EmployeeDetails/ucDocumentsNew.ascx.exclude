@@ -1,0 +1,88 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucDocumentsNew.ascx.cs" Inherits="Controls_EmployeeDetails_ucDocumentsNew" %>
+<asp:UpdatePanel ID="UpdatePanel1" runat="server">
+    <ContentTemplate>
+        <div class="panel panel-info alert alert-success">
+            <div class="panel-heading">
+                Attachments
+            </div>
+            <div class="panel-body">
+                <input type="hidden" id="hfEmpID" runat="server" />
+                <div class="alert alert-warning">
+                    <strong>You can attach reports / other documents through this upload documents sections...</strong>
+                </div>
+                <div class="form-group col-lg-3">
+                    <asp:HiddenField ID="hdnFileCount" runat="server" Value="0" />
+                    <label for="exampleInputEmail2">
+                        Comments :    
+                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Upload"
+                    ErrorMessage="*" ForeColor="Red"
+                    Display="Dynamic" ControlToValidate="txtComments" CssClass="rfv"></asp:RequiredFieldValidator>
+                    </label>
+                    <asp:TextBox ID="txtComments" placeholder="Attachment Comments" runat="server" CssClass="form-control">
+                    </asp:TextBox>
+                </div>
+                <div runat="server" id="tblUploadControls">
+                    <div class="form-group col-lg-4">
+                        <label for="exampleInputEmail2">
+                            Upload Attachment :
+                            <asp:FileUpload ID="fuAttachments" Multiple="Multiple" runat="server" />
+                            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Upload" ForeColor="Red" Display="Dynamic" ErrorMessage="* Required Field" ControlToValidate="fuAttachments">
+
+                            </asp:RequiredFieldValidator>
+                            <br />
+                            <asp:RegularExpressionValidator ForeColor="Red" ID="FileUpLoadValidator" runat="server" ValidationGroup="Upload" ErrorMessage="Only .docx, .xlsx or .pdf files are allowed!" ValidationExpression="(.*?)\.(docx|pdf|xls|xlsx|vsd|txt|doc)$" ControlToValidate="fuAttachments"> </asp:RegularExpressionValidator>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group col-lg-12">
+
+
+
+                    <asp:LinkButton Text="Upload" runat="server" OnClick="btnSave_Click" ID="btnUpload" ValidationGroup="Upload" CssClass="btn btn-primary pull-right" />
+                </div>
+                <table class="table">
+                    <asp:Repeater ID="rptAttachments" runat="server">
+                        <HeaderTemplate>
+                            <thead>
+                                <tr style="text-align: center;">
+                                    <th style="text-align: center;">File Name</th>
+                                    <th style="text-align: center;">Comments</th>
+                                    <th style="text-align: center;">Download</th>
+                                    <th style="text-align: center;">View</th>
+                                    <th style="text-align: center;">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                        </HeaderTemplate>
+                        <ItemTemplate>
+                            <tr style="text-align: center;">
+                                <td><%# Eval("OriginalName") %></td>
+                                <td><%# Eval("FileComments") %></td>
+                                <input type="hidden" runat="server" id="hfId" class="hfId" value='<%# Eval("ID") %>' />
+                                <td><a href='<%# "/Uploads/"+ Eval("FileName") %>' download>
+
+                                    <asp:Image runat="server" ImageUrl="~/img/downld.gif" />
+
+                                </a></td>
+                                <td><a target="_blank" onclick="var originalTarget = document.forms[0].target; document.forms[0].target = '_blank'; setTimeout(function () { document.forms[0].target = originalTarget; }, 3000);" href='<%# "/Uploads/"+ Eval("FileName") %>'>
+                                    <img alt="Download" src="/Images/book-open-icon.png" />
+                                </a></td>
+                                <td>
+                                    <asp:LinkButton ID="lbDelete"
+                                        runat="server"
+                                        OnClick="lbDelete_Click"><span aria-hidden="true" class="fa fa-trash"></span>
+                                    </asp:LinkButton></td>
+                            </tr>
+                        </ItemTemplate>
+                        <FooterTemplate>
+                            </tbody>
+                    </table>
+                        </FooterTemplate>
+                    </asp:Repeater>
+            </div>
+        </div>
+    </ContentTemplate>
+    <Triggers>
+        <asp:PostBackTrigger ControlID="btnUpload" />
+    </Triggers>
+</asp:UpdatePanel>

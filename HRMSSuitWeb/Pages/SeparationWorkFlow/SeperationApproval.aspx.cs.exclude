@@ -1,0 +1,89 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_SeparationWorkFlow_SeperationApproval : System.Web.UI.Page
+{
+    #region Properties
+    public string Id
+    {
+        get
+        {
+            return Request.QueryString["id"];
+        }
+    }
+    public string WorkflowStepDetailId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowStepDetailId"];
+        }
+    }
+    public string WorkflowMasterId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowMasterId"];
+        }
+    }
+    #endregion
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            if (Id != "" && Id != "0")
+            {
+                int WorkflowItemId = Convert.ToInt32(Id);
+                int WorkflowStepDetailId_INT = Convert.ToInt32(WorkflowStepDetailId);
+                bool IsApprovalTask = false;
+
+                SeparationHistory.WorkflowItemId = WorkflowItemId;
+                ITLeaverReview.IsControlInitialize = false ;
+                SeparationDetail.EmployeeId = WorkflowItemId;
+                
+
+                if ((int)Constant.WorkflowStepSeperation.HRReviewSeparation == WorkflowStepDetailId_INT
+                    || (int)Constant.WorkflowStepSeperation.HRRCA == WorkflowStepDetailId_INT
+                || (int)Constant.WorkflowStepSeperation.ManagerRCA == WorkflowStepDetailId_INT
+                    || (int)Constant.WorkflowStepSeperation.ITSubmitITLeaver == WorkflowStepDetailId_INT
+                    || WorkflowStepDetailId_INT == (int)Constant.WorkflowStepSeperation.HRExitInterview
+                    || WorkflowStepDetailId_INT == (int)Constant.WorkflowStepSeperation.InitiatorExitInterview)
+                {
+                    IsApprovalTask = false;
+
+                    if ((int)Constant.WorkflowStepSeperation.ITSubmitITLeaver == WorkflowStepDetailId_INT)
+                    {
+                        ITLeaverReview.IsControlInitialize = true;
+                        ITLeaverReview.Visible = true;
+                        ITLeaverReview.EmployeeId = WorkflowItemId;
+                    }
+                }
+                else
+                {
+                    IsApprovalTask = true;
+
+                    
+                }
+
+
+
+
+                TaskSeparation.IsControlInitialize = true;
+                TaskSeparation.WorkflowItemId = WorkflowItemId;
+                TaskSeparation.IsApprovalTask = IsApprovalTask;
+                TaskSeparation.WorkflowStepDetailId = WorkflowStepDetailId_INT;
+                TaskSeparation.WorkflowMasterId = Convert.ToInt32(WorkflowMasterId);
+
+
+            }
+        }
+    }
+
+}

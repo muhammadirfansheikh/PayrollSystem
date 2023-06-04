@@ -1,0 +1,148 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_TMSEmployeeDetails_ucLeaveHistory : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    public bool IsIncharge { get; set; }
+    public int Selected_EmployeeId { get; set; }
+    Base baseClass = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+        try
+        {
+            LB_Error.Visible = false;
+            RightContentError.Visible = false;
+            if (!IsPostBack)
+            {
+                if (IsIncharge)
+                {
+                    BindDropDown();
+                }
+
+            }
+            if (!IsIncharge)
+            {
+                ddlEmployee.Visible = false;
+                Emp_Detail_Collector.Visible = false;
+                GetEmpLeave_History();
+
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    public void BindDropDown()
+    {
+        try
+        {
+            Base UserInfo = new Base();
+            //var listEmplyee = context.Employees.Where(c => c.IsActive == true && c.InchargeId == UserInfo.UserKey).OrderBy(c => c.Name).ToList();
+
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+            var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin && e.CompanyId == baseClass.CompanyId)))
+                .OrderBy(e => e.EmployeeCode)
+                .Select(e => new
+                {
+                    EmployeeId = e.EmployeeId,
+                    Name = e.EmployeeCode + " - " + e.FirstName + " " + e.LastName
+                })
+                .ToList();
+
+
+            CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void ddlEmployee_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            GetEmpLeave_History();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    public void GetEmpLeave_History()
+    {
+        try
+        {
+
+            if (IsIncharge)
+            {
+                Selected_EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+            }
+            else
+            {
+                Selected_EmployeeId = new Base().UserKey;
+
+
+            }
+            var Lev = context.TMS_LeaveApplied.Where(p => p.EmployeeId == Selected_EmployeeId && p.IsActive == true).OrderByDescending("CreatedDate").ToList();
+
+            Repeater_LeaveHistory.DataSource = Lev;
+            Repeater_LeaveHistory.DataBind();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void Repeater_LeaveHistory_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        try
+        {
+            int leaveAppliedId = Convert.ToInt32(e.CommandArgument.ToString());
+
+            switch (e.CommandName.ToLower())
+            {
+                case "takeback":
+
+                    TMS_LeaveApplied leaveApplied = context.TMS_LeaveApplied.FirstOrDefault(l => l.LeaveAppliedId == leaveAppliedId);
+                    if (leaveApplied != null)
+                    {
+                        leaveApplied.IsActive = false;
+                        leaveApplied.ModifiedBy = baseClass.UserKey;
+                        leaveApplied.ModifiedDate = DateTime.Now;
+
+                        context.SaveChanges();
+                        GetEmpLeave_History();
+                    }
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+}

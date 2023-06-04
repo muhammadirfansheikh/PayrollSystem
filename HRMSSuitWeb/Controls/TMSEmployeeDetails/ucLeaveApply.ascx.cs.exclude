@@ -1,0 +1,399 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+
+public partial class Controls_TMSEmployeeDetails_ucLeaveApply : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+    public bool IsIncharge { get; set; }
+    private int EmployeeId = 0;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            divSummary.Visible = false;
+            if (IsIncharge)
+            {
+                ddlEmployee.Visible = true;
+                rfvEmployee.Enabled = true;
+                lblEmployeeName.Visible = false;
+            }
+            if (!IsPostBack)
+            {
+                dtPeriodFrom.Text = DateTime.Now.ToString(Constant.DateFormat2);
+                dtPeriodTo.Text = DateTime.Now.ToString(Constant.DateFormat2);
+                txtDays.Text = "1";
+                BindDropdown();
+                FillData();
+            }
+            if (!IsIncharge)
+            {
+                EmployeeId = baseClass.UserKey;
+            }
+            else
+            {
+                EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+            }
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.Text = ex.Message;
+            //    lblSummary.Text = ex.Message;
+            //    divSummary.Attributes.Add("class", "validationSummary");
+            //    divSummary.Visible = true;
+        }
+    }
+    private void BindDropdown()
+    {
+        //var leaveTypes = context.LeaveTypes.Where(l => l.IsActive == true).ToList();
+        //CommonHelper.BindDropDown(ddlLeaveType, leaveTypes, "LeaveName", "LeaveTypeID", true, false);
+
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        if (baseClass.RoleCode == roleAdmin || baseClass.IsSuperAdmin)
+        {
+            var leaveTypes = context.TMS_Setup_LeaveTypes.Where(l => l.IsActive == true || l.LeaveTypeID == 7).ToList();
+            CommonHelper.BindDropDown(ddlLeaveType, leaveTypes, "LeaveName", "LeaveTypeID", true, false);
+        }
+        else
+        {
+            var leaveTypes = context.TMS_Setup_LeaveTypes.Where(l => l.IsActive == true).ToList();
+            CommonHelper.BindDropDown(ddlLeaveType, leaveTypes, "LeaveName", "LeaveTypeID", true, false);
+        }
+
+        var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin && e.CompanyId == baseClass.CompanyId)))
+                .OrderBy(e => e.EmployeeCode)
+                .Select(e => new
+                {
+                    EmployeeId = e.EmployeeId,
+                    Name = e.EmployeeCode + " - " + e.FirstName + " " + e.LastName
+                })
+                .ToList();
+        CommonHelper.BindDropDown(ddlEmployee, employees, "Name", "EmployeeId", true, false);
+    }
+    private void FillData()
+    {
+        if (!IsIncharge)
+        {
+            EmployeeId = baseClass.UserKey;
+        }
+        else
+        {
+            EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+        }
+        TMS_EmployeeLeave empLeave = context.TMS_EmployeeLeave.FirstOrDefault(el => el.EmployeeID == EmployeeId && el.Code_ID == (int)Constant.LeaveChangesCode.CR && el.IsActive == true);
+        Setup_Employee employee = context.Setup_Employee.FirstOrDefault(e => e.EmployeeId == EmployeeId);
+
+        if (employee != null)
+        {
+            lblEmployeeName.Text = employee.FirstName + " " + employee.LastName; //employee.Name;
+            if (!string.IsNullOrEmpty(employee.PictureName))
+            {
+                imgEmployeeImage.ImageUrl = Convert.ToString(ConfigurationManager.AppSettings["EmployeeImagePath"]) + employee.PictureName;
+            }
+            else
+            {
+                imgEmployeeImage.ImageUrl = "/images/noprofilepic.png";
+            }
+        }
+        if (empLeave != null)
+        {
+            lblLeaveAnnual.Text = Convert.ToString(empLeave.AnualLeavesRemain);
+            lblLeaveSick.Text = Convert.ToString(empLeave.SickLeavesRemin);
+            lblLeaveCasual.Text = Convert.ToString(empLeave.CasualLeavesRemain);
+            lblLeaveMaternity.Text = Convert.ToString(empLeave.MaternityLeavesRemain);
+            lblLeaveDefault.Text = Convert.ToString(empLeave.DefaultLeavesRemain);
+        }
+        else
+        {
+            lblLeaveAnnual.Text = "0";
+            lblLeaveSick.Text = "0";
+            lblLeaveCasual.Text = "0";
+            lblLeaveMaternity.Text = "0";
+            lblLeaveDefault.Text = "0";
+        }
+    }
+    protected void btnSubmit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            divError.Visible = false;
+            divSuccuss.Visible = false;
+            DateTime fromDate = Convert.ToDateTime(dtPeriodFrom.Text);
+            DateTime toDate = Convert.ToDateTime(dtPeriodTo.Text);
+
+            var timeAdjustment = context.TMS_usp_TimeAdjustmentList(fromDate, toDate, EmployeeId, false).ToList();
+            timeAdjustment = timeAdjustment.Where(x => x.StartTime != null).ToList();
+            TMS_MonthEndParameter monthEndParameter = context.TMS_MonthEndParameter.FirstOrDefault(p => p.CompanyId == baseClass.CompanyId);
+            if (timeAdjustment.Count > 0)
+            {
+                divError.Visible = true;
+                lblError.Text = "You cannot apply leave because your Activity exist on this Day.";
+                return;
+            }
+            if (monthEndParameter != null)
+            {
+                DateTime lastDateforApply = new DateTime(monthEndParameter.CurrentYear, monthEndParameter.CurrentMonth, monthEndParameter.MonthEnd_EndDate);
+                lastDateforApply = lastDateforApply.AddMonths(-1);
+
+                if (fromDate <= lastDateforApply)
+                {
+                    Page.ClientScript.RegisterStartupScript(GetType(), "MonthEndProcessed", "swal('Warning','You cannot apply leave after the month end. kindly co-ordinate with your supervisor.','warning');", true);
+                    divError.Visible = true;
+                    lblError.Text = "You cannot apply leave after the month end. kindly co-ordinate with your supervisor.";
+                    return;
+                }
+            }
+            if (fromDate > toDate)
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "DateCheck", "swal('Warning','Period To must be greater than Period From','warning');", true);
+                divError.Visible = true;
+                lblError.Text = "Period To must be greater than Period From.";
+
+                return;
+            }
+            if (!CheckLeaveBalance())
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "LeaveBalance", "swal('Warning','Not enough balance in Leave type " + ddlLeaveType.SelectedItem.Text.ToUpper() + ". Please select any other leave type','warning');", true);
+                divError.Visible = true;
+                lblError.Text = "Not enough balance in Leave type " + ddlLeaveType.SelectedItem.Text.ToUpper() + ". Please select any other leave type";
+                return;
+            }
+            if (!CanUpdate(dtPeriodTo.Text))
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "CannotUpdate", "swal('Warning','Cannot Apply For Leave After " + baseClass.RoleTats + " Hours','warning');", true);
+                divError.Visible = true;
+                lblError.Text = "Cannot Apply For Leave After " + baseClass.RoleTats + " Hours";
+                return;
+            }
+            TMS_LeaveApplied laCheck = context.TMS_LeaveApplied.FirstOrDefault(la => ((la.FromDate >= fromDate && la.ToDate <= toDate) || ((la.FromDate <= fromDate && la.ToDate >= fromDate) || (la.FromDate <= toDate && la.ToDate >= toDate))) && la.EmployeeId == EmployeeId && la.IsActive == true && la.LeaveTypeId != (int)Constant.TMSLeaveTypes.WithoutPay);
+            if (laCheck != null)
+            {
+                Page.ClientScript.RegisterStartupScript(GetType(), "AlreadyLeaveApplied", "swal('Warning','You have already applied leave on this date range','warning');", true);
+                divError.Visible = true;
+                lblError.Text = "You have already applied leave on this date range";
+                return;
+            }
+            if (ddlLeaveType.SelectedValue == Convert.ToString((int)Constant.TMSLeaveTypes.Casual))
+            {
+                if (!string.IsNullOrEmpty(txtDays.Text) && Convert.ToInt16(txtDays.Text) > 3)
+                {
+                    Page.ClientScript.RegisterStartupScript(GetType(), "CasualLeaveCheck", "swal('Warning','You can apply maximum 3 days of casual leaves','warning');", true);
+                    divError.Visible = true;
+                    lblError.Text = "You can apply maximum 3 days of casual leaves";
+                    return;
+                }
+            }
+            int leaveTypeId = Convert.ToInt32(ddlLeaveType.SelectedValue);
+            int? pendingLeave = context.TMS_LeaveApplied.Where(la => la.EmployeeId == EmployeeId && la.IsActive == true
+                && la.LeaveStatusId == (int)Constant.TMSStatus.Pending && la.LeaveTypeId == leaveTypeId).Sum(la => la.NoOfDays);
+
+            if (pendingLeave != null)
+            {
+                int noOfDays = Convert.ToInt16(txtDays.Text) + Convert.ToInt16(pendingLeave);
+                bool isLeaveRemaining = true; ;
+                switch (Convert.ToInt32(ddlLeaveType.SelectedValue))
+                {
+                    case (int)Constant.TMSLeaveTypes.Annual:
+                        if (noOfDays > Convert.ToInt16(lblLeaveAnnual.Text))
+                        {
+                            isLeaveRemaining = false;
+                        }
+                        break;
+                    case (int)Constant.TMSLeaveTypes.Casual:
+                        if (noOfDays > Convert.ToInt16(lblLeaveCasual.Text))
+                        {
+                            isLeaveRemaining = false;
+                        }
+                        break;
+                    case (int)Constant.TMSLeaveTypes.Default:
+                        if (noOfDays > Convert.ToInt16(lblLeaveDefault.Text))
+                        {
+                            isLeaveRemaining = false;
+                        }
+                        break;
+                    case (int)Constant.TMSLeaveTypes.Maternity:
+                        if (noOfDays > Convert.ToInt16(lblLeaveMaternity.Text))
+                        {
+                            isLeaveRemaining = false;
+                        }
+                        break;
+                    case (int)Constant.TMSLeaveTypes.Sick:
+                        if (noOfDays > Convert.ToInt16(lblLeaveSick.Text))
+                        {
+                            isLeaveRemaining = false;
+                        }
+                        break;
+                }
+                if (isLeaveRemaining == false)
+                {
+                    Page.ClientScript.RegisterStartupScript(GetType(), "PendingLeaveExist", "swal('Warning','Not enough balance in Leave type " + ddlLeaveType.SelectedItem.Text.ToUpper() + " beacause " + pendingLeave.ToString() + " days pending leave exist','warning');", true);
+                    divError.Visible = true;
+                    lblError.Text = "Not enough balance in Leave type " + ddlLeaveType.SelectedItem.Text.ToUpper() + " beacause " + pendingLeave.ToString() + " days pending leave exist";
+                    return;
+                }
+            }
+
+            if (!IsIncharge)
+            {
+                EmployeeId = baseClass.UserKey;
+            }
+            else
+            {
+                EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+            }
+
+            Setup_Employee employee = context.Setup_Employee.FirstOrDefault(emp => emp.EmployeeId == EmployeeId);
+
+            TMS_LeaveApplied leaveApplied = new TMS_LeaveApplied();
+            leaveApplied.CreatedBy = baseClass.UserKey;
+            leaveApplied.CreatedDate = DateTime.Now;
+            leaveApplied.EmployeeId = EmployeeId;
+
+            leaveApplied.EmployeeReason = txtReason.Text.Trim();
+            if (!string.IsNullOrEmpty(dtPeriodFrom.Text.Trim()))
+            {
+                leaveApplied.FromDate = Convert.ToDateTime(dtPeriodFrom.Text);
+            }
+            if (!string.IsNullOrEmpty(dtPeriodTo.Text.Trim()))
+            {
+                leaveApplied.ToDate = Convert.ToDateTime(dtPeriodTo.Text);
+            }
+            leaveApplied.IsActive = true;
+            leaveApplied.LeaveStatusId = (int)Constant.TMSStatus.Pending;
+            leaveApplied.LeaveTypeId = Convert.ToInt32(ddlLeaveType.SelectedValue);
+            leaveApplied.NoOfDays = Convert.ToInt16(txtDays.Text);
+            leaveApplied.WithoutPay = 1;
+
+            if (employee != null)
+            {
+                leaveApplied.InchargeId = employee.InchargeId;
+            }
+            leaveApplied.UserIP = baseClass.UserIP;
+            leaveApplied.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+            context.TMS_LeaveApplied.Add(leaveApplied);
+            context.SaveChanges();
+            divSuccuss.Visible = true;
+            //lblSummary.Text = "Leave Applied Successfully";
+            //divSummary.Attributes.Add("class", "okMessage");
+            //divSummary.Visible = true;
+            context.INSERT_INTO_AuditLog(leaveApplied.LeaveAppliedId.ToString(), "TMS_LeaveApplied", (int)Constant.OperationType.INSERT, baseClass.UserKey);
+
+        }
+        catch (Exception ex)
+        {
+            //lblSummary.Text = ex.Message;
+            //divSummary.Attributes.Add("class", "validationSummary");
+            //divSummary.Visible = true;
+            divError.Visible = true;
+            lblError.Text = ex.Message;
+
+        }
+
+    }
+    protected void dtPeriod_TextChanged(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(dtPeriodFrom.Text) && !string.IsNullOrEmpty(dtPeriodTo.Text))
+        {
+            int offHours = CommonHelper.GetTotalOffHours(Convert.ToDateTime(dtPeriodFrom.Text), Convert.ToDateTime(dtPeriodTo.Text), EmployeeId);
+            TimeSpan ts = Convert.ToDateTime(dtPeriodTo.Text).Subtract(Convert.ToDateTime(dtPeriodFrom.Text));
+            int totalDays = Convert.ToInt16(ts.TotalDays) + 1 - (offHours / 24);
+            txtDays.Text = totalDays.ToString();
+        }
+    }
+    protected void ddlEmployee_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            FillData();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.Text = ex.Message;
+
+            //lblSummary.Text = ex.Message;
+            //divSummary.Attributes.Add("class", "validationSummary");
+            //divSummary.Visible = true;
+        }
+    }
+    protected void btnReset_Click(object sender, EventArgs e)
+    {
+        ddlLeaveType.SelectedValue = "0";
+        dtPeriodFrom.Text = dtPeriodTo.Text = DateTime.Now.ToString(Constant.DateFormat);
+        txtDays.Text = "1";
+        txtReason.Text = "";
+    }
+    private bool CanUpdate(string PeriodTo)
+    {
+        int offHours = CommonHelper.GetTotalOffHours(Convert.ToDateTime(dtPeriodTo.Text), DateTime.Now, EmployeeId);
+        TimeSpan ts = new TimeSpan();
+
+        ts = (TimeSpan)(DateTime.Now - Convert.ToDateTime(dtPeriodTo.Text));
+
+        if (ts.TotalHours < (Convert.ToInt16(baseClass.RoleTats) + offHours + 24))
+        {
+            return true;
+        }
+        return false;
+    }
+    private bool CheckLeaveBalance()
+    {
+        bool isLeaveRemaining = true;
+        int noOfDays = Convert.ToInt16(txtDays.Text);
+
+        switch (Convert.ToInt32(ddlLeaveType.SelectedValue))
+        {
+            case (int)Constant.TMSLeaveTypes.Annual:
+                if (noOfDays > Convert.ToInt16(lblLeaveAnnual.Text))
+                {
+                    isLeaveRemaining = false;
+                }
+                break;
+            case (int)Constant.TMSLeaveTypes.Casual:
+                if (noOfDays > Convert.ToInt16(lblLeaveCasual.Text))
+                {
+                    isLeaveRemaining = false;
+                }
+                break;
+            case (int)Constant.TMSLeaveTypes.Default:
+                if (noOfDays > Convert.ToInt16(lblLeaveDefault.Text))
+                {
+                    isLeaveRemaining = false;
+                }
+                break;
+            case (int)Constant.TMSLeaveTypes.Maternity:
+                if (noOfDays > Convert.ToInt16(lblLeaveMaternity.Text))
+                {
+                    isLeaveRemaining = false;
+                }
+                break;
+            case (int)Constant.TMSLeaveTypes.Sick:
+                if (noOfDays > Convert.ToInt16(lblLeaveSick.Text))
+                {
+                    isLeaveRemaining = false;
+                }
+                break;
+        }
+        return isLeaveRemaining;
+    }
+    protected void dtPeriodTo_TextChanged(object sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(dtPeriodFrom.Text) && !string.IsNullOrEmpty(dtPeriodTo.Text))
+        {
+            int offHours = CommonHelper.GetTotalOffHours(Convert.ToDateTime(dtPeriodFrom.Text), Convert.ToDateTime(dtPeriodTo.Text), EmployeeId);
+            TimeSpan ts = Convert.ToDateTime(dtPeriodTo.Text).Subtract(Convert.ToDateTime(dtPeriodFrom.Text));
+            int totalDays = Convert.ToInt16(ts.TotalDays) + 1 - (offHours / 24);
+            txtDays.Text = totalDays > 0 ? totalDays.ToString() : "0";
+        }
+    }
+}

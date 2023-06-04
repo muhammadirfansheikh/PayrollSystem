@@ -1,0 +1,295 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Controls_EmployeeDetails_ucPassportVisaDetail : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindDropdown()
+    {
+        var ListCountry = context.Setup_Country.Where(c => c.IsActive == true).OrderBy(c => c.CountryName).ToList();
+        CommonHelper.BindDropDown(ddlPassportCountryInfo, ListCountry, "CountryName", "CountryId", true, false);
+
+        var VisaType = context.HRMS_Setup_VisaType.Where(c => c.IsActive == true).OrderBy(c => c.VisaTypeName).ToList();
+        CommonHelper.BindDropDown(ddlVisaTypeDetails, VisaType, "VisaTypeName", "VisaTypeID", true, false);
+
+        var Profession = context.Setup_Profession.Where(c => c.IsActive == true).OrderBy(c => c.ProfessionName).ToList();
+        CommonHelper.BindDropDown(ddlProfession, Profession, "ProfessionName", "ProfessionID", true, false);
+
+    }
+    public void BindRepeaterEmployeePassportDetail(int EmployeeId)
+    {
+        var EmployeeExpereince = context.HRMS_EmployeePassport.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmployeeId)
+            ).Select(c => new
+            {
+                EmployeePassportId = c.EmployeePassportId,
+                EmployeeId = c.EmployeeId,
+                PassportNumber = c.PassportNumber,
+                PassportIssueDate = c.PassportIssueDate,
+                PassportExpiry = c.PassportExpiryDate,
+                CountryId = c.CountryId,
+                CountryName = c.Setup_Country.CountryName
+
+
+            }).ToList();
+        if (EmployeeExpereince.Count>0)
+        {
+            RptEmployeePassportDetail.DataSource = EmployeeExpereince;
+            RptEmployeePassportDetail.DataBind();
+        }
+        BindRepeaterEmployeeVisaDetail(EmpID);
+    }
+
+    private void ResetControlPassportDetail()
+    {
+        txtPassportNumberInfo.Text = string.Empty;
+        txtPassportIssueDateInfo.Text = string.Empty;
+        txtPassportExpiryInfo.Text = string.Empty;
+        ddlPassportCountryInfo.SelectedValue = "0";
+        hfPassportNumberId.Value = string.Empty;
+        btnAddPassport.Text = "Add";
+    }
+
+    protected void RptEmployeePassportDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlPassportDetail();
+
+            int EmployeePassportId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeePassport = context.HRMS_EmployeePassport.Where(c => c.EmployeePassportId == EmployeePassportId).ToList();
+            if (EmployeePassport != null)
+            {
+                hfPassportNumberId.Value = EmployeePassportId.ToString();
+                txtPassportNumberInfo.Text = EmployeePassport[0].PassportNumber;
+                txtPassportIssueDateInfo.Text = EmployeePassport[0].PassportIssueDate.Value.ToString(Constant.DateFormat2);
+                txtPassportExpiryInfo.Text = EmployeePassport[0].PassportExpiryDate.Value.ToString(Constant.DateFormat2);
+                ddlPassportCountryInfo.SelectedValue = EmployeePassport[0].CountryId.ToString();
+
+                btnAddPassport.Text = "Update";
+            }
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeePassportId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeePassport obj = context.HRMS_EmployeePassport.FirstOrDefault(j => j.EmployeePassportId == EmployeePassportId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterEmployeePassportDetail(EmpID);
+        }
+    }
+    protected void btnAddPassport_Click(object sender, EventArgs e)
+    {
+        if (hfPassportNumberId.Value == string.Empty)
+        {
+            AddPassportDetail();
+        }
+        else
+        {
+            UpdatePassportDetail();
+        }
+    }
+
+    private void AddPassportDetail()
+    {
+        DateTime dt = DateTime.Now;
+        HRMS_EmployeePassport obj = new HRMS_EmployeePassport();
+        obj.EmployeeId = EmpID;
+        obj.PassportNumber = txtPassportNumberInfo.Text.Trim();
+        obj.PassportIssueDate = Convert.ToDateTime(txtPassportIssueDateInfo.Text.Trim());
+        obj.PassportExpiryDate = Convert.ToDateTime(txtPassportExpiryInfo.Text.Trim());
+        obj.CountryId = Convert.ToInt32(ddlPassportCountryInfo.SelectedValue);
+        obj.CreatedBy = objBase.UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = objBase.UserIP;
+
+        context.HRMS_EmployeePassport.Add(obj);
+        context.SaveChanges();
+
+        BindRepeaterEmployeePassportDetail(EmpID);
+        ResetControlPassportDetail();
+    }
+
+    private void UpdatePassportDetail()
+    {
+
+        DateTime dt = DateTime.Now;
+        int EmployeePassportId = Convert.ToInt32(hfPassportNumberId.Value);
+
+
+        HRMS_EmployeePassport obj = context.HRMS_EmployeePassport.FirstOrDefault(j => j.EmployeePassportId == EmployeePassportId);
+
+        obj.PassportNumber = txtPassportNumberInfo.Text.Trim();
+        obj.PassportIssueDate = Convert.ToDateTime(txtPassportIssueDateInfo.Text.Trim());
+        obj.PassportExpiryDate = Convert.ToDateTime(txtPassportExpiryInfo.Text.Trim());
+        obj.CountryId = Convert.ToInt32(ddlPassportCountryInfo.SelectedValue);
+        obj.IsActive = true;
+        obj.ModifiedBy = objBase.UserKey;
+        obj.ModifiedDate = dt;
+        context.SaveChanges();
+
+        BindRepeaterEmployeePassportDetail(EmpID);
+        ResetControlPassportDetail();
+    }
+
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    protected void btnAddVisa_Click(object sender, EventArgs e)
+    {
+        if (hfEmployeeVisaID.Value == string.Empty)
+        {
+            AddVisaDetail();
+        }
+        else
+        {
+            UpdateVisaDetail();
+        }
+    }
+    private void AddVisaDetail()
+    {
+        int? INTNull = null;
+        DateTime dt = DateTime.Now;
+        HRMS_EmployeeVisa obj = new HRMS_EmployeeVisa();
+        obj.EmployeeID = Convert.ToInt32(EmpID);
+        obj.VisaExpiryDate = Convert.ToDateTime(txtVisaExpiryDate.Text);
+        obj.VisaIssueDate = Convert.ToDateTime(txtVisaIssueDate.Text);
+        obj.ProfessionID = ddlProfession.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlProfession.SelectedValue);
+        obj.VisaTypeID = ddlVisaTypeDetails.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlVisaTypeDetails.SelectedValue);
+        obj.VisaSponser = txtSponser.Text.Trim();
+        obj.CreatedBy = objBase.UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = objBase.UserIP;
+
+        context.HRMS_EmployeeVisa.Add(obj);
+        context.SaveChanges();
+
+        BindRepeaterEmployeeVisaDetail(EmpID);
+        ResetControlPassportDetail();
+    }
+
+    private void UpdateVisaDetail()
+    {
+
+        DateTime dt = DateTime.Now;
+        int EmployeeVisaId = Convert.ToInt32(hfEmployeeVisaID.Value);
+
+
+        HRMS_EmployeeVisa obj = context.HRMS_EmployeeVisa.FirstOrDefault(j => j.VisaDetailID == EmployeeVisaId);
+
+        int? INTNull = null;
+
+        obj.VisaExpiryDate = Convert.ToDateTime(txtVisaExpiryDate.Text);
+        obj.VisaIssueDate = Convert.ToDateTime(txtVisaIssueDate.Text);
+        obj.ProfessionID = ddlProfession.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlProfession.SelectedValue);
+        obj.VisaTypeID = ddlVisaTypeDetails.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlVisaTypeDetails.SelectedValue);
+        obj.VisaSponser = txtSponser.Text.Trim();
+        obj.CreatedBy = objBase.UserKey;
+        obj.CreatedDate = dt;
+
+        context.SaveChanges();
+
+        BindRepeaterEmployeeVisaDetail(EmpID);
+        ResetControlVisaDetail();
+    }
+
+    private void ResetControlVisaDetail()
+    {
+        txtVisaIssueDate.Text = string.Empty;
+        txtVisaExpiryDate.Text = string.Empty;
+        txtSponser.Text = string.Empty;
+        ddlVisaTypeDetails.SelectedValue = "0";
+        ddlProfession.SelectedValue = "0";
+        hfEmployeeVisaID.Value = string.Empty;
+        btnAddVisa.Text = "Add";
+    }
+    private void BindRepeaterEmployeeVisaDetail(int EmployeeId)
+    {
+        var EmployeeVisa = context.HRMS_EmployeeVisa.Where(c => c.IsActive == true
+                                && (c.EmployeeID == EmployeeId)
+            ).Select(c => new
+            {
+                VisaDetailID = c.VisaDetailID,
+                EmployeeId = c.EmployeeID,
+                VisaSponser = c.VisaSponser,
+                VisaTypeName = c.HRMS_Setup_VisaType.VisaTypeName,
+                VisaExpiryDate = c.VisaExpiryDate,
+                VisaIssueDate = c.VisaIssueDate,
+                ProfessionName = c.Setup_Profession.ProfessionName
+
+            }).ToList();
+        if (EmployeeVisa.Count > 0)
+        {
+            RptEmployeeVisaDetail.DataSource = EmployeeVisa;
+            RptEmployeeVisaDetail.DataBind();
+        }
+       
+    }
+
+
+
+    protected void RptEmployeeVisaDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlPassportDetail();
+
+            int VisaDetailID = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeVisa = context.HRMS_EmployeeVisa.Where(c => c.VisaDetailID == VisaDetailID).ToList();
+            if (EmployeeVisa != null)
+            {
+                hfEmployeeVisaID.Value = VisaDetailID.ToString();
+                txtSponser.Text = EmployeeVisa[0].VisaSponser;
+
+                txtVisaIssueDate.Text = Convert.ToDateTime(EmployeeVisa[0].VisaIssueDate).ToString(Constant.DateFormat);
+                txtVisaExpiryDate.Text = Convert.ToDateTime(EmployeeVisa[0].VisaExpiryDate).ToString(Constant.DateFormat);
+                ddlVisaTypeDetails.SelectedValue = EmployeeVisa[0].VisaTypeID == null ? "0" : EmployeeVisa[0].VisaTypeID.ToString();
+                ddlProfession.SelectedValue = EmployeeVisa[0].ProfessionID == null ? "0" : EmployeeVisa[0].ProfessionID.ToString();
+
+                btnAddVisa.Text = "Update";
+            }
+
+
+
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int VisaDetailID = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeVisa obj = context.HRMS_EmployeeVisa.FirstOrDefault(j => j.VisaDetailID == VisaDetailID);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterEmployeeVisaDetail(EmpID);
+        }
+    }
+
+}

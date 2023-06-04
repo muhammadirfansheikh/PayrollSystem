@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucOther : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindOtherDetails(int EmployeeId)
+    {
+        HRMS_EmployeeGeneralInformation objupdate = context.HRMS_EmployeeGeneralInformation.FirstOrDefault(j => j.EmployeeId == EmployeeId);
+        if (objupdate != null)
+        {
+            txtFamilyAssociated.Text = objupdate.FamilyMemberAssociationDetail;
+            txtMojorIllnessdetail.Text = objupdate.MajorIllnessDetail;
+            txtTimingRestrictions.Text = objupdate.MobilityRestrictionDetail;
+            rbisAssociated.SelectedValue = objupdate.IsAssociatedwithGroup == true ? "1" : "0";
+            rbIsProsecuted.SelectedValue = objupdate.IsProsecuted == true ? "1" : "0";
+            rbIsDismissed.SelectedValue = objupdate.IsDismissed == true ? "1" : "0";
+        }
+    }
+    public void UpdateOtherDetails(int EmployeeId)
+    {
+        HRMS_EmployeeGeneralInformation objupdate = context.HRMS_EmployeeGeneralInformation.FirstOrDefault(j => j.EmployeeId == EmployeeId);
+        if (objupdate != null)
+        {
+            objupdate.FamilyMemberAssociationDetail = txtFamilyAssociated.Text;
+            objupdate.MajorIllnessDetail = txtMojorIllnessdetail.Text;
+            objupdate.MobilityRestrictionDetail = txtTimingRestrictions.Text;
+            objupdate.IsAssociatedwithGroup = rbisAssociated.SelectedValue == "1" ? true : false;
+            objupdate.IsProsecuted = rbIsProsecuted.SelectedValue == "1" ? true : false;
+            objupdate.IsDismissed = rbIsDismissed.SelectedValue == "1" ? true : false;
+            context.SaveChanges();
+        }
+    }
+}

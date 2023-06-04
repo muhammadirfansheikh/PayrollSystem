@@ -1,0 +1,701 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucClearance : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void Binddropdown()
+    {
+        var TerminationType = context.HRMS_Setup_TerminationType.Where(c => c.IsActive == true).OrderBy(c => c.TerminationType).ToList();
+        var ListNoticePeriod = context.HRMS_Setup_NoticePeriodType.Where(c => c.IsActive == true).OrderBy(c => c.NoticePeriodType).ToList();
+        CommonHelper.BindDropDown(ddlTerminationType, TerminationType, "TerminationType", "TerminationTypeId", true, false);
+        CommonHelper.BindDropDown(ddlNoticePeriod, ListNoticePeriod, "NoticePeriodType", "NoticePeriodTypeId", true, false);
+    }
+    public void LoadClearenceFormSahrePointData(int EmployeeId)
+    {
+
+        var EmployeeSeperation = context.Setup_Employee.Where(a => a.EmployeeId == EmployeeId).ToList();
+
+        if (EmployeeSeperation.Count > 0)
+        {
+            txtResignDate.Text = EmployeeSeperation[0].ReisgnedDate.ToString();
+            txtLastWorkingDay.Text = EmployeeSeperation[0].LastworkingDate.ToString();
+            lblNoticeDays.Text = EmployeeSeperation[0].NoticePeriodDays.ToString();
+            ddlNoticePeriod.SelectedValue = EmployeeSeperation[0].NoticePeriodTypeId == null ? "0" : EmployeeSeperation[0].NoticePeriodTypeId.ToString();
+            ddlTerminationType.SelectedValue = EmployeeSeperation[0].TerminationTypeId == null ? "0" : EmployeeSeperation[0].TerminationTypeId.ToString();
+            txtRemarks.Text = EmployeeSeperation[0].Remarks==null?"":EmployeeSeperation[0].Remarks.ToString();
+        }
+        List<HRMS_EmployeeSeperationDetail> Detail = context.HRMS_EmployeeSeperationDetail.Where(a => a.EmployeeId == EmployeeId).ToList();
+
+
+        /*HR Department Loading*/
+        if (Detail.Count > 0)
+        {
+
+
+            //txtLastworking_Memo.Text = "";
+            if (Detail[Detail.Count - 1].IsEmployeecardReceived == (int)Constant.TMSIds.Received)
+            {
+                rbEmployeeIDCard.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsEmployeecardReceived == (int)Constant.TMSIds.NotReceived)
+            {
+                rbEmployeeIDCard.Items[1].Selected = true;
+            }
+            else
+            {
+                rbEmployeeIDCard.Items[2].Selected = true;
+            }
+
+
+
+            if (Detail[Detail.Count - 1].IsTMSIdDeleted == (int)Constant.TMSIds.Active)
+            {
+                rbTaskMS.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsTMSIdDeleted == (int)Constant.TMSIds.Deleted)
+            {
+                rbTaskMS.Items[1].Selected = true;
+            }
+            else
+            {
+                rbTaskMS.Items[2].Selected = true;
+            }
+
+
+            /*Admin Department Loading*/
+
+            if (Detail[Detail.Count - 1].IsAccessCardRecoverd == (int)Constant.TMSIds.Yes)
+            {
+                rbMobileSet.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsAccessCardRecoverd == (int)Constant.TMSIds.No)
+            {
+                rbMobileSet.Items[1].Selected = true;
+            }
+
+            if (Detail[Detail.Count - 1].IsTelephonyIdBlocked == (int)Constant.TMSIds.Yes)
+            {
+                rbAccessCard.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsTelephonyIdBlocked == (int)Constant.TMSIds.No)
+            {
+                rbAccessCard.Items[1].Selected = true;
+            }
+
+            /*IT Department Loading*/
+
+            txtLaptopaccessories.Text = Detail[Detail.Count - 1].IsLaptopRecovered;
+
+            if (Detail[Detail.Count - 1].IsCampaignIdBlocked == (int)Constant.TMSIds.Active)
+            {
+                rbCampaignApp.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsCampaignIdBlocked == (int)Constant.TMSIds.Deleted)
+            {
+                rbCampaignApp.Items[1].Selected = true;
+            }
+            else
+            {
+                rbCampaignApp.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsEmailIdBlocked == (int)Constant.TMSIds.Active)
+            {
+                rbEmailDomainId.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsEmailIdBlocked == (int)Constant.TMSIds.Deleted)
+            {
+                rbEmailDomainId.Items[1].Selected = true;
+            }
+            else
+            {
+                rbEmailDomainId.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsTelephonyIdBlocked == (int)Constant.TMSIds.Active)
+            {
+                rbTelephony.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsTelephonyIdBlocked == (int)Constant.TMSIds.Deleted)
+            {
+                rbTelephony.Items[1].Selected = true;
+            }
+            else
+            {
+                rbTelephony.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsTaskMSIdBlocked == (int)Constant.TMSIds.Active)
+            {
+                rbTaskMS.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsTaskMSIdBlocked == (int)Constant.TMSIds.Deleted)
+            {
+                rbTaskMS.Items[1].Selected = true;
+            }
+            else
+            {
+                rbTaskMS.Items[2].Selected = true;
+            }
+
+            if (Detail[Detail.Count - 1].IsOtherIdBlocked == (int)Constant.TMSIds.Active)
+            {
+                rbOtherIds.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsOtherIdBlocked == (int)Constant.TMSIds.Deleted)
+            {
+                rbOtherIds.Items[1].Selected = true;
+            }
+            else
+            {
+                rbOtherIds.Items[2].Selected = true;
+            }
+
+
+            /*Finance Departement Loading*/
+
+            txtFloatTour.Text = Convert.ToString(Detail[Detail.Count - 1].TourAdvance);
+            txtCarloan.Text = Convert.ToString(Detail[Detail.Count - 1].CompanyCarLoan);
+
+            txtdvanceagainstsalary.Text = Convert.ToString(Detail[Detail.Count - 1].AdvanceSalary);
+
+            //txtOtherAdvance.Text = Convert.ToString(Detail.ad);
+
+            txtOtheradvance.Text = Convert.ToString(Detail[Detail.Count - 1].TotalDues);
+
+            /*Head Of Departement Loading*/
+
+            //.Detail//ddlNoticePeriod.SelectedValue=Detail.perio
+
+            //txtRemarks_Memo.Text=Detail.isre
+
+
+            /*IT Leaver Work Control Loading*/
+
+
+            //txtLeaverFrom_empName.Text = Detail.Setup_Employee.FirstName + " " + Detail.Setup_Employee.LastName;
+
+            int? InchageID = Detail[Detail.Count - 1].Setup_Employee.InchargeId;
+            int? RequestRaisedBy = Detail[Detail.Count - 1].RequestedRaisedby;
+            ViewState["RequestRausedByID"] = RequestRaisedBy;
+            var emp_Inchage = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == InchageID);
+            var emp_RequestRaisedBy = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == RequestRaisedBy);
+            if (emp_Inchage != null)
+            {
+                txtManagerSupervisor.Text = emp_Inchage.FirstName;
+            }
+            //txtLeaverForm_CurrentDept.Text = Detail.Setup_Employee.Setup_Department.DepartmentName;
+
+            // txtLeaverForm_CuurentDept.Text = Detail.Setup_Employee.Setup_Department.DepartmentName;
+            if (emp_RequestRaisedBy != null)
+            {
+                txtTicketNo.Text = Detail[Detail.Count - 1].TicketNo == null ? "" : Detail[Detail.Count - 1].TicketNo;
+                txtManagerSupervisor.Text = emp_RequestRaisedBy.FirstName == null ? "" : emp_RequestRaisedBy.FirstName;
+            }
+            txtCampaign.Text = Detail[Detail.Count - 1].Campaign;
+
+
+
+            if (Detail[Detail.Count - 1].IsRevokeOfficialEmail == (int)Constant.TMSIds.Yes)
+            {
+                ddlRevokeOfficialEmailAccount.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsRevokeOfficialEmail == (int)Constant.TMSIds.No)
+            {
+                ddlRevokeOfficialEmailAccount.Items[1].Selected = true;
+            }
+            else
+            {
+                ddlRevokeOfficialEmailAccount.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsRevokeloginId == (int)Constant.TMSIds.Yes)
+            {
+                ddlRevokeDomainLoginID.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsRevokeloginId == (int)Constant.TMSIds.No)
+            {
+                ddlRevokeDomainLoginID.Items[1].Selected = true;
+            }
+            else
+            {
+                ddlRevokeDomainLoginID.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsRevokeSharepointId == (int)Constant.TMSIds.Yes)
+            {
+                ddlRevokeSharepointID.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsRevokeSharepointId == (int)Constant.TMSIds.No)
+            {
+                ddlRevokeSharepointID.Items[1].Selected = true;
+            }
+            else
+            {
+                ddlRevokeSharepointID.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsRevokeFileserverAccess == (int)Constant.TMSIds.Yes)
+            {
+                ddlRevokeServerAccess.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsRevokeFileserverAccess == (int)Constant.TMSIds.No)
+            {
+                ddlRevokeServerAccess.Items[1].Selected = true;
+            }
+            else
+            {
+                ddlRevokeServerAccess.Items[2].Selected = true;
+            }
+
+
+            if (Detail[Detail.Count - 1].IsRevokeFTPServer == (int)Constant.TMSIds.Yes)
+            {
+                ddlRevokeFTPAccess.Items[0].Selected = true;
+            }
+            else if (Detail[Detail.Count - 1].IsRevokeFTPServer == (int)Constant.TMSIds.No)
+            {
+                ddlRevokeFTPAccess.Items[1].Selected = true;
+            }
+            else
+            {
+                ddlRevokeFTPAccess.Items[2].Selected = true;
+            }
+            txtExtraDetails.Text = Detail[Detail.Count - 1].ExtraRevokeDetail;
+
+            /*Root Cause Analysis Loading*/
+
+
+            txtCommentsByManager.Text = Detail[Detail.Count - 1].RCAByManager;
+
+            txtCommentsByHR.Text = Detail[Detail.Count - 1].RCAByHR;
+            txtConclusion.Text = Detail[Detail.Count - 1].Conclusion;
+
+        }
+    }
+
+
+    private string GetEmployeeCNIC(int EmpID)
+    {
+        string NIC = context.Setup_Employee.Where(x => x.EmployeeId == EmpID).OrderByDescending(x=>x.JoiningDate).First().CNIC;
+        return NIC;
+       
+    }
+    private bool CheckIfIsActiveEmployeeExist(string CNIC)
+    {
+        var ExistingEmployee = context.Setup_Employee.Where(x => x.IsActive == true && x.CNIC == CNIC).ToList();
+        if (ExistingEmployee.Count > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+    private int GetEmployeeID(string CNIC)
+    {
+        int ExistingEmployee = context.Setup_Employee.Where(x => x.IsActive == true && x.CNIC == CNIC).OrderByDescending(x => x.JoiningDate).First().EmployeeId;
+        return ExistingEmployee;
+    }
+    private string GetActiveEmployeeCode(string Cnic)
+    {
+        string EmpCode = context.Setup_Employee.Where(x => x.IsActive == true && x.CNIC == Cnic).FirstOrDefault().EmployeeCode;
+        return EmpCode;
+    }
+    public void UpdateClearenceRecord(int EmpID)
+    {
+        int? NullInt = null;
+        Base objbase = new Base();
+        DateTime dt = DateTime.Now;
+
+        if (txtResignDate.Text.Trim() == string.Empty)
+        {
+
+            string CNIC = GetEmployeeCNIC(EmpID);
+
+            if (!CheckIfIsActiveEmployeeExist(CNIC))
+            {
+                
+
+                    Setup_Employee Emp = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == EmpID);
+                    Emp.IsActive = true;
+                    Emp.ModifiedBy = objbase.UserKey;
+                    Emp.ModifiedDate = dt;
+
+                    Setup_User user = context.Setup_User.FirstOrDefault(u => u.EmployeeId == EmpID);
+                    user.Is_Active = true;
+                    user.Modified_By = objbase.UserKey;
+                    user.Modified_Date = dt;
+
+                    context.SaveChanges();
+                
+            }
+            else
+            {
+
+                if (!(EmpID == GetEmployeeID(CNIC)))
+                {
+                    string message = "";
+                    string Warning = "There is already an Employee is Active on this CNIC with Employee Code " + GetActiveEmployeeCode(CNIC) + " Kindly Update Accordingly";
+                    message = "AlertBox('Error!','" + Warning + "','error');";
+                    ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+
+                }
+
+            }
+
+
+
+        }
+        else if (txtResignDate.Text.Trim() != string.Empty)
+        {
+            /*Updating HR Data*/
+            int EmployeeId = EmpID;
+            int? INTNull = null;
+            DateTime? DateTimeNull = null;
+
+            #region Code By Fahad After Discussion with Faizan Bhai on 20160812
+
+            Setup_Employee Emp = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == EmployeeId);
+            int EmployeeCode = Convert.ToInt32(Emp.EmployeeCode);
+            Emp.NoticePeriodTypeId = ddlNoticePeriod.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlNoticePeriod.SelectedValue);
+            Emp.Remarks = txtRemarks.Text;
+            Emp.ReisgnedDate = txtResignDate.Text.Trim() == string.Empty ? DateTimeNull : Convert.ToDateTime(txtResignDate.Text.Trim());
+            Emp.LastworkingDate = txtLastWorkingDay.Text.Trim() == string.Empty ? DateTimeNull : Convert.ToDateTime(txtLastWorkingDay.Text.Trim());
+            Emp.TerminationTypeId = ddlTerminationType.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlTerminationType.SelectedValue);
+            if (txtResignDate.Text != "")
+            {
+                Emp.IsActive = false;
+                Setup_User user = context.Setup_User.FirstOrDefault(u => u.EmployeeId == EmployeeId && u.Is_Active == true);
+                if (user != null)
+                {
+                    user.Is_Active = false;
+                    user.Modified_By = objbase.UserKey;
+                    user.Modified_Date = dt;
+                }
+            }
+            else
+            {
+                Emp.IsActive = true;
+                Setup_User user = context.Setup_User.FirstOrDefault(u => u.EmployeeId == EmployeeId);
+                user.Is_Active = true;
+                user.Modified_By = objbase.UserKey;
+                user.Modified_Date = dt;
+            }
+            context.SaveChanges();
+            var TMSEntry = context.INSERT_INTO_TMS(EmployeeCode);
+            //MessageCtrl.showMessageBox("Clearence information has been updated successfully.", MessageType.Success);
+            #endregion
+
+            #region Code Commited By Fahad After Discussion with Faizan Bhai on 20160812
+
+            List<HRMS_EmployeeSeperationDetail> DetailActive = context.HRMS_EmployeeSeperationDetail.Where(a => a.EmployeeId == EmployeeId && a.IsActive == true).ToList();
+            if (DetailActive.Count > 0)
+            {
+                DetailActive[DetailActive.Count - 1].IsActive = false;
+                DetailActive[DetailActive.Count - 1].ModifiedBy = objbase.UserKey;
+                DetailActive[DetailActive.Count - 1].ModifiedDate = dt;
+                context.SaveChanges();
+            }
+            else
+            {
+                //MessageCtrl.showMessageBox("Clearence information does not exist against the employee.", MessageType.Success);
+            }
+            HRMS_EmployeeSeperationDetail Detail = new HRMS_EmployeeSeperationDetail();
+            Detail.AttendanceReport = txtattendancereportDetail.Text == "" ? "" : txtattendancereportDetail.Text;
+            Detail.LeaveBalance = txtLeaveBalance.Text == "" ? "" : txtLeaveBalance.Text;
+
+            Detail.EmployeeId = EmployeeId;
+            if (rbEmployeeIDCard.Items[0].Selected)
+            {
+                Detail.IsEmployeecardReceived = Convert.ToInt32(rbEmployeeIDCard.Items[0].Value);
+            }
+            else if (rbEmployeeIDCard.Items[1].Selected)
+            {
+                Detail.IsEmployeecardReceived = Convert.ToInt32(rbEmployeeIDCard.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsEmployeecardReceived = Convert.ToInt32(rbEmployeeIDCard.Items[2].Value);
+            }
+
+            if (rblTimeId.Items[0].Selected)
+            {
+                Detail.IsTMSIdDeleted = Convert.ToInt32(rblTimeId.Items[0].Value);
+            }
+            else if (rblTimeId.Items[1].Selected)
+            {
+                Detail.IsTMSIdDeleted = Convert.ToInt32(rblTimeId.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsTMSIdDeleted = Convert.ToInt32(rbEmployeeIDCard.Items[2].Value);
+            }
+
+
+            /*Updating Admin Data*/
+
+
+            if (rbMobileSet.Items[0].Selected)
+            {
+                Detail.IsAdminFacilityRecoverd = Convert.ToInt32(rbMobileSet.Items[0].Value);
+            }
+
+            else
+            {
+                Detail.IsAdminFacilityRecoverd = Convert.ToInt32(rbMobileSet.Items[1].Value);
+            }
+
+            if (rbAccessCard.Items[0].Selected)
+            {
+                Detail.IsAccessCardRecoverd = Convert.ToInt32(rbAccessCard.Items[0].Value);
+            }
+
+            else
+            {
+                Detail.IsAccessCardRecoverd = Convert.ToInt32(rbAccessCard.Items[1].Value);
+            }
+
+            /*Updating IT Department*/
+
+            Detail.IsLaptopRecovered = txtLaptopaccessories.Text;
+
+            if (rbCampaignApp.Items[0].Selected)
+            {
+                Detail.IsCampaignIdBlocked = Convert.ToInt32(rbCampaignApp.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsCampaignIdBlocked = Convert.ToInt32(rbCampaignApp.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsCampaignIdBlocked = Convert.ToInt32(rbCampaignApp.Items[2].Value);
+            }
+
+
+            if (rbEmailDomainId.Items[0].Selected)
+            {
+                Detail.IsEmailIdBlocked = Convert.ToInt32(rbEmailDomainId.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsEmailIdBlocked = Convert.ToInt32(rbEmailDomainId.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsEmailIdBlocked = Convert.ToInt32(rbEmailDomainId.Items[2].Value);
+            }
+
+            if (rbTelephony.Items[0].Selected)
+            {
+                Detail.IsTelephonyIdBlocked = Convert.ToInt32(rbTelephony.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsTelephonyIdBlocked = Convert.ToInt32(rbTelephony.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsTelephonyIdBlocked = Convert.ToInt32(rbTelephony.Items[2].Value);
+            }
+
+            if (rbTaskMS.Items[0].Selected)
+            {
+                Detail.IsTaskMSIdBlocked = Convert.ToInt32(rbTaskMS.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsTaskMSIdBlocked = Convert.ToInt32(rbTaskMS.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsTaskMSIdBlocked = Convert.ToInt32(rbTaskMS.Items[2].Value);
+            }
+
+            if (rbOtherIds.Items[0].Selected)
+            {
+                Detail.IsOtherIdBlocked = Convert.ToInt32(rbOtherIds.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsOtherIdBlocked = Convert.ToInt32(rbOtherIds.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsOtherIdBlocked = Convert.ToInt32(rbOtherIds.Items[2].Value);
+            }
+
+
+            /*Updating Finance Data*/
+
+
+            Detail.TourAdvance =txtFloatTour.Text==""?NullInt:Convert.ToInt32(txtFloatTour.Text);
+
+            Detail.CompanyCarLoan =txtCarloan.Text==""?NullInt:Convert.ToInt32(txtCarloan.Text);
+
+            Detail.AdvanceSalary =txtdvanceagainstsalary.Text==""?NullInt:Convert.ToInt32(txtdvanceagainstsalary.Text);
+
+
+            Detail.TotalDues =txtTotaldues.Text==""?NullInt:Convert.ToInt32(txtTotaldues.Text);
+
+            /*Updating HOD */
+
+            //Setup_Employee Emp = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == EmployeeId && a.IsActive == true);
+
+            Emp.NoticePeriodTypeId = ddlNoticePeriod.SelectedValue == "0" ? INTNull : Convert.ToInt32(ddlNoticePeriod.SelectedValue);
+
+            Emp.Remarks = txtRemarks.Text;
+
+            /*Updating IT Leaver Form*/
+
+            //Emp.Name = txtLeaverFrom_empName.Text;
+
+            //Detail.RequestedRaisedby = txtLeaverForm_RequestRaisedBy.Text;
+
+            Detail.Campaign = txtCampaign.Text;
+
+            Detail.TicketNo = txtTicketNo.Text;
+            Detail.RequestedRaisedby = Convert.ToInt32(ViewState["RequestRausedByID"]);
+
+
+
+            if (ddlRevokeOfficialEmailAccount.Items[0].Selected)
+            {
+                Detail.IsRevokeOfficialEmail = Convert.ToInt32(ddlRevokeOfficialEmailAccount.Items[0].Value);
+            }
+            else if (rbCampaignApp.Items[1].Selected)
+            {
+                Detail.IsRevokeOfficialEmail = Convert.ToInt32(ddlRevokeOfficialEmailAccount.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsRevokeOfficialEmail = Convert.ToInt32(ddlRevokeOfficialEmailAccount.Items[2].Value);
+            }
+
+
+
+            if (ddlRevokeDomainLoginID.Items[0].Selected)
+            {
+                Detail.IsRevokeloginId = Convert.ToInt32(ddlRevokeDomainLoginID.Items[0].Value);
+            }
+            else if (ddlRevokeDomainLoginID.Items[1].Selected)
+            {
+                Detail.IsRevokeloginId = Convert.ToInt32(ddlRevokeDomainLoginID.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsRevokeloginId = Convert.ToInt32(ddlRevokeDomainLoginID.Items[2].Value);
+            }
+
+
+
+            if (ddlRevokeSharepointID.Items[0].Selected)
+            {
+                Detail.IsRevokeSharepointId = Convert.ToInt32(ddlRevokeSharepointID.Items[0].Value);
+            }
+            else if (ddlRevokeSharepointID.Items[1].Selected)
+            {
+                Detail.IsRevokeSharepointId = Convert.ToInt32(ddlRevokeSharepointID.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsRevokeSharepointId = Convert.ToInt32(ddlRevokeSharepointID.Items[2].Value);
+            }
+
+
+            if (ddlRevokeFTPAccess.Items[0].Selected)
+            {
+                Detail.IsRevokeFileserverAccess = Convert.ToInt32(ddlRevokeFTPAccess.Items[0].Value);
+            }
+            else if (ddlRevokeDomainLoginID.Items[1].Selected)
+            {
+                Detail.IsRevokeFileserverAccess = Convert.ToInt32(ddlRevokeServerAccess.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsRevokeFileserverAccess = Convert.ToInt32(ddlRevokeServerAccess.Items[2].Value);
+            }
+
+
+            if (ddlRevokeFTPAccess.Items[0].Selected)
+            {
+                Detail.IsRevokeFTPServer = Convert.ToInt32(ddlRevokeFTPAccess.Items[0].Value);
+            }
+            else if (ddlRevokeFTPAccess.Items[1].Selected)
+            {
+                Detail.IsRevokeFTPServer = Convert.ToInt32(ddlRevokeFTPAccess.Items[1].Value);
+            }
+            else
+            {
+                Detail.IsRevokeFTPServer = Convert.ToInt32(ddlRevokeFTPAccess.Items[2].Value);
+            }
+
+            Detail.ExtraRevokeDetail = txtExtraDetails.Text;
+
+
+            /*Updating RCA Data*/
+
+            Detail.RCAByHR = txtCommentsByHR.Text;
+            Detail.RCAByManager = txtCommentsByManager.Text;
+            Detail.Conclusion = txtConclusion.Text;
+
+            Detail.CreatedBy = objbase.UserKey;
+            Detail.IsActive = true;
+            Detail.CreatedDate = dt;
+
+            context.HRMS_EmployeeSeperationDetail.Add(Detail);
+            context.SaveChanges();
+
+
+            //MessageCtrl.showMessageBox("Clearence information has been updated successfully.", MessageType.Success);
+
+        }
+            #endregion
+    }
+
+    protected void txtLastWorkingDay_TextChanged(object sender, EventArgs e)
+    {
+        DateTime ResignedDate = DateTime.Now;
+        DateTime LastWorkingDate = DateTime.Now;
+        if (txtResignDate.Text != "" && txtLastWorkingDay.Text != "")
+        {
+            LastWorkingDate = Convert.ToDateTime(Convert.ToDateTime(txtLastWorkingDay.Text).Date.ToString(Constant.DateFormat2));
+            ResignedDate = Convert.ToDateTime(Convert.ToDateTime(txtResignDate.Text).Date.ToString(Constant.DateFormat2));
+            if (ResignedDate <= LastWorkingDate)
+            {
+                double ProbationPeriodDays = (LastWorkingDate - ResignedDate).TotalDays;
+                lblNoticeDays.Text = Convert.ToString(ProbationPeriodDays);
+
+                //lblError.InnerText = "";
+                //divError.Visible = false;
+            }
+            else
+            {
+                txtResignDate.Text = "";
+                lblNoticeDays.Text = "0";
+                //divError.Visible = true;
+                //lblError.InnerText = "Date Of Joining must be earlier than Probation end date";
+            }
+        }
+
+    }
+}

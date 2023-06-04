@@ -1,0 +1,252 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+using System.IO;
+
+public partial class Pages_Reports_CompanyEmployeesMonthlyReport : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        divError.Visible = false;
+        //LB_Error.Visible = false;
+        //RightContentError.Visible = false;
+        //txtStartDate.Enabled = false;
+        //txtEndDate.Enabled = false;
+      
+
+        Commit_Button_Table.Visible = false;
+        if (!IsPostBack)
+        {
+
+            BindDropDown();
+         
+
+        }
+     
+
+    }
+
+    private void BindParameters()
+    {
+        var Parameters = context.TMS_MonthEndParameter.ToList();
+        ddl_From_Date.SelectedValue = Parameters[0].MonthEnd_StartDate.ToString();
+        ddl_From_month.SelectedValue = (Convert.ToInt32(Parameters[0].CurrentMonth) - 1).ToString();
+        ddl_From_Year.SelectedValue = Parameters[0].CurrentYear.ToString();
+        ddl_To_Year.SelectedValue = Parameters[0].CurrentYear.ToString();
+        ddl_To_Date.SelectedValue = Parameters[0].MonthEnd_EndDate.ToString();
+        ddl_To_Month.SelectedValue = (Convert.ToInt32(Parameters[0].CurrentMonth)).ToString();
+     
+       
+       
+    }
+    
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        //string roleAdmin = Convert.ToString((int)Constant.Role.SuperAdmin);
+        var CompanyList = new List<Setup_Company>();
+        CompanyList = context.Setup_Company.Where(p => p.IsActive == true && (p.CompanyId == baseClass.CompanyId || baseClass.IsSuperAdmin == true)).ToList();
+        CommonHelper.BindDropDown(ddlCompany, CompanyList, "CompanyName", "CompanyId", CompanyList.Count > 1 ? true : false, false);
+        ddlCompany_SelectedIndexChanged(null, null);
+
+    }
+    protected void LB_Export_To_Excel_Click(object sender, EventArgs e)
+    {
+
+        try
+        {
+            //List<usp_MonthEndReport_Result> MonthRep = new List<usp_MonthEndReport_Result>();
+
+            //MonthRep = context.usp_MonthEndReport(Convert.ToInt32(ddlCompany.SelectedValue)).ToList();
+
+            //// string fileName = " Month_End_Report.xls";
+
+            //GridView gv = new GridView();
+            //gv.DataSource = MonthRep;
+            //gv.DataBind();
+
+            Response.ClearContent();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment; filename=Month_End_Report.xls");
+            Response.ContentType = "application/vnd.ms-excel";
+            Response.Charset = "";
+            StringWriter sw = new StringWriter();
+            HtmlTextWriter htw = new HtmlTextWriter(sw);
+            Rep_MounthReport.RenderControl(htw);
+            Response.Output.Write(sw.ToString());
+            Response.Flush();
+            Response.End();
+
+            /*  Response.Clear();
+              Response.ContentType = "application/vnd.ms-excel";
+              Response.AddHeader("content-disposition", "attachment;filename=" + fileName);
+
+              DataSet ds = new DataSet("New_DataSet");
+
+              DataTable dt = new DataTable();
+              dt = MonthRep.ToDataTable();
+
+              dt.Columns.Remove("EMPLOYEEID");
+              dt.Columns.Remove("DEPARTMENTID");
+              dt.Columns.Remove("COMPANYID");
+              dt.Columns.Remove("DESIGNATIONID");
+              dt.Columns.Remove("CATEGORYID");
+
+           
+
+              ds.Tables.Add(dt);
+              using (MemoryStream m = new MemoryStream())
+              {
+                  ExcelLibrary.DataSetHelper.CreateWorkbook(m ,ds);
+                  m.WriteTo(Response.OutputStream);
+                  Response.End();
+              }*/
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            //RightContentError.Attributes.Add("class", "validationSummary");
+            //RightContentError.Visible = true;
+        }
+
+
+    }
+    protected void Commit_Save_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int companyID = Convert.ToInt32(ddlCompany.SelectedValue);
+            //List<usp_MonthEndReport_Result> MonthEndReport = new List<usp_MonthEndReport_Result>();
+
+            var MonthEndReport = context.TMS_usp_MonthEndReport(companyID).ToList();
+
+            Rep_MounthReport.DataSource = MonthEndReport;
+            Rep_MounthReport.DataBind();
+
+            if (MonthEndReport.Count > 0)
+            {
+                LB_Export_To_Excel.Visible = true;
+            }
+            else
+            {
+                LB_Export_To_Excel.Visible = false;
+            }
+
+            TMS_MonthEndParameter MEP = context.TMS_MonthEndParameter.First(p => p.CompanyId == companyID);
+
+            if (MEP.Is_PayRoll_Running)
+            {
+                Commit_Button_Table.Visible = true;
+            }
+
+            Commit_Save.Enabled = true;
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            //RightContentError.Attributes.Add("class", "validationSummary");
+            //RightContentError.Visible = true;
+        }
+    }
+
+    public void BindDropDown()
+    {
+        try
+        {
+            for (int i = 1; i < 32; i++)
+            {
+                ListItem Li = new ListItem(i.ToString(), i.ToString());
+                ListItem La = new ListItem(i.ToString(), i.ToString());
+                ddl_From_Date.Items.Add(Li);
+                ddl_To_Date.Items.Add(La);
+            }
+
+            string[] MonthNames = DateTimeFormatInfo.CurrentInfo.MonthNames;
+            int j = 1;
+            foreach (var item in MonthNames)
+            {
+                if (item.Length > 2)
+                {
+                    ListItem Li = new ListItem(item, j.ToString());
+                    ListItem La = new ListItem(item, j.ToString());
+                    ddl_To_Month.Items.Add(Li);
+
+                    ddl_From_month.Items.Add(La);
+                }
+                j++;
+            }
+
+            ddl_To_Year.Items.Add(DateTime.Now.Year.ToString());
+            ddl_From_Year.Items.Add(DateTime.Now.Year.ToString());
+           var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey)
+                     .Select(a => new
+                     {
+                         GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                         GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                     })
+                     .ToList().Distinct();
+            CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+
+            ddlGroup_SelectedIndexChanged(null, null);
+
+
+            
+
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            //RightContentError.Attributes.Add("class", "validationSummary");
+            //RightContentError.Visible = true;
+        }
+    }
+
+    protected void Button_Commit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int companyID = Convert.ToInt32(ddlCompany.SelectedValue);
+            //context.Database = 3000;
+            ((System.Data.Entity.Infrastructure.IObjectContextAdapter)this.context).ObjectContext.CommandTimeout = 3000;
+            List<TMS_usp_MonthEndCommit_Result> MonthEndReport = new List<TMS_usp_MonthEndCommit_Result>();
+            MonthEndReport = context.TMS_usp_MonthEndCommit(companyID).ToList();
+
+            List<TMS_usp_MonthEndReport_Result> MonthEnd = new List<TMS_usp_MonthEndReport_Result>();
+            MonthEnd = context.TMS_usp_MonthEndReport(companyID).ToList();
+
+            Rep_MounthReport.DataSource = MonthEnd;
+            Rep_MounthReport.DataBind();
+
+            divSuccess.Visible = true;
+            lblSuccess.InnerText = "Month End Commit Successfully";
+            //RightContentError.Attributes.Add("class", "okMessage");
+            //RightContentError.Visible = true;
+
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            //RightContentError.Attributes.Add("class", "validationSummary");
+            //RightContentError.Visible = true;
+        }
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+
+
+        BindParameters();
+
+    }
+}

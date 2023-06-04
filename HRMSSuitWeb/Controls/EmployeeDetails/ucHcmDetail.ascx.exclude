@@ -1,0 +1,140 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucHcmDetail.ascx.cs" Inherits="Controls_EmployeeDetails_ucHcmDetail" %>
+
+<style>
+    .form-control {
+        font-size: 11px;
+    }
+
+    label {
+        font-size: smaller;
+    }
+</style>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        HCM Details
+    </div>
+    <asp:HiddenField ID="hfEmpID" runat="server" />
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide the details..</strong>
+        </div>
+
+         <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Blood Group : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Blood Group" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlGrade" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlBloodGroup" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Garde Code : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator22" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Grade Code" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlGrade" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlGrade" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Group Insurance : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator23" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Group Insurance" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlGroupInsurance" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlGroupInsurance" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Reporting Cost Center : </label>
+
+         <%--   <asp:RequiredFieldValidator ID="RequiredFieldValidator24" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Reporting Cost Center" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlReportingCostCenter" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlReportingCostCenter" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+                <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Employee Function : </label>
+
+            <asp:DropDownList ID="ddlEmpFunc" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlEmpFunc_SelectedIndexChanged">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Employee Sub Function : </label>
+
+<%--            <asp:RequiredFieldValidator ID="RequiredFieldValidator25" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Employee Sub Function" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlEmployeeSubFunction" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlEmployeeSubFunction" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Att. Allowance Status : </label>
+            <asp:CheckBox ID="chkAttendanceAllowanceStatus" runat="server" CssClass="form-control"></asp:CheckBox>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">EOBI Status : </label>
+            <asp:CheckBox ID="chkEobiStatus" runat="server" CssClass="form-control"></asp:CheckBox>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">EOBI No. : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator26" runat="server" ValidationGroup="Save" Text="*"
+                ErrorMessage="Name" ForeColor="Red" Display="Dynamic" ControlToValidate="txtEobiNo" CssClass="rfv"></asp:RequiredFieldValidator>--%>
+
+            <asp:TextBox ID="txtEobiNo" placeholder="EOBI No" runat="server" CssClass="form-control ">
+            </asp:TextBox>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">EOBI Date : </label>
+
+<%--            <asp:RequiredFieldValidator ID="RequiredFieldValidator27" runat="server" ValidationGroup="Save" Text="*"
+                ErrorMessage="Name" ForeColor="Red" Display="Dynamic" ControlToValidate="txtEobiDate" CssClass="rfv"></asp:RequiredFieldValidator>--%>
+
+            <asp:TextBox ID="txtEobiDate" runat="server" CssClass="form-control datetime" />
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">SESA No. : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator28" runat="server" ValidationGroup="Save" Text="*"
+                ErrorMessage="Name" ForeColor="Red" Display="Dynamic" ControlToValidate="txtEobiNo" CssClass="rfv"></asp:RequiredFieldValidator>--%>
+
+            <asp:TextBox ID="txtSesaNo" placeholder="SESA No" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Entry Date</label>
+            <asp:TextBox ID="txtEntryDate" runat="server" CssClass="form-control datetime" />
+        </div>
+
+         <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Allow Intrest : </label>
+            <asp:CheckBox ID="chkAllowIntrest" runat="server" CssClass="form-control"></asp:CheckBox>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Joining Date</label>
+            <asp:TextBox ID="txtDateOfJoiningHcm" runat="server" CssClass="form-control datetime" />
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">SAP Cost Center</label>
+           <asp:DropDownList ID="ddlSapCostCenter" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+         <div class="form-group col-lg-12">
+                <asp:Button Text="Cancel" CssClass="btn btn-warning pull-right" Style="width: 65px; margin-right: 5px;" ID="btnCancel" OnClick="btnCancel_Click" runat="server" />
+                <asp:Button Text="Add" ID="btnAdd" OnClick="btnAdd_Click" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+            </div>
+    </div>
+</div>

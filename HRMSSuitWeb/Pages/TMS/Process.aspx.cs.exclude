@@ -1,0 +1,146 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_TMS_Process : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        //divCompany.Visible = false;
+        //if (baseClass.IsSuperAdmin)
+        //{
+
+        //    divCompany.Visible = true;
+        //}
+        if (!IsPostBack)
+        {
+           
+            BindDropDown();
+        }
+    }
+    private void CheckIfCommit()
+    {
+        int CompanyID = Convert.ToInt32(ddlCompany.SelectedValue);
+        if (CompanyID > 0)
+        {
+            var parameter = context.TMS_MonthEndParameter.Where(p => p.CompanyId == CompanyID && p.Is_PayRoll_Running == true).ToList();
+            if (parameter.Count > 0)
+            {
+                btnPostCommit.Enabled = true;
+                btnPreCommit.Enabled = false;
+            }
+            else
+            {
+                btnPreCommit.Enabled = true;
+                btnPostCommit.Enabled = false;
+            }
+        }
+
+    }
+
+    private void BindDropDown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey)
+                     .Select(a => new
+                     {
+                         GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                         GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                     })
+                     .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+        ddlGroup_SelectedIndexChanged(null, null);
+    }
+    protected void btnPostCommit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int CompanyID = 0;
+            if (baseClass.IsSuperAdmin)
+            {
+                CompanyID = Convert.ToInt32(ddlCompany.SelectedValue);
+            }
+            else
+            {
+                CompanyID = baseClass.CompanyId;
+            }
+
+
+            TMS_MonthEndParameter paramerter = context.TMS_MonthEndParameter.First(p => p.CompanyId == CompanyID);
+
+            paramerter.Is_PayRoll_Running = false;
+            paramerter.Modified_Date = DateTime.Now;
+            context.Entry(paramerter).State = System.Data.EntityState.Modified;
+            context.SaveChanges();
+
+
+            divSuccess.Visible = true;
+            lblSuccess.InnerText = "Sucessfully UnLock";
+            ddlCompany_SelectedIndexChanged(null, null);
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void btnPreCommit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            int CompanyID = 0;
+            if (baseClass.IsSuperAdmin)
+            {
+                CompanyID = Convert.ToInt32(ddlCompany.SelectedValue);
+            }
+            else
+            {
+                CompanyID = baseClass.CompanyId;
+            }
+
+            TMS_MonthEndParameter paramerter = context.TMS_MonthEndParameter.First(p => p.CompanyId == CompanyID);
+
+            paramerter.Is_PayRoll_Running = true;
+            paramerter.Modified_Date = DateTime.Now;
+            context.Entry(paramerter).State = System.Data.EntityState.Modified;
+            context.SaveChanges();
+
+            divSuccess.Visible = true;
+            lblSuccess.InnerText = "Sucessfully Lock";
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlCompany.SelectedValue == "0")
+        {
+            btnPreCommit.Enabled = false;
+            btnPostCommit.Enabled = false;
+        }
+        CheckIfCommit();
+    }
+}

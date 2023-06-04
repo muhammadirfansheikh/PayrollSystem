@@ -1,0 +1,276 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucPassportVisaDetail.ascx.cs" Inherits="Controls_EmployeeDetails_ucPassportVisaDetail" %>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Passport
+        <asp:HiddenField ID="hfEmpID" runat="server" />
+        <asp:HiddenField ID="hfPassportNumberId" runat="server" />
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Passport Number : </label>
+            <asp:TextBox ID="txtPassportNumberInfo" runat="server" CssClass="form-control"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator14" runat="server" ValidationGroup="PassportDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtPassportNumberInfo" CssClass="rfv"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Passport Issue Date : </label>
+            <asp:TextBox ID="txtPassportIssueDateInfo" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator15" runat="server" ValidationGroup="PassportDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtPassportIssueDateInfo" CssClass="rfv"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Passport Expiry : </label>
+            <asp:TextBox ID="txtPassportExpiryInfo" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="PassportDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtPassportExpiryInfo" CssClass="rfv"></asp:RequiredFieldValidator>
+
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Country : </label>
+            <asp:DropDownList CssClass="form-control" runat="server" ID="ddlPassportCountryInfo">
+            </asp:DropDownList>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator17" runat="server" ValidationGroup="PassportDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="ddlPassportCountryInfo" CssClass="rfv" InitialValue="0"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" CssClass="btn btn-danger pull-right" Style="width: 65px; margin-right: 5px;" ID="btnCancel" runat="server" />
+            <asp:Button Text="Add" ID="btnAddPassport" OnClick="btnAddPassport_Click" ValidationGroup="PassportDetailSave" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Passport Details
+        <asp:HiddenField ID="HiddenField1" runat="server" />
+    </div>
+    <div class="panel-body">
+        <asp:Repeater ID="RptEmployeePassportDetail" runat="server" OnItemCommand="RptEmployeePassportDetail_ItemCommand">
+            <ItemTemplate>
+                <table border="0" cellpadding="0" cellspacing="0" align="center" width="97%" class="table">
+
+                    <tr bgcolor="#e9eff7">
+
+                        <td colspan="8" style="text-align: right">
+                            <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+                                <asp:ImageButton ID="btnPassportDetailEdit" OnClientClick="return true" CommandName="Edit" CommandArgument='<%#Eval("EmployeePassportId") %>' ImageUrl="/images/edit.png" runat="server" />
+                            </asp:HyperLink>
+                            <asp:HyperLink runat="server" ID="hplDelete">
+                                <asp:ImageButton ImageUrl="/images/close.png" OnClientClick="return DeleteConfirmation();"
+                                    ID="imgRemoveEducationSchoolPanel" CommandName="Delete" CommandArgument='<%#Eval("EmployeePassportId") %>'
+                                    runat="server" />
+                            </asp:HyperLink>
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="width: 10%">
+                            <label>
+                                Passport Number</label>
+                        </td>
+                        <td style="width: 20%">
+
+                            <asp:Label ID="Label7" runat="server" Text='<%# Eval("PassportNumber") %>'></asp:Label>
+                        </td>
+                        <td style="width: 10%">
+                            <label>
+                                Passport Issue Date</label>
+                        </td>
+                        <td style="width: 20%">
+
+                            <asp:Label ID="lblStatus" runat="server" Text='<%# Convert.ToDateTime(Eval("PassportIssueDate")).ToString(Constant.DateFormat) %>'></asp:Label>
+                        </td>
+
+                        <td style="width: 10%">
+                            <label>
+                                Passport Expiry</label>
+                        </td>
+                        <td style="width: 20%">
+                            <asp:Label ID="lblSchool" runat="server" Text='<%# Convert.ToDateTime(Eval("PassportExpiry")).ToString(Constant.DateFormat) %>'></asp:Label>
+
+                        </td>
+                        <td style="width: 10%">
+                            <label>
+                                Country</label>
+                        </td>
+                        <td style="width: 20%">
+
+                            <asp:Label ID="Label1" runat="server" Text='<%# Eval("CountryName") %>'></asp:Label>
+                        </td>
+                    </tr>
+
+                </table>
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                <tr align="center">
+                    <td>
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </table>
+            </FooterTemplate>
+        </asp:Repeater>
+    </div>
+</div>
+
+
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Visa                                                                   
+        <asp:HiddenField ID="hfEmployeeVisaID" runat="server" Value="" />
+    </div>
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Visa Type : </label>
+            <asp:DropDownList ID="ddlVisaTypeDetails" runat="server" CssClass="form-control"></asp:DropDownList>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator50" runat="server" ValidationGroup="VisaDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="ddlVisaTypeDetails" CssClass="rfv" InitialValue="0"></asp:RequiredFieldValidator>
+
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Visa Sponser : </label>
+            <asp:TextBox ID="txtSponser" runat="server" CssClass="form-control"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator51" runat="server" ValidationGroup="VisaDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtSponser" CssClass="rfv"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Profession : </label>
+            <asp:DropDownList ID="ddlProfession" runat="server" CssClass="form-control"></asp:DropDownList>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator52" runat="server" ValidationGroup="VisaDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="ddlProfession" CssClass="rfv" InitialValue="0"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Visa Issue Date : </label>
+            <asp:TextBox ID="txtVisaIssueDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator53" runat="server" ValidationGroup="VisaDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtVisaIssueDate" CssClass="rfv"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Visa Expiry Date : </label>
+            <asp:TextBox ID="txtVisaExpiryDate" runat="server" CssClass="form-control" TextMode="Date"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator54" runat="server" ValidationGroup="VisaDetailSave"
+                ErrorMessage="*" ForeColor="Red" Display="Dynamic" ControlToValidate="txtVisaExpiryDate" CssClass="rfv"></asp:RequiredFieldValidator>
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" CssClass="btn btn-danger pull-right" Style="width: 65px; margin-right: 5px;" ID="Button1" runat="server" />
+            <asp:Button Text="Add" ID="btnAddVisa" OnClick="btnAddVisa_Click" ValidationGroup="VisaDetailSave" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Visa Details                                             
+        <asp:HiddenField ID="HiddenField2" runat="server" Value="" />
+    </div>
+    <div class="panel-body">
+
+        <asp:Repeater ID="RptEmployeeVisaDetail" runat="server" OnItemCommand="RptEmployeeVisaDetail_ItemCommand">
+
+
+            <HeaderTemplate>
+                <table class="grid table_content" cellspacing="0" cellpadding="0">
+
+
+                    <thead>
+                        <tr>
+
+                            <th>Visa Type
+                            </th>
+                            <th>Profession
+                            </th>
+
+                            <th>Issue Date
+                            </th>
+                            <th>Expiry Date
+                            </th>
+                            <th>Visa Sponser
+                            </th>
+
+                            <th style="width: 35px; text-align: center;" class='editFunction'>Action
+                                          
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            </HeaderTemplate>
+            <ItemTemplate>
+
+
+                <tr bgcolor="#e9eff7">
+
+
+
+
+                    <td style="width: 15%">
+
+                        <asp:Label ID="Label22" runat="server" Text='<%# Eval("VisaTypeName") %>'></asp:Label>
+                    </td>
+
+                    <td style="width: 15%">
+
+                        <asp:Label ID="Label1" runat="server" Text='<%# Eval("ProfessionName") %>'></asp:Label>
+                    </td>
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="lblSchool" runat="server" Text='<%# Convert.ToDateTime(Eval("VisaExpiryDate")).ToString(Constant.DateFormat) %>'></asp:Label>
+
+
+                    </td>
+
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="lblStatus" runat="server" Text='<%# Convert.ToDateTime(Eval("VisaIssueDate")).ToString(Constant.DateFormat) %>'></asp:Label>
+
+                    </td>
+
+
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="Label7" runat="server" Text='<%# Eval("VisaSponser") %>'></asp:Label>
+
+                    </td>
+
+
+
+                    <td colspan="8" style="text-align: right">
+                        <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+                            <asp:ImageButton ID="btnPassportDetailEdit" OnClientClick="return true" CommandName="Edit" CommandArgument='<%#Eval("VisaDetailID") %>' ImageUrl="/images/edit.png" runat="server" />
+                        </asp:HyperLink>
+                        <asp:HyperLink runat="server" ID="hplDelete">
+                            <asp:ImageButton ImageUrl="/images/close.png" OnClientClick="return DeleteConfirmation();"
+                                ID="imgRemoveEducationSchoolPanel" CommandName="Delete" CommandArgument='<%#Eval("VisaDetailID") %>'
+                                runat="server" />
+                        </asp:HyperLink>
+
+                    </td>
+
+                </tr>
+
+
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                <tr align="center">
+                    <td>
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </tbody>  
+                                                </table>
+            </FooterTemplate>
+
+        </asp:Repeater>
+    </div>
+</div>

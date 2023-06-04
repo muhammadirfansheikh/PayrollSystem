@@ -1,0 +1,170 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RequisitionApprovalHod.ascx.cs" Inherits="Controls_RequisitionWorkflow_RequisitionApprovalHod" %>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        <asp:HiddenField ID="hfRequisitionId" runat="server" />
+        Requisition Details
+    </div>
+
+    <div class="panel-body">
+
+        <div class="col-lg-12">
+            <div class="form-group col-lg-2" style="padding-left: 0px; padding-right: 25px;">
+                <label for="exampleInputPassword2">Requisition No.</label>
+                <asp:Label ID="lblRequisitionNo" runat="server" CssClass="label label-success" Text="01"></asp:Label>
+            </div>
+
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Country</label>
+            <asp:Label ID="lblCountry" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Location</label>
+            <asp:Label ID="lblLocation" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Department</label>
+            <asp:Label ID="lblDepartment" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Designation</label>
+            <asp:Label ID="lblDesignation" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Job Type</label>
+            <asp:Label ID="lblJobType" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Total Vacancies</label>
+            <asp:Label ID="lblTotalVacancies" runat="server" CssClass="label label-alert" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Joining Date</label>
+            <asp:Label ID="lblJoiningDate" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Last Apply Date</label>
+            <asp:Label ID="lblLastApplyDate" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Min.Degree Req.</label>
+            <asp:Label ID="lblMinDegreeReq" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Experience Req.</label>
+            <asp:Label ID="lblExpReq" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Type of Placement</label>
+            <asp:Label ID="lblPlacementType" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Reason of Hiring</label>
+            <asp:Label ID="lblHiringReason" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Is Budgeted</label>
+            <asp:CheckBox ID="chkbxIsBudgeted" runat="server" Checked="true" CssClass="form-control i-checks" Enabled="false" />
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Salary Range</label>
+            <asp:Label ID="lblSalaryRange" runat="server" CssClass="label label-success" Text=""></asp:Label>
+        </div>
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Is Replacement</label>
+            <asp:CheckBox ID="chkIsReplacement" runat="server" CssClass="form-control i-checks"  Enabled="false" />
+        </div>
+
+        <div class="form-group col-lg-6">
+            <label for="exampleInputPassword2">Remarks</label>
+            <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control" ReadOnly="true"> </asp:TextBox>
+        </div>
+
+        <div class="form-group col-lg-12">
+            <label for="exampleInputPassword2">Job Description</label>
+
+            <%--<cc1:editor id="txtJobDesc" runat="server"></cc1:editor>--%>
+
+        </div>
+
+
+
+
+
+
+    </div>
+
+</div>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Resource Approval
+    </div>
+
+    <div class="panel-body">
+
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Approved Vacancies</label>
+            <asp:TextBox ID="txtTotalVacancies" runat="server" CssClass="form-control numeric"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Total Vacancies" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtTotalVacancies"></asp:RequiredFieldValidator>
+        </div>
+
+    </div>
+</div>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Resource Replacement
+    </div>
+
+
+    <div class="panel-body">
+
+        <div class="project-list">
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Employee Code</th>
+                        <th style="width: 170px; text-align: center;">
+                            <asp:CheckBox ID="chkSelectAll" runat="server" Checked="false" CssClass="form-control i-checks" Text="Select" />
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <asp:Repeater ID="rpt" runat="server">
+                        <ItemTemplate>
+                            <tr>
+                                <td class="project-title">
+                                    <input type="hidden" runat="server" id="hfEmployeeId" class="hfEmployeeId" value='<%# Eval("EmployeeId") %>' />
+                                    <%# Eval("EmployeeName") %>
+                                </td>
+                                <td class="project-completion">
+                                    <%# Eval("EmployeeCode") %>
+                                </td>
+                                <td class="project-actions">
+                                    <asp:CheckBox ID="chkIsSelect" runat="server" Checked="false" CssClass="form-control i-checks" />
+                                </td>
+                            </tr>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>

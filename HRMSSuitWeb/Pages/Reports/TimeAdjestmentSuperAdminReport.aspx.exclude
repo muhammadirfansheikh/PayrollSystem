@@ -1,0 +1,203 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="TimeAdjestmentSuperAdminReport.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" EnableEventValidation="false" Inherits="Pages_Reports_TimeAdjestmentSuperAdminReport" %>
+
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Time Adjustment Super Admin</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Reports</a>
+                </li>
+                <li class="active">
+                    <strong>Time Adjustment Super Admin</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                        <%--    <div class="form-group col-lg-2" runat="server" id="divGroup">
+                                <label for="exampleInputEmail2" class="">Group</label>
+                                <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span1" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="divCompany">
+                                <label for="exampleInputEmail2" class="">Company</label>
+                                <asp:DropDownList ID="ddlCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span3" style="color: Red; display: none;">*</span>
+                            </div>--%>
+                            <div class="form-group col-lg-2" runat="server" id="divDept">
+                                <label for="exampleInputEmail2" class="">Department</label>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="Search" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlDepartment" InitialValue="0"></asp:RequiredFieldValidator>
+                                <asp:DropDownList ID="ddlDepartment" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span2" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="div1">
+                                <label for="exampleInputEmail2" class="">Start Date</label><asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtStartDate"
+                                    Display="Dynamic" ErrorMessage="End Date" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                                <asp:TextBox runat="server" ID="txtStartDate" CssClass="form-control datetime" Text='<%# DateTime.Now.ToString(Constant.DateFormat2) %>' />
+                                <span id="Span4" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="div2">
+                                <label for="exampleInputEmail2" class="">End Date</label>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator_End" runat="server" ControlToValidate="txtEndDate"
+                                    Display="Dynamic" ErrorMessage="End Date" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                                <asp:CompareValidator ID="CompareValidator1" runat="server"
+                                    ControlToCompare="txtStartDate" CultureInvariantValues="true"
+                                    Display="Dynamic" EnableClientScript="true"
+                                    ControlToValidate="txtEndDate"
+                                    ErrorMessage="Start date must be earlier than finish date"
+                                    Type="Date" SetFocusOnError="true" Operator="GreaterThanEqual" ForeColor="Red"
+                                    Text="Start date must be earlier than finish date"></asp:CompareValidator>
+                                <asp:TextBox runat="server" ID="txtEndDate" CssClass="form-control datetime" Text='<%# DateTime.Now.ToString(Constant.DateFormat2) %>' />
+                                <span id="Span5" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="div6">
+                                <label for="exampleInputEmail2" class="">Status</label>
+                                <asp:DropDownList ID="ddlStatus" CssClass="form-control col-lg-12" runat="server">
+                                    <asp:ListItem Text="-Select-" Value="0" />
+                                </asp:DropDownList>
+                                <span id="Span9" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" ValidationGroup="ValGroup" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                                Time Adjustment Super Admin
+                            </div>
+                            <div class="panel-body" style="padding: 0;">
+
+                                <div class="ibox-tools">
+                                    <%--<a href="" class="btn btn-primary btn-xs btnAdd" data-toggle="modal" data-target="#CreateProjectModal">Create new project</a>--%>
+                                    <asp:LinkButton ID="LB_Export_To_Excel" runat="server" CssClass="addLinkButton"
+                                        OnClick="LB_Export_To_Excel_Click" Visible="false">Export To Excel</asp:LinkButton>
+                                </div>
+                                <div class="ibox-content">
+                                    <div class="row m-b-sm m-t-sm">
+                                        <div class="col-md-12">
+                                            <%--<a href="AddShifts.aspx" class="btn btn-primary pull-right">Add new</a>--%>
+                                            <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                        </div>
+                                    </div>
+                                    <div class="project-list">
+
+
+                                        <asp:Repeater ID="rpt" runat="server">
+                                            <HeaderTemplate>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr style="font-size: x-small;">
+                                                            <th>Sr. No. </th>
+                                                            <th>Employee Code</th>
+                                                            <th>Employee Name </th>
+                                                            <th>Department </th>
+
+                                                            <th>IsTimeOut Request</th>
+                                                            <th>Original DateTime</th>
+                                                            <th>Requested DateTime</th>
+                                                            <th>Status </th>
+                                                            <th>Employee Comment</th>
+
+                                                            <th>Approver Name</th>
+                                                            <th>Approver Comment</th>
+                                                            <th>Approved DateTime</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <tr style="font-size: x-small;">
+                                                    <td><%#(((RepeaterItem)Container).ItemIndex+1).ToString()%> </td>
+
+                                                    <td><%# Eval("EmployeeCode")%> </td>
+                                                    <td><%# Eval("EmployeeName")%> </td>
+                                                    <td><%# Eval("DepartmentName")%> </td>
+
+                                                    <td><%# Eval("IsTimeOutRequest")%></td>
+                                                    <td><%# Eval("OriginalDateTime")%></td>
+                                                    <td><%# Eval("RequestedDateTime")%></td>
+                                                    <td><%# Eval("StatusName")%></td>
+                                                    <td style="max-width: 100px;"><%# Eval("EmployeeComment")%></td>
+                                                    <td><%# Eval("ApproverName")%></td>
+                                                    <td><%# Eval("ApproverComment")%></td>
+                                                    <td><%# Eval("ApprovedDateTime")%></td>
+                                                </tr>
+                                            </ItemTemplate>
+                                            <FooterTemplate>
+                                                </tbody>
+                                        </table>
+                                            </FooterTemplate>
+                                        </asp:Repeater>
+                                        <div class="pagging">
+                                            <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+        <Triggers>
+            <asp:PostBackTrigger ControlID="LB_Export_To_Excel" />
+        </Triggers>
+    </asp:UpdatePanel>
+              <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:inprogress id="InProgress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+    <script>
+        function pageLoad() {
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green'
+            });
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                //format: 'dd/mm/yyyy'
+                format: 'mm/dd/yyyy'
+            });
+        }
+    </script>
+</asp:Content>

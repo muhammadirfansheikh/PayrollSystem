@@ -1,0 +1,396 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Pages_HRMS_EmployeeLocationMapping : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            BindRepeater();
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControls();
+        BindRepeater();
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        LinkButton btnEdit = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+        int ID = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfId")).Value);
+        GetEmployeeGroup(ID);
+        //var lstEdit = context.Setup_UserAccessLocation.Where(x => x.VisaTypeID == ID).FirstOrDefault();
+        //if (lstEdit != null)
+        //{
+        //hfModalId.Value = ID.ToString();
+        //txtNameAdd.Text = lstEdit.VisaTypeName;
+        OpenPopup();
+        //}
+    }
+    public void GetEmployeeGroup(int EmpID)
+    {
+        var Employee = context.Setup_Employee.Where(x => x.EmployeeId == EmpID).FirstOrDefault();
+        ddlGroupAdd.SelectedValue = Employee.Setup_Company.GroupId.ToString();
+        ddlGroupAdd_SelectedIndexChanged(null, null);
+        ddlCompanyAdd.SelectedValue = Employee.Setup_Company.CompanyId.ToString();
+        ddlCompanyAdd_SelectedIndexChanged(null, null);
+        ddlDeptAdd.SelectedValue = Employee.DepartmentId.ToString();
+        ddlDeptAdd_SelectedIndexChanged(null, null);
+        ddlUserAdd.SelectedValue = EmpID.ToString();
+        ddlUserAdd_SelectedIndexChanged(null, null);
+    }
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        //try
+        //{
+        //    LinkButton btnDelete = (LinkButton)sender;
+        //    RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+        //    int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfId")).Value);
+
+        //    divError.Visible = false;
+        //    Setup_UserAccessLocation obj = context.Setup_UserAccessLocation.FirstOrDefault(j => j.VisaTypeID == Id);
+        //    if (obj.HRMS_EmployeeVisa.Count == 0)
+        //    {
+        //        DateTime dt = DateTime.Now;
+        //        obj.IsActive = false;
+        //        obj.ModifiedBy = UserKey;
+        //        obj.ModifiedDate = dt;
+        //        context.SaveChanges();
+        //        //MessageCtrl.showMessageBox("Education Score has been deleted successfully.", MessageType.Success);
+        //        Success("Visa Type has been deleted successfully.");
+        //        BindRepeater();
+        //    }
+        //    else
+        //    {
+        //        Error("Visa Type already Exist against Employee..");
+        //    }
+        //}
+        //catch (Exception ex)
+        //{
+        //    divError.Visible = true;
+        //    lblError.InnerText = ex.Message;
+        //}
+    }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        Add();
+    }
+    #region Custom Methods
+    private void Add()
+    {
+        DateTime dt = DateTime.Now;
+        Setup_UserAccessLocation obj = new Setup_UserAccessLocation();
+        int EmpID = Convert.ToInt32(ddlUserAdd.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation
+            .Where(a => a.IsActive == true && a.EmployeeId == EmpID && a.Setup_Location.CompanyId == CompanyId)
+            .ToList();
+        LstLocation.ForEach(x => x.IsActive = false);
+        context.SaveChanges();
+
+        for (int i = 0; i < cbLocationsAdd.Items.Count; i++)
+        {
+            if (cbLocationsAdd.Items[i].Selected && cbLocationsAdd.Items[i].Value != "0")
+            {
+                Setup_UserAccessLocation userAccess = new Setup_UserAccessLocation();
+                userAccess.LocationId = Convert.ToInt32(cbLocationsAdd.Items[i].Value);
+                userAccess.EmployeeId = EmpID;
+                userAccess.CreatedBy = UserKey;
+                userAccess.IsActive = true;
+                userAccess.CreatedDate = dt;
+                context.Setup_UserAccessLocation.Add(userAccess);
+                context.SaveChanges();
+            }
+        }
+        context.SaveChanges();
+        Success("Mapping has been updated successfully.");
+        ClosePopup();
+        BindRepeater();
+        //obj.VisaTypeName = txtNameAdd.Text.Trim();
+        //obj.CreatedBy = UserKey;
+        //obj.CreatedDate = dt;
+        //obj.IsActive = true;
+        ////obj.UserIP = UserIP;
+        ////obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        //bool checkIsExist = CheckAlreadyNameExists(txtNameAdd.Text.Trim());
+
+        //if (!checkIsExist)
+        //{
+        //    context.Setup_UserAccessLocation.Add(obj);
+        //    context.SaveChanges();
+        //    //MessageCtrl.showMessageBox("Education Score has been added successfully.", MessageType.Success);
+        //    Success("Visa Type has been added successfully.");
+        //    ClosePopup();
+        //}
+        //else
+        //{
+        //    //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+        //    // ShowMessage(");
+
+        //    //MessageCtrl.showMessageBox("Education Score Already Exist.", MessageType.Validation);
+        //    Error("Visa Type Already Exist.");
+        //    ClosePopup();
+        //}
+        //BindRepeater();
+
+        //ResetControls();
+    }
+    private void Update()
+    {
+        //DateTime dt = DateTime.Now;
+
+        //int Id = Convert.ToInt32(hfModalId.Value);
+        //Setup_UserAccessLocation obj = context.Setup_UserAccessLocation.FirstOrDefault(j => j.VisaTypeID == Id);
+        ////obj.CompanyName = txtNameAdd.Text.Trim();
+        ////obj.DomainId = Convert.ToInt32(ddlDomainAdd.SelectedValue);
+        //obj.VisaTypeName = txtNameAdd.Text.Trim();
+        //obj.ModifiedBy = UserKey;
+        //obj.ModifiedDate = dt;
+        //obj.IsActive = true;
+        //bool checkIsExist = CheckAlreadyNameExists(txtNameAdd.Text.Trim());
+        //if (!checkIsExist)
+        //{
+        //    context.SaveChanges();
+        //    //MessageCtrl.showMessageBox("Education Score has been updated successfully.", MessageType.Success);
+        //    Success("Visa Type has been updated successfully.");
+        //    ClosePopup();
+        //}
+        //else
+        //{
+        //    //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+        //    //MessageCtrl.showMessageBox("Education Score Already Exist.", MessageType.Validation);
+        //    Error("Visa Type Already Exist.");
+        //    ClosePopup();
+        //}
+        //BindRepeater();
+        //ResetControls();
+    }
+    private void BindRepeater()
+    {
+        int departmentid = Convert.ToInt32(ddlDepartment.SelectedValue);
+        // ddlDepartmentSearch_SelectedIndexChanged(null, null);
+        int empid = Convert.ToInt32(ddlUser.SelectedValue);
+
+        int locationid = Convert.ToInt32(ddlLocation.SelectedValue);
+        var dept = context.Setup_Employee.Where(x => x.IsActive == true).ToList()
+            .Where(x => x.Setup_UserAccessLocation.Count == 0 || x.Setup_UserAccessLocation.Any(c => c.LocationId == locationid || locationid == 0))
+            .Where(x => x.Setup_Department.DepartmentId == departmentid || departmentid == 0)
+            .Where(x => x.EmployeeId == empid || empid == 0)
+            
+           .Select(c => new
+           {
+               ID = c.EmployeeId,
+               LocationId = c.LocationId,
+               Location = c.Setup_Location.LocationName,
+               EmployeeName = c.EmployeeCode + " - " + c.FirstName == "" ? null : c.EmployeeCode + " - " + c.FirstName + " " + c.LastName,
+              /// DepartmentName = " <ul class='ul'> <li>  " + String.Join("</li><li>", c.Setup_UserAccessLocation.de+"</li> ")) + "</ul>",
+             //  Locations = String.Join(", ", c.Setup_UserAccessLocation.Where(aa => aa.IsActive == true).Select(t => t.Setup_Location.LocationName)),
+               DepartmentName = c.Setup_Department.DepartmentName
+           })
+           //.ToList()
+        .OrderBy(c => c.EmployeeName);
+
+        //var Lst = dept.Select(x => new
+        //{
+        //    x.ID,
+        //    x.DepartmentName,
+        //    x.EmployeeName,
+        //    Locations = String.Join(",", x.Location.Select(y => y.ToString())
+        //                                  .ToArray())
+        //});
+
+        rpt.DataSource = dept;
+        rpt.DataBind();
+    }
+    #endregion
+    public bool CheckAlreadyNameExists(string title)
+    {
+        //int ModalId = 0;
+        ////City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+        //if (hfModalId.Value != "")
+        //{
+        //    ModalId = Convert.ToInt32(hfModalId.Value);
+        //}
+        //else
+        //{
+        //    ModalId = 0;
+        //}
+        ////City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+
+        //Setup_UserAccessLocation obj = context.Setup_UserAccessLocation.FirstOrDefault(j => j.VisaTypeName == title && j.IsActive == true && j.VisaTypeID != ModalId);
+        //if (obj != null)
+        //{
+        //    return true;
+        //}
+        return false;
+    }
+    private void BindDropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                        .Select(a => new
+                        {
+                            GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                            GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                        })
+                        .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+        CommonHelper.BindDropDown(ddlGroupAdd, LstGroup, "GroupName", "GroupId", true, false);
+
+        ddlGroupAdd_SelectedIndexChanged(null, null);
+        ddlGroup_SelectedIndexChanged(null, null);
+    }
+    private void ResetControls()
+    {
+        //txtSearch.Text = string.Empty;
+        //txtNameAdd.Text = string.Empty;
+        hfModalId.Value = "";
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+        ddlDepartment_SelectedIndexChanged(null, null);
+
+    }
+    protected void ddlGroupAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroupAdd.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompanyAdd, LstCompany, "CompanyName", "CompanyId", true, false);
+        ddlCompanyAdd_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompanyAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindCheckBoxList(cbLocationsAdd, LstLocation, "LocationName", "LocationId", LstLocation.Count > 1 ? true : false, false);
+
+        //CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDeptAdd, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+        ddlDeptAdd_SelectedIndexChanged(null, null);
+    }
+    protected void ddlDeptAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentid = Convert.ToInt32(ddlDeptAdd.SelectedValue);
+        var listEmp = context.Setup_Employee.Where(a => a.IsActive == true && a.DepartmentId == departmentid)
+             .Select(a => new
+             {
+                 EmployeeName = a.EmployeeCode + " - " + a.FirstName == "" ? null : a.EmployeeCode + " - " + a.FirstName + " " + a.LastName,
+                 EmployeeId = a.EmployeeId,
+             }
+           ).ToList();
+        CommonHelper.BindDropDown(ddlUserAdd, listEmp, "EmployeeName", "EmployeeId", true, false);
+    }
+    protected void ddlUserAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int empID = Convert.ToInt32(ddlUserAdd.SelectedValue);
+        //   var listLocation = context.Setup_UserAccessLocation.Where(c => c.IsActive == true && (c.EmployeeId == empID))
+        //.Select(a => new
+        //{
+        //    LocationId = a.LocationId,
+        //    LocationName = a.Setup_Location.LocationName,
+        //}
+        //).ToList();
+        //var departmentList = context.Setup_UserAccessLocation.Where(c => c.IsActive == true && c.EmployeeId == empID).ToList();
+        cbLocationsAdd.ClearSelection();
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == empID && a.Setup_Location.CompanyId == CompanyId)
+           .ToList();
+        for (int i = 0; i < LstLocation.Count; i++)
+        {
+            cbLocationsAdd.Items.FindByValue(LstLocation[i].LocationId.ToString()).Selected = true;
+        }
+
+        cbLocationsAdd.Items[0].Selected = cbLocationsAdd.Items.Count - 1 == LstLocation.Count;
+
+        //   CommonHelper.BindDropDown(ddlLocation, listLocation, "LocationName", "LocationId", true, false);
+        //   //CommonHelper.BindDropDown(ddlUserAdd, listEmp, "EmployeeName", "EmployeeId", true, false);
+
+    }
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentid = Convert.ToInt32(ddlDepartment.SelectedValue);
+        var listEmp = context.Setup_Employee.Where(a => a.IsActive == true && a.DepartmentId == departmentid)
+             .Select(a => new
+             {
+                 EmployeeName = a.EmployeeCode + " - " + a.FirstName == "" ? null : a.EmployeeCode + " - " + a.FirstName + " " + a.LastName,
+                 EmployeeId = a.EmployeeId,
+             }
+           ).ToList();
+        CommonHelper.BindDropDown(ddlUser, listEmp, "EmployeeName", "EmployeeId", true, false);
+
+    }
+}

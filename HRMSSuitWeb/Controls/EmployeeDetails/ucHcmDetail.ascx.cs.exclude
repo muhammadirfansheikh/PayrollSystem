@@ -1,0 +1,119 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+
+public partial class Controls_EmployeeDetails_ucHcmDetail : System.Web.UI.UserControl
+{
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            //BindDropdown();
+        }
+    }
+
+    public void BindDropdown(int CompanyID, int EmpID)
+    {
+        var ListGrade = context.HRMS_Setup_Grade.Where(c => c.IsActive == true).OrderBy(c => c.Grade).ToList();
+        CommonHelper.BindDropDown(ddlGrade,ListGrade,"Grade","GradeId",true,false );
+
+        var ListGroupInsuranceId = context.HRMS_Setup_GroupInsurance.Where(c => c.IsActive == true).OrderBy(c => c.GroupInsurance).ToList();
+        CommonHelper.BindDropDown(ddlGroupInsurance, ListGroupInsuranceId, "GroupInsurance", "GroupInsuranceId", true, false);
+
+        //var ListReportingCC= context.HRMS_Setup_ReportingCostCenter.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.ReportingCostCenter).ToList();
+        //CommonHelper.BindDropDown(ddlReportingCostCenter, ListReportingCC, "ReportingCostCenter", "ReportingCostCenterId", true, false);
+
+        var ListReportingCC = context.Setup_CostCenter.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.CostCenterName).ToList();
+        CommonHelper.BindDropDown(ddlReportingCostCenter, ListReportingCC, "CostCenterName", "CostCenterId", true, false);
+        
+        var ListEmpFunc = context.HRMS_Setup_EmployeeFunction.Where(c => c.IsActive == true ).OrderBy(c => c.FunctionName).ToList();
+        CommonHelper.BindDropDown(ddlEmpFunc, ListEmpFunc, "FunctionName", "EmployeeFunctionId", true, false);
+
+        var ListBloodGroup = context.HRMS_Setup_BloodGroup.Where(c => c.IsActive == true).OrderBy(c => c.BloodGroup).ToList();
+        CommonHelper.BindDropDown(ddlBloodGroup, ListBloodGroup, "BloodGroup", "BloodGroupId", true, false);
+
+        var ListSapCC = context.Setup_CostCenter.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.CostCenterName).ToList();
+        CommonHelper.BindDropDown(ddlSapCostCenter, ListSapCC, "CostCenterName", "CostCenterId", true, false);
+
+        //int FuncId = Convert.ToInt32(ddlEmpFunc.SelectedValue);
+        //var ListEmpSubFunc = context.HRMS_Setup_EmployeeSubFunction.Where(c => c.IsActive == true ).OrderBy(c => c.SubFunction).ToList();
+        //CommonHelper.BindDropDown(ddlEmpFunc, ListEmpSubFunc, "SubFunction", "EmployeeSubFunctionId", true, false);
+
+        ddlEmpFunc_SelectedIndexChanged(null ,null );
+    }
+    protected void ddlEmpFunc_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int FuncId = Convert.ToInt32(ddlEmpFunc.SelectedValue);
+        var ListEmpSubFunc = context.HRMS_Setup_EmployeeSubFunction.Where(c => c.IsActive == true && c.EmployeeFunctionId == FuncId).OrderBy(c => c.SubFunction).ToList();
+        CommonHelper.BindDropDown(ddlEmployeeSubFunction, ListEmpSubFunc, "SubFunction", "EmployeeSubFunctionId", true, false);
+    }
+
+    public void UpdateHcmDetail(int EmployeeID)
+    {
+        int? intnull = null;
+        DateTime? dtnull = null;
+        DateTime dt = DateTime.Now;
+        var Employees = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeID).FirstOrDefault();
+
+        Employees.GradeId = ddlGrade.SelectedValue == "0" ? intnull : Convert.ToInt32( ddlGrade.SelectedValue);
+        Employees.GroupInsuranceId = ddlGroupInsurance.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlGroupInsurance.SelectedValue);
+        Employees.ReportingCostCenterId = ddlReportingCostCenter.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlReportingCostCenter.SelectedValue);
+        Employees.BloodGroupId = ddlBloodGroup.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlBloodGroup.SelectedValue);
+        Employees.EmployeeSubFunctionId = ddlEmployeeSubFunction.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlEmployeeSubFunction.SelectedValue);
+        Employees.AttendanceAllowanceStatus =chkAttendanceAllowanceStatus.Checked;
+        Employees.EOBIStatus = chkEobiStatus.Checked;
+        Employees.EOBINumber = txtEobiNo.Text .Trim ();
+        Employees.EOBIDate = txtEobiDate.Text.Trim() == "" ? dtnull : Convert.ToDateTime(txtEobiDate.Text.Trim());
+        Employees.SESANumber = txtSesaNo.Text.Trim();
+        Employees.EntryDate = txtEntryDate.Text.Trim() == "" ? dtnull : Convert.ToDateTime(txtEntryDate.Text.Trim());
+        Employees.IsAllowInterest = chkAllowIntrest.Checked;
+        Employees.ModifiedBy = objBase.UserKey;
+        Employees.ModifiedDate = dt;
+        Employees.JoiningDate = txtDateOfJoiningHcm.Text.Trim() == "" ? dtnull : Convert.ToDateTime(txtDateOfJoiningHcm.Text.Trim());
+        Employees.SapCostCenterId = ddlSapCostCenter.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlSapCostCenter.SelectedValue);
+
+        context.SaveChanges();
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        UpdateHcmDetail(EmpID);
+    }
+
+    private void ResetControls()
+    { 
+    
+    }
+
+    public void SetFields()
+    {
+        var emp = context.Setup_Employee.Where(a => a.EmployeeId == EmpID).FirstOrDefault();
+
+        chkAllowIntrest.Checked = emp.IsAllowInterest;
+        chkAttendanceAllowanceStatus.Checked = emp.AttendanceAllowanceStatus == null ? false : Convert.ToBoolean( emp.AttendanceAllowanceStatus);
+        chkEobiStatus.Checked = emp.EOBIStatus == null ? false : Convert.ToBoolean(emp.EOBIStatus); ;
+        ddlGrade.SelectedValue = Convert.ToString ( emp.GradeId);
+        ddlGroupInsurance.SelectedValue = Convert.ToString(emp.GroupInsuranceId);
+        ddlBloodGroup.SelectedValue = Convert.ToString(emp.BloodGroupId);
+        ddlReportingCostCenter.SelectedValue = Convert.ToString(emp.ReportingCostCenterId);
+        txtEobiNo.Text = emp.EOBINumber;
+        txtEntryDate.Text = Convert.ToString ( emp.EntryDate);
+        txtEobiDate.Text = Convert.ToString (emp.EOBIDate);
+        txtSesaNo.Text = Convert.ToString (emp.SESANumber);
+        txtDateOfJoiningHcm.Text = Convert.ToString(emp.JoiningDate);
+        ddlSapCostCenter.SelectedValue = Convert.ToString(emp.SapCostCenterId);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControls();
+    }
+}

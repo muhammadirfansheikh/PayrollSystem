@@ -1,0 +1,351 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_HRMS_Setup_Leave : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            BindRepeater();
+        }
+    }
+
+    private void BindDropdown()
+    {
+        var listCompany = context.Setup_Company.Where(c => c.IsActive == true && (c.CompanyId == CompanyId || IsSuperAdmin == true)).OrderBy(c => c.CompanyName).ToList();
+        var listCategory = context.Setup_Category.Where(c => c.IsActive == true).OrderBy(c => c.CategoryName).ToList();
+        var listGender = context.HRMS_Setup_Gender.Where(c => c.IsActive == true)
+            .Select(c => new
+            {
+                Id = c.GenderId,
+                Value = c.GenderTitle,
+            })
+            .ToList();
+
+        CommonHelper.BindDropDown(ddlCompany, listCompany, "CompanyName", "CompanyId", true, false);
+        CommonHelper.BindDropDown(ddlCompanyNameSearch, listCompany, "CompanyName", "CompanyId", true, false);
+
+        CommonHelper.BindDropDown(ddlCategory, listCategory, "CategoryName", "CategoryId", true, false);
+        CommonHelper.BindDropDown(ddlCategoryNameSearch, listCategory, "CategoryName", "CategoryId", true, false);
+        CommonHelper.BindDropDown(ddlGender, listGender, "Value", "Id", true, false);
+
+    }
+
+    private void BindRepeater()
+    {
+        int companyid = 0;
+        int categoryid = 0;
+        string leaveName = txtDescriptionSearch.Text.Trim();
+
+        if (ddlCompanyNameSearch.SelectedIndex != -1)
+            companyid = Convert.ToInt32(ddlCompanyNameSearch.SelectedItem.Value);
+
+        if (ddlCategoryNameSearch.SelectedIndex != -1)
+            categoryid = Convert.ToInt32(ddlCategoryNameSearch.SelectedItem.Value);
+
+        var leaveList = context.TMS_Setup_LeaveDefinition.Where(c => c.IsActive == true
+                && (c.Description.Contains(leaveName) || leaveName == string.Empty)
+                && (c.CompanyId == companyid || companyid == 0)
+                && (c.CategoryId == categoryid || categoryid == 0)
+                && (c.CompanyId == CompanyId || IsSuperAdmin == true)
+            ).Select(c => new
+            {
+                LeaveDef_Id = c.LeaveDefId,
+                Description_Name = c.Description,
+                Category_Id = c.CategoryId,
+                Category_Name = c.Setup_Category.CategoryName,
+                Company_Name = c.Setup_Company.CompanyName,
+                Company_Id = c.CompanyId,
+                Annual_Leaves_NOD = c.AnualLeaves,
+                Annual_Leaves_CF = c.AnualLeavesForward,
+                Casual_Leaves_NOD = c.CasualLeaves,
+                Casual_Leaves_CF = c.CasualLeavesFarward,
+                Sick_Leaves_NOD = c.SickLeaves,
+                Sick_Leaves_CF = c.SickLeavesForward,
+                Maternity_Leaves_NOD = c.MaternityLeaves,
+                Maternity_Leaves_CF = c.MaternityLeavesForward,
+                Default_Leaves_NOD = c.DefaultLeaves,
+                Default_Leaves_CF = c.DefaultLeavesForward,
+                Gender = c.HRMS_Setup_Gender.GenderTitle,
+                GenderId = c.GenderId,
+                CreatedDate = c.CreatedDate
+            }).OrderByDescending(d => d.CreatedDate).ToList();
+        rpt.DataSource = leaveList;
+        rpt.DataBind();
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        if (hfLeaveDefId.Value == string.Empty)
+            AddLeave();
+        else
+            UpdateLeave();
+    }
+
+    private void AddLeave()
+    {
+        DateTime dt = DateTime.Now;
+
+        TMS_Setup_LeaveDefinition leave = new TMS_Setup_LeaveDefinition();
+
+        leave.Description = txtLeaveName.Value.Trim();
+        if (ddlCompany.SelectedValue != "0")
+            leave.CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+
+        if (ddlCategory.SelectedValue != "0")
+            leave.CategoryId = Convert.ToInt32(ddlCategory.SelectedValue);
+
+        if (ddlGender.SelectedValue != "0")
+            leave.GenderId = Convert.ToInt32(ddlGender.SelectedValue);
+
+        leave.AnualLeaves = Convert.ToInt32(txtAnnualLeaves.Value);
+        leave.AnualLeavesForward = chkAnnualCarryForward.Checked;
+
+        leave.SickLeaves = Convert.ToInt32(txtSickLeaves.Value);
+        leave.SickLeavesForward = chkSickCarryForward.Checked;
+
+        leave.CasualLeaves = Convert.ToInt32(txtCasualLeaves.Value);
+        leave.CasualLeavesFarward = chkCasualCarryForward.Checked;
+
+        leave.MaternityLeaves = Convert.ToInt32(txtMaternityLeaves.Value);
+        leave.MaternityLeavesForward = chkMaternityCarryForward.Checked;
+
+        leave.DefaultLeaves = Convert.ToInt32(txtDefaultLeaves.Value);
+        leave.DefaultLeavesForward = chkDefaultCarryForward.Checked;
+
+        leave.CreatedBy = UserKey;
+        leave.CreatedDate = dt;
+        leave.IsActive = true;
+        leave.UserIP = UserIP;
+        //leave.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+        context.TMS_Setup_LeaveDefinition.Add(leave);
+        context.SaveChanges();
+
+        BindRepeater();
+        //BindDropdown();
+        ResetControls();
+    }
+
+    private void UpdateLeave()
+    {
+        DateTime dt = DateTime.Now;
+
+        int leaveDefId = Convert.ToInt32(hfLeaveDefId.Value);
+        TMS_Setup_LeaveDefinition leave = context.TMS_Setup_LeaveDefinition.FirstOrDefault(j => j.LeaveDefId == leaveDefId);
+
+        leave.Description = txtLeaveName.Value.Trim();
+        if (ddlCompany.SelectedValue != "0")
+            leave.CompanyId = Convert.ToInt16(ddlCompany.SelectedValue);
+
+        if (ddlCategory.SelectedValue != "0")
+            leave.CategoryId = Convert.ToInt32(ddlCategory.SelectedValue);
+
+        if (ddlGender.SelectedValue != "0")
+            leave.GenderId = Convert.ToInt32(ddlGender.SelectedValue);
+
+        leave.AnualLeaves = Convert.ToInt32(txtAnnualLeaves.Value);
+        leave.AnualLeavesForward = chkAnnualCarryForward.Checked;
+
+        leave.SickLeaves = Convert.ToInt32(txtSickLeaves.Value);
+        leave.SickLeavesForward = chkSickCarryForward.Checked;
+
+        leave.CasualLeaves = Convert.ToInt32(txtCasualLeaves.Value);
+        leave.CasualLeavesFarward = chkCasualCarryForward.Checked;
+
+        leave.MaternityLeaves = Convert.ToInt32(txtMaternityLeaves.Value);
+        leave.MaternityLeavesForward = chkMaternityCarryForward.Checked;
+
+        leave.DefaultLeaves = Convert.ToInt32(txtDefaultLeaves.Value);
+        leave.DefaultLeavesForward = chkDefaultCarryForward.Checked;
+
+        //else
+        //category.CompanyId = null;
+        leave.ModifiedBy = UserKey;
+        leave.ModifiedDate = dt;
+        leave.IsActive = true;
+        leave.UserIP = UserIP;
+
+        context.SaveChanges();
+
+        BindRepeater();
+        //BindDropdown();
+        ResetControls();
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        if (IsValid)
+        {
+            BindRepeater();
+        }
+    }
+
+    protected void btnDeleteLeave_Click(object sender, ImageClickEventArgs e)
+    {
+        try
+        {
+            ImageButton btnDelete = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+            int leaveDefId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfLeaveDefIdRpt")).Value);
+
+            //bool childExist = context.Categories.Any(j => j. == categoryId);
+
+            //if (!childExist)
+            //{
+            divError.Visible = false;
+
+
+            // TMSLeaveId
+            var ListSetup_Employee = context.Setup_Employee.Where(a => a.IsActive == true && a.TMSLeaveId == leaveDefId).ToList();
+
+
+            if (ListSetup_Employee.Count() == 0)
+            {
+                TMS_Setup_LeaveDefinition leave = context.TMS_Setup_LeaveDefinition.FirstOrDefault(j => j.LeaveDefId == leaveDefId);
+
+                DateTime dt = DateTime.Now;
+                leave.IsActive = false;
+                leave.ModifiedBy = UserKey;
+                leave.ModifiedDate = dt;
+                context.SaveChanges();
+            }
+            else
+            {
+
+                divError.Visible = true;
+                lblError.Text = "Date exist against this leave definition";
+
+            }
+            //}
+            //else
+            //{
+            //  divError.Visible = true;
+            //  lblError.Text = "This category has sub-category so you cannot delete";
+            //}
+
+            BindRepeater();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.Text = ex.Message;
+        }
+    }
+
+    private void ResetControls()
+    {
+        txtLeaveName.Value = "";
+        txtAnnualLeaves.Value = "";
+        txtSickLeaves.Value = "";
+        txtCasualLeaves.Value = "";
+        txtMaternityLeaves.Value = "";
+        txtDefaultLeaves.Value = "";
+
+        chkAnnualCarryForward.Checked = false;
+        chkSickCarryForward.Checked = false;
+        chkCasualCarryForward.Checked = false;
+        chkMaternityCarryForward.Checked = false;
+        chkDefaultCarryForward.Checked = false;
+
+        hfLeaveDefId.Value = "";
+
+        ddlCompany.SelectedValue = "0";
+        ddlCompany_SelectedIndexChanged(null,null);
+        ddlCategory.SelectedValue = "0";
+    }
+
+    protected void ddlCompanyNameSearch_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int companyid = Convert.ToInt32(ddlCompanyNameSearch.SelectedValue);
+        ddlCategoryNameSearch.Items.Clear();
+        var listCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == companyid).OrderBy(c => c.CategoryName).ToList();
+
+        CommonHelper.BindDropDown(ddlCategoryNameSearch, listCategory, "CategoryName", "CategoryId", true, false);
+        if (ddlCompanyNameSearch.SelectedValue != "0")
+            ddlCategoryNameSearch.Enabled = true;
+        else
+            ddlCategoryNameSearch.Enabled = false;
+    }
+
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int companyid = Convert.ToInt32(ddlCompany.SelectedValue);
+        ddlCategory.Items.Clear();
+        var listCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == companyid).OrderBy(c => c.CategoryName).ToList();
+
+        CommonHelper.BindDropDown(ddlCategory, listCategory, "CategoryName", "CategoryId", true, false);
+        if (ddlCompany.SelectedValue != "0")
+            ddlCategory.Enabled = true;
+        else
+            ddlCategory.Enabled = false;
+    }
+
+    protected void btnEdit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int LeaveDefId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfLeaveDefIdRpt")).Value);
+
+            var leaveList = context.TMS_Setup_LeaveDefinition.Where(c => c.IsActive == true
+                   && c.LeaveDefId == LeaveDefId
+               ).Select(c => new
+               {
+                   LeaveDef_Id = c.LeaveDefId,
+                   Description_Name = c.Description,
+                   Category_Id = c.CategoryId,
+                   Category_Name = c.Setup_Category.CategoryName,
+                   Company_Name = c.Setup_Company.CompanyName,
+                   Company_Id = c.CompanyId,
+                   Annual_Leaves_NOD = c.AnualLeaves,
+                   Annual_Leaves_CF = c.AnualLeavesForward,
+                   Casual_Leaves_NOD = c.CasualLeaves,
+                   Casual_Leaves_CF = c.CasualLeavesFarward,
+                   Sick_Leaves_NOD = c.SickLeaves,
+                   Sick_Leaves_CF = c.SickLeavesForward,
+                   Maternity_Leaves_NOD = c.MaternityLeaves,
+                   Maternity_Leaves_CF = c.MaternityLeavesForward,
+                   Default_Leaves_NOD = c.DefaultLeaves,
+                   Default_Leaves_CF = c.DefaultLeavesForward,
+                   Gender = c.HRMS_Setup_Gender.GenderTitle,
+                   GenderId = c.GenderId,
+                   CreatedDate = c.CreatedDate
+               }).OrderByDescending(d => d.CreatedDate).ToList().FirstOrDefault();
+
+
+            hfLeaveDefId.Value = LeaveDefId.ToString();
+            txtLeaveName.Value = leaveList.Description_Name;
+            ddlCompany.SelectedValue = Convert.ToString(leaveList.Company_Id);
+            ddlCompany_SelectedIndexChanged(null,null);
+            ddlCategory.SelectedValue = Convert.ToString(leaveList.Category_Id);
+            ddlGender.SelectedValue = Convert.ToString(leaveList.GenderId);
+            txtAnnualLeaves.Value = Convert.ToString(leaveList.Annual_Leaves_NOD);
+            chkAnnualCarryForward.Checked = leaveList.Annual_Leaves_CF;
+            txtSickLeaves.Value = Convert.ToString(leaveList.Annual_Leaves_NOD);
+            chkSickCarryForward.Checked = leaveList.Sick_Leaves_CF;
+            txtCasualLeaves.Value = Convert.ToString(leaveList.Sick_Leaves_NOD);
+            chkCasualCarryForward.Checked = leaveList.Annual_Leaves_CF;
+            txtMaternityLeaves.Value = Convert.ToString(leaveList.Casual_Leaves_NOD);
+            chkMaternityCarryForward.Checked = leaveList.Maternity_Leaves_CF;
+            txtDefaultLeaves.Value = Convert.ToString(leaveList.Default_Leaves_NOD);
+            chkDefaultCarryForward.Checked = leaveList.Default_Leaves_CF;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+        }
+        catch (Exception ex) { }
+    }
+}

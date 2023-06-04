@@ -1,0 +1,20 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="LeaveApply.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Incharge_LeaveApply" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>TMS</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li class="active">
+                    <strong>Leave Apply</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <uc:ucLeaveApply ID="ucLeaveApply" IsIncharge="true" runat="server" />
+</asp:Content>

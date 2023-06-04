@@ -1,0 +1,192 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucAcademicDetails.ascx.cs" Inherits="Controls_EmployeeDetails_ucAcademicDetails" %>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        <asp:HiddenField ID="hfEmpID" runat="server" />
+        Academic Details
+    </div>
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please comply with the following instructions..</strong>
+            <ul>
+                <li>Fill out your educational details and click on "Add button".</li>
+                <li>Please make sure that you put in accurate educational details like High school / College / Graduate / Post-Graduate / Doctorate / Foreign Qualification / Training / Certificate Details as these would be verified at later stage.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Add  Academic Details
+    </div>
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please comply with the following instructions..</strong>
+        </div>
+        <div class="form-group col-lg-3">
+            <asp:HiddenField ID="hfAcademicID" runat="server" />
+            <label for="exampleInputEmail2" class="control-label col-lg-3">Education</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator45" runat="server" ValidationGroup="AddAcademicDetails" Text="*" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlEducationType" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlEducationType" runat="server" Style="margin-top: 18px;" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">
+                Major Subjects
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="AddAcademicDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAcademicMajor" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtAcademicMajor" placeholder="Major Subjects" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">
+                Last Attended Institute
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddAcademicDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAcademicInstitute" CssClass="rfv"></asp:RequiredFieldValidator></label>
+            <asp:TextBox ID="txtAcademicInstitute" placeholder="School / College / Institute / University" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">Status</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ValidationGroup="AddAcademicDetails" Text="*" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlAcademicStatus" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlAcademicStatus" runat="server" Style="margin-top: 18px;" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">From</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="AddAcademicDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAcademicDatefrom" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtAcademicDatefrom" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">To</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ValidationGroup="AddAcademicDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAcademicDateTo" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtAcademicDateTo" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">Percentage / GPA's </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="AddAcademicDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAcademicpercentage" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtAcademicpercentage" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">Did you score any positon</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="AddAcademicDetails" Text="*" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlAcademicScore" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlAcademicScore" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2" class="control-label col-lg-12">Country</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator8" runat="server" ValidationGroup="AddAcademicDetails" Text="*" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlAcademicCountry" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlAcademicCountry" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" CssClass="btn btn-warning pull-right" Style="width: 65px; margin-right: 5px;" ID="btnCancel" OnClick="btnCancel_Click" runat="server" />
+            <asp:Button Text="Add" ID="btnAdd" OnClick="btnAdd_Click" ValidationGroup="AddAcademicDetails" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Academic Details
+    </div>
+
+    <div class="panel-body">
+        <asp:Repeater ID="rptEmployeeAcademic" OnItemCommand="rptEmployeeAcademic_ItemCommand" runat="server">
+            <HeaderTemplate>
+                <table border="0" cellpadding="0" cellspacing="0" align="center" width="97%" class="table   ">
+                    <thead>
+                        <tr>
+                            <th>EducationType</th>
+                            <th>Major Subjects / Degree / Expertise / Certificate</th>
+                            <th>Status</th>
+                            <th>High School / College / Institute / University</th>
+                            <th>Percentage / GPA's / A's</th>
+                            <th>Education Duration</th>
+                            <th>Position</th>
+                            <th>Country</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+            </HeaderTemplate>
+            <ItemTemplate>
+
+                <tr>
+                    <td>
+                        <asp:Label ID="Label10" runat="server" Text='<%# Eval("EducationType") %>'></asp:Label>
+                    </td>
+
+
+                    <td>
+                        <asp:Label ID="lblSchool" runat="server" Text='<%# Eval("Institution") %>'></asp:Label>
+
+                    </td>
+
+                    <td>
+                        <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("EducationStatus") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label7" runat="server" Text='<%# Eval("degree") %>'></asp:Label>
+                    </td>
+                    <td>
+
+                        <asp:Label ID="Label1" runat="server" Text='<%# Eval("percentage") %>'></asp:Label>
+                    </td>
+
+                    <td>
+                        <asp:Label ID="lblEducationDuration" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "fromDate", "{0:MMMM dd yyyy }")+" to "+DataBinder.Eval(Container.DataItem, "toDate", "{0:MMMM dd yyyy }") %>'></asp:Label>
+
+                    </td>
+                    <td>
+
+                        <asp:Label ID="Label2" runat="server" Text='<%# Eval("EducationScore") %>'></asp:Label>
+                    </td>
+
+                    <td colspan="3">
+                        <asp:Label ID="Label9" runat="server" Text='<%# Eval("CountryName") %>'></asp:Label>
+                    </td>
+                    <td colspan="3" style="text-align: right">
+                        <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+                            <asp:ImageButton ID="ImageButton1" OnClientClick="return true" CommandName="Edit" CommandArgument='<%#Eval("EmployeeEducationId") %>' ImageUrl="/images/edit.png" runat="server" />
+                        </asp:HyperLink>
+                        <asp:HyperLink runat="server" ID="hplDelete">
+                            <asp:ImageButton ImageUrl="/images/close.png" OnClientClick="return DeleteConfirmation();"
+                                ID="imgRemoveEducationSchoolPanel" CommandName="Delete" CommandArgument='<%#Eval("EmployeeEducationId") %>'
+                                runat="server" />
+                        </asp:HyperLink>
+
+                    </td>
+                </tr>
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                </table>
+                <tr align="center">
+                    <td colspan="5">
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </table>
+            </FooterTemplate>
+        </asp:Repeater>
+
+    </div>
+</div>

@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="144c379ae2a74930be2cc589a3bb27aa" Name="Diagram1" ZoomLevel="52">
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.AuditLog" Width="1.5" PointX="5" PointY="5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.DEL_HCM_TaxableMedical" Width="1.5" PointX="7.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_AbsentFlexiLog" Width="1.5" PointX="9.75" PointY="224.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Additional_Allowances" Width="1.5" PointX="12.75" PointY="105.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_ArrearDetail" Width="1.5" PointX="7.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_ArrearHistory" Width="1.5" PointX="21" PointY="110.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Atribute_Mapping" Width="1.5" PointX="27" PointY="87.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Bonus" Width="1.5" PointX="29" PointY="123" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_BonusTransactionDetail" Width="1.5" PointX="31.25" PointY="122.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_BonusTransactionMaster" Width="1.5" PointX="0.75" PointY="9.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Company_Settings" Width="1.5" PointX="21.75" PointY="91.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_CompanyFormula" Width="1.5" PointX="26.75" PointY="122.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Employee_Education_Detail" Width="1.5" PointX="7.75" PointY="133.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAccountDetail" Width="1.5" PointX="21.75" PointY="81.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping" Width="1.5" PointX="15.75" PointY="121.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeOvertimeDetail" Width="1.5" PointX="9.75" PointY="210" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary" Width="1.5" PointX="21.75" PointY="116.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail" Width="1.5" PointX="2.75" PointY="9.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSESSI_Details" Width="1.5" PointX="18.75" PointY="120.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSettlement" Width="1.5" PointX="15.75" PointY="110" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTax" Width="1.5" PointX="27" PointY="117.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxDetails" Width="1.5" PointX="18" PointY="96" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxDirectDeduction" Width="1.5" PointX="12.75" PointY="119.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxForecast" Width="1.5" PointX="15.75" PointY="98" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxForecastDetail_Loan" Width="1.5" PointX="9.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Final_Settlement" Width="1.5" PointX="21.75" PointY="100.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_FormMaster" Width="1.5" PointX="22.5" PointY="85.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Fuel_DesignationMapping" Width="1.5" PointX="3" PointY="91.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_IncreamentHistory" Width="1.5" PointX="4.75" PointY="9.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_IncrementSheetAdditional" Width="1.5" PointX="12" PointY="237.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_IncrementSheetHistory" Width="1.5" PointX="12" PointY="241" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_IncrementSheetInfo" Width="1.5" PointX="9.75" PointY="238.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Interest" Width="1.5" PointX="16.5" PointY="86.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_InterestIncome" Width="1.5" PointX="9.75" PointY="228.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Jv_accounts" Width="1.5" PointX="13.5" PointY="72.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_LeaveEncashment" Width="1.5" PointX="15.75" PointY="117.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Loan_Detail" Width="1.5" PointX="24" PointY="100.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Loan_Master" Width="1.5" PointX="18.75" PointY="101.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_LoanAttributeDetail" Width="1.5" PointX="27" PointY="103.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_MedicalReinbursment" Width="1.5" PointX="12.75" PointY="100.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Payroll_Detail" Width="1.5" PointX="24" PointY="117.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Payroll_Log" Width="1.5" PointX="15.75" PointY="91" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Payroll_Master" Width="1.5" PointX="18.75" PointY="110.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PayrollDisplay" Width="1.5" PointX="18" PointY="81.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFDetail" Width="1.5" PointX="15.75" PointY="74.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFLog" Width="1.5" PointX="9.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster" Width="1.5" PointX="13.5" PointY="94.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFWithdraw" Width="1.5" PointX="15.75" PointY="104.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_ProvidentFund" Width="1.5" PointX="18" PointY="162.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Salary_OverTimeHistory" Width="1.5" PointX="29.25" PointY="117.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Settlement_Detail" Width="1.5" PointX="26" PointY="110.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Allowance" Width="1.5" PointX="10.5" PointY="78.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Arrear" Width="1.5" PointX="12.75" PointY="82.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Atribute" Width="1.5" PointX="24.75" PointY="84" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_CategoryAllowanceMapping" Width="1.5" PointX="12.75" PointY="78.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_CostCenterAccountMapping" Width="1.5" PointX="11.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Definitions" Width="1.5" PointX="10" PointY="1.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Detail" Width="1.5" PointX="19.5" PointY="85.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_FomulaType" Width="1.5" PointX="3.75" PointY="155.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Gratuity" Width="1.5" PointX="15.75" PointY="126" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_JV_AccountAllowanceMapping" Width="1.5" PointX="15.75" PointY="80.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Master" Width="1.5" PointX="7.75" PointY="1" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_MenuItem" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Pay_type" Width="1.5" PointX="21.75" PointY="96.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_RM" Width="1.5" PointX="3.75" PointY="84.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_SETUP_SapCostCenter" Width="1.5" PointX="3.75" PointY="175" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_SETUP_SapCostCenterNew1" Width="1.5" PointX="11.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Settlement" Width="1.5" PointX="23.75" PointY="132.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Tax" Width="1.5" PointX="11.25" PointY="92.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Tax_Slab" Width="1.5" PointX="13.5" PointY="88.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_TaxLaw" Width="1.5" PointX="10.5" PointY="128.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Wppf_Slab" Width="1.5" PointX="7.5" PointY="129" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_Year" Width="1.5" PointX="11.25" PointY="86.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Tax_Forecast_Allowance_Detail" Width="1.5" PointX="11.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_TaxComputation" Width="1.5" PointX="12.75" PointY="110" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_TaxRefund" Width="1.5" PointX="9.75" PointY="233.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Vehicle_Detail" Width="1.5" PointX="24" PointY="125.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Vehicle_Master" Width="1.5" PointX="21.75" PointY="122.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_VehicleCategoryMapping" Width="1.5" PointX="26.75" PointY="98.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_VehicleDesignationMapping" Width="1.5" PointX="28.75" PointY="107.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_VehicleInformation" Width="1.5" PointX="19.5" PointY="125.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_WPPF" Width="1.5" PointX="9.75" PointY="122.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_ApplicantApplication" Width="1.5" PointX="5.25" PointY="102.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_CandidateInfo" Width="1.5" PointX="10.5" PointY="102.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_EmployeeBank" Width="1.5" PointX="23.75" PointY="110.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_ProbationEvaluationMaster" Width="1.5" PointX="9.75" PointY="72.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Requisition" Width="1.5" PointX="3" PointY="100.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_ResignationDetail" Width="1.5" PointX="9.75" PointY="96.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_AccountType" Width="1.5" PointX="21.5" PointY="132.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Applicant" Width="1.5" PointX="3" PointY="95.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Bank" Width="1.5" PointX="21.5" PointY="135.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_BankMaster" Width="1.5" PointX="19.25" PointY="135.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_BloodGroup" Width="1.5" PointX="5.25" PointY="133.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_EducationType" Width="1.5" PointX="0.75" PointY="115.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_EducationType_Copy" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_EmployeeFunction" Width="1.5" PointX="3" PointY="138.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_EmployeeSubFunction" Width="1.5" PointX="5.25" PointY="138.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Gender" Width="1.5" PointX="5.25" PointY="146.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Grade" Width="1.5" PointX="5.25" PointY="129.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_GroupInsurance" Width="1.5" PointX="5.25" PointY="142.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_HiringType" Width="1.5" PointX="5.25" PointY="119.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_MartialStatus" Width="1.5" PointX="5.25" PointY="122.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Nationality" Width="1.5" PointX="5.25" PointY="126.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_NoticePeriodType" Width="1.5" PointX="5.25" PointY="96.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_PayMode" Width="1.5" PointX="21.5" PointY="139.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_RCAReason" Width="1.5" PointX="7.5" PointY="93.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_Religion" Width="1.5" PointX="5.25" PointY="115.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_ReportingCostCenter" Width="1.5" PointX="3.75" PointY="167.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_SeprationStatus" Width="1.5" PointX="6.75" PointY="12.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_TerminationType" Width="1.5" PointX="5.25" PointY="99.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_ValueType" Width="1.5" PointX="3.75" PointY="75.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_VisaType" Width="1.5" PointX="8.75" PointY="12.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowFormDetail" Width="1.5" PointX="6" PointY="82.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowFormMaster" Width="1.5" PointX="3.75" PointY="79.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowMaster" Width="1.5" PointX="1.5" PointY="126.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowStatus" Width="1.5" PointX="0.75" PointY="88.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowStepAction" Width="1.5" PointX="1.5" PointY="130.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowStepDetail" Width="1.5" PointX="0.75" PointY="120.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_Setup_WorkflowTaskStatus" Width="1.5" PointX="13.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_SetupDetail" Width="1.5" PointX="0.75" PointY="97" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_SetupMaster" Width="1.5" PointX="1.5" PointY="111" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HRMS_WorkFlowTaskMaster" Width="1.5" PointX="7.5" PointY="88" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_AD_Location" Width="1.5" PointX="12.75" PointY="115.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Application" Width="1.5" PointX="12.75" PointY="141" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_ApplicationRoleMapping" Width="1.5" PointX="12" PointY="146" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Area" Width="1.5" PointX="3.75" PointY="159.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_BusinessUnitCostCenterMapping" Width="1.5" PointX="24.5" PointY="96.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Campaign" Width="1.5" PointX="24.75" PointY="106.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Category" Width="1.5" PointX="1.5" PointY="77.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_City" Width="1.5" PointX="5.25" PointY="110.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Company" Width="1.5" PointX="1.5" PointY="144.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_CompanyDomains" Width="1.5" PointX="3.75" PointY="151.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_CostCenter" Width="1.5" PointX="5.25" PointY="91" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Country" Width="1.5" PointX="0.75" PointY="103.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Currency" Width="1.5" PointX="13.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Department" Width="1.5" PointX="0.75" PointY="138.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Designation" Width="1.5" PointX="0.75" PointY="91.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee" Width="1.5" PointX="7.5" PointY="97.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_Log" Width="1.5" PointX="13.75" PointY="12.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_EmployeeCompanyMapping" Width="1.5" PointX="9.75" PointY="117.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_EmployeeType" Width="1.5" PointX="0.75" PointY="83.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Floor" Width="1.5" PointX="3.75" PointY="171.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_FloorAreaMapping" Width="1.5" PointX="6" PointY="165.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Group" Width="1.5" PointX="1.5" PointY="154.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Location" Width="1.5" PointX="10.5" PointY="110.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_MenuItem" Width="1.5" PointX="12.75" PointY="150.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_OperationType" Width="1.5" PointX="2.75" PointY="5.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Profession" Width="1.5" PointX="14.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Province" Width="1.5" PointX="3" PointY="118" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Role" Width="1.5" PointX="9.75" PointY="139.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_RoleAccess" Width="1.5" PointX="18" PointY="146.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_RoleAccessFunction" Width="1.5" PointX="15" PointY="152.625" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_User" Width="1.5" PointX="9.75" PointY="145.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_UserAccessLocation" Width="1.5" PointX="18.75" PointY="116.5" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_ValueType" Width="1.5" PointX="2.75" PointY="1.125" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_ValueTypeCompanyMapping" Width="1.5" PointX="5" PointY="1" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_City" Width="1.5" PointX="0.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_Designation" Width="1.5" PointX="2.75" PointY="14.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.sysdiagram" Width="1.5" PointX="15.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.ThirdParty_Menu_User_Mapping" Width="1.5" PointX="15" PointY="146.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.TMS_AccessFunction" Width="1.5" PointX="12.75" PointY="162.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.TMS_Setup_LeaveDefinition" Width="1.5" PointX="13.5" PointY="125.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.TMS_Setup_LeaveTypes" Width="1.5" PointX="15.75" PointY="7.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.TMS_Setup_Shift" Width="1.5" PointX="3.75" PointY="163.375" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.TS_Setup_BusinessUnit" Width="1.5" PointX="1.5" PointY="133.875" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.UserLoginHistory" Width="1.5" PointX="15" PointY="142" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.UserPasswordHistory" Width="1.5" PointX="12" PointY="158.25" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.AdvanceTax" Width="1.5" PointX="10.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Allowance" Width="1.5" PointX="15.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Bonus10C" Width="1.5" PointX="16.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.DEL_HRMS_Setup_GroupLifeInsurance" Width="1.5" PointX="4.75" PointY="16.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.DEL_HRMS_Setup_GroupPersonalAccidentInsurance" Width="1.5" PointX="6.75" PointY="16.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Finance_Type" Width="1.5" PointX="17.75" PointY="3.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Arrear_Amounts" Width="1.5" PointX="17.75" PointY="6.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Constant" Width="1.5" PointX="17.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20201230" Width="1.5" PointX="17.75" PointY="13.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20210708" Width="1.5" PointX="15.75" PointY="17.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20210809" Width="1.5" PointX="17.75" PointY="17.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20210812" Width="1.5" PointX="19.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20210812_1" Width="1.5" PointX="0.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeAllowanceMapping_20211104" Width="1.5" PointX="19.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeOvertimeDetail_20220106" Width="1.5" PointX="19.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary_20200401" Width="1.5" PointX="8.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary_20210217" Width="1.5" PointX="10.75" PointY="19.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary_20210618" Width="1.5" PointX="19.75" PointY="12.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary_20211215" Width="1.5" PointX="19.75" PointY="18.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalary_IncrementLetter" Width="1.5" PointX="2.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20201222" Width="1.5" PointX="4.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20201226" Width="1.5" PointX="21.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20210407" Width="1.5" PointX="21.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20210708" Width="1.5" PointX="21.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20210812_1" Width="1.5" PointX="21.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20211104" Width="1.5" PointX="15.75" PointY="21.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20211215" Width="1.5" PointX="21.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20220112" Width="1.5" PointX="23.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_20220720" Width="1.5" PointX="23.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeSalaryDetail_IncrementLetter" Width="1.5" PointX="23.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxDetails_20210217" Width="1.5" PointX="23.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxForecast_20210217" Width="1.5" PointX="23.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_EmployeeTaxForecast_20210825" Width="1.5" PointX="17.75" PointY="24.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Formula_Master" Width="1.5" PointX="25.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_IncrementSheetHistory_IncrementLetter" Width="1.5" PointX="25.75" PointY="3.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Jv_accounts_20220202" Width="1.5" PointX="4.75" PointY="25.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_LeaveEncashment_20220714" Width="1.5" PointX="6.75" PointY="25.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Loan_Detail_20210217" Width="1.5" PointX="8.75" PointY="25.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Loan_Master_20210217" Width="1.5" PointX="25.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Loan_Master_20220224" Width="1.5" PointX="10.75" PointY="25.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Payroll_Master_20210709" Width="1.5" PointX="25.75" PointY="17.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFDetail_20210217" Width="1.5" PointX="19.75" PointY="25.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFDetail_20210408" Width="1.5" PointX="25.75" PointY="23.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster_20210217" Width="1.5" PointX="0.75" PointY="26.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster_20210408" Width="1.5" PointX="21.75" PointY="26.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster_20210712" Width="1.5" PointX="27.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster_20211129" Width="1.5" PointX="27.75" PointY="5.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFMaster_20220426" Width="1.5" PointX="27.75" PointY="10.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_PFWithdraw_20220608" Width="1.5" PointX="27.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_CostCenterAccountMapping_20211206" Width="1.5" PointX="27.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_JV_AccountAllowanceMapping_20220629" Width="1.5" PointX="27.75" PointY="24.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_RM_20210611" Width="1.5" PointX="23.75" PointY="28.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_RM_20210708" Width="1.5" PointX="25.75" PointY="28.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_RM_20210807" Width="1.5" PointX="27.75" PointY="28.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Setup_RM_20220330" Width="1.5" PointX="29.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Tax_ForecastingDetails" Width="1.5" PointX="29.75" PointY="6.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Vehicle_Detail_20210217" Width="1.5" PointX="29.75" PointY="11.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.HCM_Vehicle_Master_20210217" Width="1.5" PointX="29.75" PointY="15.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.SAPCOSTKOT" Width="1.5" PointX="29.75" PointY="23.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20210929" Width="1.5" PointX="29.75" PointY="26.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20211221" Width="1.5" PointX="2.75" PointY="30.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20211221_2" Width="1.5" PointX="4.75" PointY="30.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20211222" Width="1.5" PointX="6.75" PointY="30.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20220113" Width="1.5" PointX="15.75" PointY="30.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20220124" Width="1.5" PointX="17.75" PointY="30.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20220203" Width="1.5" PointX="31.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_20220215" Width="1.5" PointX="19.75" PointY="31.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.Setup_Employee_Log_20210927" Width="1.5" PointX="31.75" PointY="20.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_HRMS_Setup_BloodGroup" Width="1.5" PointX="8.75" PointY="32.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_HRMS_Setup_EducationType" Width="1.5" PointX="10.75" PointY="32.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_HRMS_Setup_Gender" Width="1.5" PointX="33.75" PointY="0.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_HRMS_Setup_MaritalStatus" Width="1.5" PointX="33.75" PointY="4.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_BusinessUnit" Width="1.5" PointX="33.75" PointY="8.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_Category" Width="1.5" PointX="12.75" PointY="33.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_CostCenter" Width="1.5" PointX="33.75" PointY="13.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_Department" Width="1.5" PointX="33.75" PointY="18.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_EmployeeData" Width="1.5" PointX="33.75" PointY="24.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_EmployeeType" Width="1.5" PointX="21.75" PointY="34.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_Location" Width="1.5" PointX="23.75" PointY="34.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_Province" Width="1.5" PointX="25.75" PointY="34.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.STG_Setup_SapCostCenter" Width="1.5" PointX="33.75" PointY="34.75" />
+        <EntityTypeShape EntityType="Sybrid_DatabaseModel.tmpFerdeen" Width="1.5" PointX="35.75" PointY="0.75" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_AuditLog_Setup_OperationType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_AbsentFlexiLog_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Additional_Allowances_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Additional_Allowances_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ArrearHistory_HCM_ArrearHistory" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ArrearHistory_HCM_SalaryHistory_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ArrearHistory_HCM_SalaryHistory_Master1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ArrearHistory_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ArrearHistory_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Atribute_Mapping_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Atribute_Mapping_HCM_Setup_Atribute" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Bonus_HCM_CompanyFormula" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_BonusTransactionDetail_HCM_Bonus" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Company_Settings_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Company_Settings_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Detail_HCM_Company_Settings" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Salary_OverTimeHistory_HCM_Company_Settings" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_CompanyFormula_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_CompanyFormula_Setup_FomulaType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_CompanyFormula_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Employee_Education_Detail_HRMS_Setup_EducationType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Employee_Education_Detail_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Account_AccountType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Account_Bank" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmployeeAllowanceMapping_EmployeeMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmployeeAllowanceMapping_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeOvertimeDetail_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmployeeTax_EmployeeSalary" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeSalary_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeSalary_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeSESSI_Details_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_SESSI_Employee_Mapping_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeSettlement_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeSettlement_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmployeeTax_Setup_Tax" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxDetails_HCM_EmployeeTaxForecast2" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxDetails_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxDirectDeduction_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Tax_Direct_Deduction_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Tax_Direct_Deduction_HCM_Setup_Tax_Slab" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Tax_Direct_Deduction_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxForecast_HCM_EmployeeTaxForecast23125" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxForecast_HCM_Setup_Tax_Slab2315" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxForecast_HCM_Setup_Year2315" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_EmployeeTaxForecast_Setup_Employee2315" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Final_Settlement_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Final_Settlement_HCM_Setup_Detail_Notice" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Final_Settlement_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Atribute_HCM_FormMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Fuel_DesignationMapping_Setup_Designation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_IncrementSheetAdditional_HCM_IncrementSheetInfo" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_IncrementSheetHistory_HCM_IncrementSheetInfo" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_IncrementSheetInfo_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Interest_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Interest_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Master_HCM_Interest" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_InterestIncome_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ProvidentFund_HCM_InterestIncome" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_JV_AccountAllowanceMapping_HCM_Jv_accounts" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_LeaveEncashment_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_LeaveEncashment_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Detail_HCM_Loan_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Detail_HCM_Pay_Type" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Detail_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Master_HCM_Loan_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Master_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Loan_Master_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_LoanAttributeDetail_HCM_Loan_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Settlement_Detail_HCM_Loan_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_LoanAttributeDetail_HCM_Setup_Atribute" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_MedicalReinbursment_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_MedicalReinbursment_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmpSalary" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Salary_OverTimeHistory_HCM_EmployeeAllowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Payroll_Log_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_PayrollDisplay_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ProvidentFund_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_SalaryHistory_Master_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Settlement_Detail_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Vehicle_Detail_HCM_Payroll_Log" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_SalaryHistory_Master_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_PFDetail_HCM_PFMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_PFWithdraw_HCM_PFMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_PFWithdraw_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ProvidentFund_HCM_PFWithdraw" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ProvidentFund_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_ProvidentFund_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Settlement_Detail_HCM_Pay_Type" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Settlement_Detail_HCM_SETUP_Settlement" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Settlement_Detail_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Allowance_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_CategoryAllowanceMapping_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Gratuity_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_JV_AccountAllowanceMapping_HCM_Setup_Allowance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Allowance_Setup_Arrear" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Atribute_HCM_Setup_Atribute1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Atribute_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_CategoryAllowanceMapping_Setup_Category" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Definations_HCM_Setup_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Detail_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleCategoryMapping_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleDesignationMapping_HCM_VehicleInformation1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleInformation_HCM_Setup_Detail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleInformation_HCM_Setup_Detail1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleInformation_HCM_Setup_Detail2" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleInformation_HCM_Setup_Detail3" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleInformation_HCM_Setup_Detail4" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Value_Setup_Column" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_FomulaType_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Gratuity_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_MenuItem_Setup_MenuItemM" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Pay_type_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_RM_Setup_Category" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_RM_Setup_Designation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_SETUP_SapCostCenter_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Settlement_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Tax_Slab_HCM_Setup_Tax" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Tax_Slab_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Tax_Slab_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_TaxLaw_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_TaxComputation_HCM_Setup_TaxLaw" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Wppf_Slab_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Wppf_Slab_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_WPPF_Setup_Wppf_Slab" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Wppf_Rate_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Year_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_TaxComputation_HCM_Setup_Year" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_WPPF_SETUP_YEAR" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_TaxComputation_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_TaxRefund_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Vehicle_Detail_HCM_Vehicle_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Vehicle_Master_HCM_Vehicle_Master" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Vehicle_Master_HCM_VehicleInformation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Vehicle_Master_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleCategoryMapping_HCM_VehicleInformation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleCategoryMapping_Setup_Category" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_VehicleDesignationMapping_HCM_VehicleInformation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_Setup_Wppf_Rate_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_WPPF_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HCM_WPPF_SETUP_EMPLOYEE" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_ApplicantApplication_HRMS_Requisition" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_ApplicantAttachment_HRMS_Setup_Applicant" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_ApplicantAttachment_HRMS_Setup_FileStatus" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_CandidateInfo_HRMS_ApplicantApplication" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_CandidateInfo_HRMS_RequisitionSetupDetail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_CandidateInfo_HRMS_RequisitionSetupDetail1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_EmployeeBank_HRMS_Setup_AccountType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_EmployeeBank_HRMS_Setup_Bank" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_EmployeeBank_HRMS_Setup_PayMode" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_EmployeeBank_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_ProbationEvaluationMaster_HRMS_WorkFlowTaskMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_RequisitionSetupDetail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_RequisitionSetupDetail1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_RequisitionSetupDetail2" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_RequisitionSetupDetail4" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_Setup_EducationType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_Setup_WorkflowStatus" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_HRMS_WorkflowStepDetail" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_Setup_Country" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_Setup_Department" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_Setup_Designation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_Setup_EmployeeType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Requisition_Setup_Location" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__HRMS_Resi__Emplo__4A64ABE3" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__HRMS_Resi__HODRC__4B58D01C" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__HRMS_Resi__HRRCA__4C4CF455" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_ResignationDetail_HRMS_WorkFlowTaskMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_Applicant_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_Bank_HRMS_Setup_BankMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_BloodGroup" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_EmployeeSubFunction_HRMS_Setup_EmployeeFunction" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_EmployeeSubFunction" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_Gender" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_TMS_Setup_LeaveDefinition_HRMS_Setup_Gender" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_Grade" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_GroupInsurance" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_HiringType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_MartialStatus" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_Nationality" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_NoticePeriodType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_Religion" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_ReportingCostCenter_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_HRMS_Setup_TerminationType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_SeperationCriteriaDetail_HRMS_Setup_ValueType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_SeperationCriteriaDetail_HRMS_Setup_SeperationCriteriaMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_WorkflowFormDetail_HRMS_SetupMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_SeperationCriteriaMaster_HRMS_Setup_WorkflowMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_Setup_WorkflowTaskDetail_HRMS_Setup_WorkflowMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_WorkFlowTask_HRMS_Setup_WorkflowStatus" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_WorkflowStepDetail_HRMS_Setup_WorkflowStepAction" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_HRMS_RequisitionSetupDetail_HRMS_RequisitionSetupMaster" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_AD_Location_Setup_Location" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_ApplicationRoleMapping_Setup_Application" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_MenuItem_Setup_Application" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Role_Setup_Application" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_UserLoginHistory_Setup_Application" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_ApplicationRoleMapping_TMS_Setup_Role" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_ApplicationRoleMapping_TMS_User" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Area_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_FloorAreaMapping_Setup_Area" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_BusinessUnitCostCenterMapping_Setup_CostCenter" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_BusinessUnitCostCenterMapping_TS_Setup_BusinessUnit" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Campaign_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Campaign_Setup_Location" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Category_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Designation_Category" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_LeaveDefinition_Category" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_City_Setup_Country" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_City_Setup_Province" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_City" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Location_Setup_City" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_CostCenter_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Department_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_EmployeeType_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_LeaveDefinition_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Company_Setup_Group" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_CompanyDomains_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_EmployeeCompanyMapping_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Floor_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Location_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Shift_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_TS_Setup_BusinessUnit_Setup_Company" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_CostCenter" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_CostCenter1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_CostCenter2" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Country" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Country1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Province_Setup_Country" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Department_TS_Setup_BusinessUnit" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Department" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Designation" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__Setup_Emp__Repla__7A48C92F" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Employee1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Employee2" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_EmployeeType" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Location" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_Employee_Setup_Province" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_EmployeeCompanyMapping_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_UserAccessLocation_Setup_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_User_Employee" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.Province_PayrollFK" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_FloorAreaMapping_Setup_Floor" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_UserAccessLocation_Setup_Location" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__RoleAcces__Menu___3B75D760" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_RoleAccessFunction_MenuItem" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_MenuItem_Setup_MenuItem" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_MenuItem_Setup_MenuItem1" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_RoleAccess_Setup_MenuItem" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_ThirdParty_Menu_User_Mapping_Setup_MenuItem" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_RoleAccess_Setup_Role" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK__RoleAcces__Acces__2CF2ADDF" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_ThirdParty_Menu_User_Mapping_Setup_User" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_UserLoginHistory_Setup_User" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_UserPasswordHistory_Setup_User" />
+        <AssociationConnector Association="Sybrid_DatabaseModel.FK_Setup_ValueTypeCompanyMapping_Setup_ValueType" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

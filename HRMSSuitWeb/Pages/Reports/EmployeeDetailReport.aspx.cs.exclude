@@ -1,0 +1,137 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Pages_Reports_EmployeeDetailReport : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!IsPostBack)
+            {
+                string numberOfdays = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month).ToString();
+                txtStartDate.Text = DateTime.Now.Month.ToString() + "/01/" + DateTime.Now.Year;
+                txtEndDate.Text = DateTime.Now.Month.ToString() + "/" + numberOfdays + "/" + DateTime.Now.Year;
+                BindDropDown();
+                // BindRepeater();
+            }
+        }
+        catch (Exception ex) { }
+    }
+    private void BindDropDown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", department.Count > 1 ? true : false, false);
+
+
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        
+    }
+ 
+    protected void LB_Export_To_Excel_Click(object sender, EventArgs e)
+    {
+
+        try
+        {
+           
+            Response.ClearContent();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment; filename=EmployeeDetailReport.xls");
+            Response.ContentType = "application/vnd.ms-excel";
+            Response.Charset = "";
+            StringWriter sw = new StringWriter();
+            HtmlTextWriter htw = new HtmlTextWriter(sw);
+            rpt.RenderControl(htw);
+            Response.Output.Write(sw.ToString());
+            Response.Flush();
+            Response.End();
+
+
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Visible = true;
+            lblError.InnerText = ex.Message;
+            divError.Attributes.Add("class", "validationSummary");
+            divError.Visible = true;
+        }
+
+
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    public void BindRepeater()
+    {
+        try
+        {
+            string[] formats = { "MM/dd/yyyy" };
+            //var StartDate = DateTime.ParseExact(TB_Start_date.Text, formats, new CultureInfo("en-US"), DateTimeStyles.None);
+            //var EndDate = DateTime.ParseExact(TB_End_date.Text, formats, new CultureInfo("en-US"), DateTimeStyles.None);
+            DateTime StartDate = Convert.ToDateTime(txtStartDate.Text);
+            DateTime EndDate = Convert.ToDateTime(txtEndDate.Text);
+
+            int? intNullVar = null;
+            int? Dep_ID = ddlDepartment.SelectedValue == "0" ? intNullVar : Convert.ToInt32(ddlDepartment.SelectedValue);
+            //int? month = Convert.ToInt16(ddlMonth.SelectedValue) == 1 ? 13 : Convert.ToInt16(ddlMonth.SelectedValue);
+            //int? year = Convert.ToInt16(ddlMonth.SelectedValue) == 1 ? (Convert.ToInt16(ddlYear.SelectedValue) - 1) : Convert.ToInt16(ddlYear.SelectedValue);
+            int? EmployeeCode = txtEmployeeCode.Text.Trim() == "" ? intNullVar : Convert.ToInt32(txtEmployeeCode.Text.Trim());
+            string EmployeeName = txtEmployeeName.Text.Trim() == "" ? null : txtEmployeeName.Text.Trim();
+            //var List = context.EmployeeDetailReport(month, year, Dep_ID, EmployeeCode, EmployeeName).ToList();
+            //var List = context.EmployeeDetailReportNew(StartDate, EndDate, Dep_ID, EmployeeCode, EmployeeName).ToList();
+            ((IObjectContextAdapter)context).ObjectContext.CommandTimeout = 300;
+            var List1 = context.TMS_EmployeeDetailReport_Extended(StartDate, EndDate, Dep_ID, EmployeeCode, EmployeeName).ToList();
+            rpt.DataSource = List1;
+            rpt.DataBind();
+
+            if (List1.Count > 0)
+            {
+                LB_Export_To_Excel.Visible = true;
+            }
+            else
+            {
+                LB_Export_To_Excel.Visible = false;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            //divError.Attributes.Add("class", "validationSummary");
+            //divError.Visible = true;
+        }
+    }
+
+}

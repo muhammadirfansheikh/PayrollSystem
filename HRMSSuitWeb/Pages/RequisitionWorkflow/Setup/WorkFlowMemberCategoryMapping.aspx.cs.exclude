@@ -1,0 +1,444 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+
+public partial class Pages_RequisitionWorkflow_Setup_WorkFlowMemberCategoryMapping : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            BindRepeater();
+        }
+        PagingHandler();
+    }
+
+    #region PAGING
+    private void PagingHandler()
+    {
+        PagingAndSorting.ImgNext.Click += ImgNext_Click;
+        PagingAndSorting.ImgPrevious.Click += ImgPrevious_Click;
+        PagingAndSorting.DdlPage.SelectedIndexChanged += DdlPage_SelectedIndexChanged;
+        PagingAndSorting.DdlPageSize.SelectedIndexChanged += DdlPageSize_SelectedIndexChanged;
+    }
+
+    void DdlPageSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void DdlPage_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgNext_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgPrevious_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    #endregion
+
+    public void BindDropdown()
+    {
+
+
+
+
+
+
+        var List_Setup_Department = context.Setup_Department.Where(a => a.IsActive == true
+
+                         ).Select(c => new
+                         {
+                             Value = c.DepartmentName,
+                             Id = c.DepartmentId,
+                         }).ToList();
+
+
+
+        CommonHelper.BindDropDown(ddlDepartment, List_Setup_Department, "Value", "Id", true, false);
+        CommonHelper.BindDropDown(ddlDepartmentSearch, List_Setup_Department, "Value", "Id", true, false);
+
+        BindCheckBoxList();
+
+    }
+
+    public void BindCheckBoxList()
+    {
+        var List_MemberCategory = context.HRMS_Setup_MemberCategory.Where(a => a.IsActive == true
+                      ).Select(c => new
+                      {
+                          Value = c.MemberCategory,
+                          Id = c.MemberCategoryId,
+                      }).ToList();
+
+
+        CommonHelper.BindDropDown(ddlCategorySearch, List_MemberCategory, "Value", "Id", true, false);
+        CommonHelper.BindCheckBoxList(chkbxlstcategory, List_MemberCategory, "Value", "Id");
+
+        if (chkbxlstcategory.Items.Count > 0)
+        {
+            foreach (ListItem item in chkbxlstcategory.Items)
+            {
+                item.Selected = false;
+            }
+        }
+
+    }
+
+    public void BindRepeater()
+    {
+        try
+        {
+            int pageSize = 50;
+            int pageNumber = 1;
+            if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+            {
+                pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+            }
+            if (PagingAndSorting.DdlPage.Items.Count > 0)
+            {
+                pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+            }
+
+            int skip = pageNumber * pageSize - pageSize;
+
+
+
+            int DepartmentId = Convert.ToInt32(ddlDepartmentSearch.SelectedValue);
+            int CategoryId = Convert.ToInt32(ddlCategorySearch.SelectedValue);
+
+            var List_HRMS_WorkflowMemberDetail = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true
+
+                && (a.DepartmentID == DepartmentId || DepartmentId == 0)
+                && (a.MemberCategoryId == CategoryId || CategoryId == 0)
+
+              ).ToList()
+            .Select(c => new
+            {
+                MemberDetailId = c.MemberDetailId,
+                DepartmentId = c.DepartmentID,
+                Department = c.Setup_Department.DepartmentName,
+                MemberCategoryId = c.MemberCategoryId,
+                MemberCategory = c.HRMS_Setup_MemberCategory.MemberCategory,
+                EmployeeId = c.EmployeeID,
+                EmployeeName = c.Setup_Employee.FirstName + " " + c.Setup_Employee.LastName,
+                CreatedDate = c.CreatedDate,
+
+            }).OrderByDescending(d => d.CreatedDate);
+
+            //rpt.DataSource = List_HRMS_WorkflowMemberDetail;
+            //rpt.DataBind();
+
+
+
+            var _List = List_HRMS_WorkflowMemberDetail.Skip(skip).Take(pageSize).ToList();
+            rpt.DataSource = _List;
+            rpt.DataBind();
+            PagingAndSorting.setPagingOptions(List_HRMS_WorkflowMemberDetail.Count());
+        }
+        catch (Exception ex) {
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        resetControll();
+        BindRepeater();
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+
+    protected void btnViewApplication_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnInterview = (LinkButton)sender;
+
+            RepeaterItem rptItem = (RepeaterItem)btnInterview.NamingContainer;
+
+
+            int CandidateId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfCandidateId")).Value);
+
+
+            Response.Redirect("/Pages/NewHiring/CEO_Approval.aspx?CandidateId=" + CandidateId);
+
+
+        }
+        catch (Exception ex) {
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+        
+        
+        }
+    }
+
+    protected void btnDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int MemberDetailId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfMemberDetailId")).Value);
+
+
+            var list = context.HRMS_Setup_WorkFlowMemberDetail.FirstOrDefault(a => a.IsActive == true && a.MemberDetailId == MemberDetailId);
+
+
+            list.IsActive = false;
+            list.ModifiedBy = UserKey;
+            list.ModifiedDate = DateTime.Now;
+            list.UserIP = UserIP;
+            context.SaveChanges();
+
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Data Inserted Successfully','success')", "OpenDialog('success','Data Inserted Successfully','success');", true);
+
+
+
+            BindRepeater();
+        }
+        catch (Exception ex) {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnEdit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+
+        }
+        catch (Exception ex) { }
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            int DepartmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+            //Check Box List Data Category
+
+            int?[] ArrcategoryId = null;
+            string ArrcategoryIdStr = "";
+
+
+            foreach (ListItem chkbx in chkbxlstcategory.Items)
+            {
+                if (chkbx.Text != "All")
+                {
+                    if (chkbx.Selected == true)
+                    {
+                        ArrcategoryIdStr += chkbx.Value + ",";
+                    }
+                }
+            }
+
+            if (ArrcategoryIdStr.Length > 1)
+            {
+                ArrcategoryIdStr = ArrcategoryIdStr.Substring(0, ArrcategoryIdStr.Length - 1);
+
+                ArrcategoryId = ArrcategoryIdStr.Split(',')
+                    .Select(x =>
+                    {
+                        int value;
+                        return int.TryParse(x, out value) ? value : (int?)null;
+                    })
+                    .ToArray();
+
+            }
+
+            //End Category
+
+
+            //Start employee category
+            int?[] ArrEmployeeId = null;
+            string ArrEmployeeIdStr = "";
+
+
+            foreach (ListItem chkbx in chkbxlstemp.Items)
+            {
+                if (chkbx.Text != "All")
+                {
+                    if (chkbx.Selected == true)
+                    {
+                        ArrEmployeeIdStr += chkbx.Value + ",";
+                    }
+                }
+            }
+
+            if (ArrEmployeeIdStr.Length > 1)
+            {
+                ArrEmployeeIdStr = ArrEmployeeIdStr.Substring(0, ArrEmployeeIdStr.Length - 1);
+
+                ArrEmployeeId = ArrEmployeeIdStr.Split(',')
+                    .Select(x =>
+                    {
+                        int value;
+                        return int.TryParse(x, out value) ? value : (int?)null;
+                    })
+                    .ToArray();
+
+            }
+
+            //End employee category
+
+            if (ArrcategoryId.Length > 0)
+            {
+                for (int i = 0; i < ArrcategoryId.Length; i++)
+                {
+                    for (int j = 0; j < ArrEmployeeId.Length; j++)
+                    {
+                        if (checkCategoryExist(DepartmentId, Convert.ToInt32(ArrEmployeeId[j]), Convert.ToInt32(ArrcategoryId[i])))
+                        {
+                            HRMS_Setup_WorkFlowMemberDetail objHRMS_Setup_WorkFlowMemberDetail = new HRMS_Setup_WorkFlowMemberDetail();
+
+                            objHRMS_Setup_WorkFlowMemberDetail.EmployeeID = Convert.ToInt32(ArrEmployeeId[j]);
+                            objHRMS_Setup_WorkFlowMemberDetail.MemberCategoryId = Convert.ToInt32(ArrcategoryId[i]);
+                            objHRMS_Setup_WorkFlowMemberDetail.DepartmentID = DepartmentId;
+                            objHRMS_Setup_WorkFlowMemberDetail.IsActive = true;
+                            objHRMS_Setup_WorkFlowMemberDetail.CreatedDate = DateTime.Now;
+                            objHRMS_Setup_WorkFlowMemberDetail.CreatedBy = UserKey;
+                            objHRMS_Setup_WorkFlowMemberDetail.UserIP = UserIP;
+                            context.HRMS_Setup_WorkFlowMemberDetail.Add(objHRMS_Setup_WorkFlowMemberDetail);
+                            context.SaveChanges();
+                        }
+                    }
+                }
+            }
+
+            resetControll();
+            BindRepeater();
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Data Inserted Successfully','success')", "OpenDialog('success','Data Inserted Successfully','success');", true);
+
+
+        }
+        catch (Exception ex) {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    public bool checkCategoryExist(int DepartmentId, int EmployeeId, int CategoryId)
+    {
+        bool IsExist = false;
+        int list = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true && a.MemberCategoryId == CategoryId
+                          && a.Setup_Department.DepartmentId == DepartmentId && a.EmployeeID == EmployeeId).Count();
+
+        if (list > 0)
+        {
+            IsExist = false;
+        }
+        else
+        {
+            IsExist = true;
+        }
+        return IsExist;
+    }
+
+    public void resetControll()
+    {
+        ddlDepartment.SelectedValue = "0";
+        ddlDepartment_SelectedIndexChanged(null, null);
+        BindCheckBoxList();
+
+        ddlDepartmentSearch_SelectedIndexChanged(null, null);
+    }
+
+    protected void ddlDepartmentSearch_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+        try
+        {
+            //int DepartmentID = Convert.ToInt32(ddlDepartmentSearch.SelectedValue);
+            //var listDept = context.Setup_Employee.Where(a => a.IsActive == true && a.WorkflowMasterId == DepartmentID).Select(c => new
+            //{
+            //    Value = c.StepName,
+            //    Id = c.WorkflowStepDetailId,
+            //}).ToList();
+            //CommonHelper.BindDropDown(ddlWorkFlowStepSearch, listDept, "Value", "Id", true, false);
+        }
+        catch (Exception ex) { }
+
+    }
+
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int DeptId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+            var List_Interviewer = context.Setup_Employee.Where(a => a.IsActive == true
+                                   && (a.DepartmentId == DeptId)
+
+                         ).Select(c => new
+                         {
+                             Value = c.FirstName + " " + c.LastName,//c.EmployeeCode + "_" +
+                             Id = c.EmployeeId,
+                         }).ToList();
+
+            CommonHelper.BindCheckBoxList(chkbxlstemp, List_Interviewer, "Value", "Id");
+
+            if (chkbxlstemp.Items.Count > 0)
+            {
+                foreach (ListItem item in chkbxlstemp.Items)
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+        catch (Exception ex) {
+
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        }
+
+    }
+}

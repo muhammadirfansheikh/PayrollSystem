@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class pages_employee_ViewDetail : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            FillData();
+        }
+    }
+
+    private void FillData()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(Request.QueryString["daId"]))
+            {
+                long dailyActivityId = Convert.ToInt64(Request.QueryString["daId"]);
+
+                var da = context.TMS_DailyActivity.FirstOrDefault(a => a.DailyActivityId == dailyActivityId);
+                if (da != null)
+                {
+                    lblActivityId.Text = da.DailyActivityId.ToString();
+                    var listEmployeeIDinEmployee = context.Setup_Employee.Select(x => new {EmpID=x.EmployeeId}).ToList();
+                    var ListEmployeeIDinDailyActivity = context.TMS_DailyActivity.Select(x =>new {EmpID= x.EmployeeId}).ToList();
+                    for (int i = 0; i < listEmployeeIDinEmployee.Count; i++)
+                    {
+
+                    }
+                    lblActivityCreationDate.Text = da.CreatedDate.Value.ToString(Constant.DateFormat1) + " " + da.StartTime.ToString();
+
+                    if (da.Setup_Employee != null)
+                    {
+                        lblEmployeeNo.Text = da.Setup_Employee.EmployeeCode;
+                        lblCardNo.Text = da.Setup_Employee.CardNumber.ToString();
+                        lblEmployeeName.Text = da.Setup_Employee.FirstName;
+
+                        lblDesignation.Text = da.Setup_Employee.Setup_Designation != null ? da.Setup_Employee.Setup_Designation.DesignationName : "";
+                        lblDepartment.Text = da.Setup_Employee.Setup_Department != null ? da.Setup_Employee.Setup_Department.DepartmentName : "";
+                        var empIncharge = context.Setup_Employee.Select(emp => new { InchargeName = emp.FirstName, EmployeeId = emp.EmployeeId }).FirstOrDefault(emp => emp.EmployeeId == da.Setup_Employee.InchargeId);
+                        if (empIncharge != null)
+                        {
+                            lblIncharge.Text = empIncharge.InchargeName; //context.Employees.FirstOrDefault(emp => emp.EmployeeId == da.Employee.InchargeId).Name;
+                        }
+                    }
+                    
+                    lblInTime.Text = lblActivityCreationDate.Text;
+                    lblInReaderID.Text = da.ReaderIn;
+                    lblOutTime.Text = (da.ModifiedDate != null && da.EndTime != null) 
+                                        ? (da.ModifiedDate.Value.ToString(Constant.DateFormat1) + " " + da.EndTime.Value.ToString()) 
+                                        : "";
+                    lblOutReaderID.Text = da.ReaderOut;
+                    lblMonthEndProcess.Text = da.Processed == true ? "Yes" : "No";
+                    
+                    int day = (int)da.CreatedDate.Value.DayOfWeek;
+                    TMS_Setup_ShiftDetail shiftDetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(sd => sd.ShiftId == da.ShiftID && sd.DayInt == day);
+
+                    if (shiftDetail != null)
+                    {
+                        lblShiftDetail.Text = shiftDetail.TMS_Setup_Shift.ShiftName;
+                        lblDescription.Text = shiftDetail.TMS_Setup_Shift.Description;
+                        lblShiftStartTime.Text = shiftDetail.StartTimeSt;
+                        lblShiftEndTime.Text = shiftDetail.EndTimeSt;
+                        lblFlexiIn.Text = shiftDetail.FlixeInSt;
+                        lblFlexiOut.Text = shiftDetail.FlixeOutSt;
+                        lblNatureOfDay.Text = shiftDetail.TMS_Setup_ShiftDayTypes.ShiftDayTypeName; //Convert.ToString((Constant.TMSDayTypes)shiftDetail.ShiftDayTypeId);
+                        lblDay.Text = Convert.ToString((DayOfWeek)shiftDetail.DayInt); //Convert.ToString(da.CreatedDate.Value.DayOfWeek);
+                    }
+
+                    lblShiftStartTime.Text = da.ShiftStartTime.Value.Hours.ToString("D2") + ":" + da.ShiftStartTime.Value.Minutes.ToString("D2");//shiftDetail.StartTimeSt;
+                    lblShiftEndTime.Text = da.ShiftEndTime.Value.Hours.ToString("D2") + ":" + da.ShiftEndTime.Value.Minutes.ToString("D2"); ;
+                    lblFlexiIn.Text = da.FlexiIn.Value.Hours.ToString("D2") + ":" + da.FlexiIn.Value.Minutes.ToString("D2"); ;
+                    lblFlexiOut.Text = da.FlexiOut.Value.Hours.ToString("D2") + ":" + da.FlexiOut.Value.Minutes.ToString("D2"); ;
+
+                    double reqHours = Convert.ToDouble(da.ShiftReqHours);
+                    int totalHours = Convert.ToInt16(TimeSpan.FromSeconds(reqHours).TotalHours);
+                    int minutes = TimeSpan.FromSeconds(reqHours).Minutes;
+                    lblWorkHours.Text = totalHours.ToString("D2") + ":" + minutes.ToString("D2");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Visible = true;
+        }
+    }
+}

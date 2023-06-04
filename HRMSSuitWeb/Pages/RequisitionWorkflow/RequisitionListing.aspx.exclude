@@ -1,0 +1,215 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="RequisitionListing.aspx.cs" Inherits="Pages_RequisitionWorkflow_RequisitionListing" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Requisition</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Requisition</a>
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">From</label>
+                                <asp:TextBox ID="txtDateFrom" runat="server" CssClass="form-control SearchDatePicker datetime"></asp:TextBox>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">To</label>
+                                <asp:TextBox ID="txtDateTo" runat="server" CssClass="form-control SearchDatePicker datetime"></asp:TextBox>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label>Requisition No.  </label>
+
+                                <asp:TextBox ID="txtReqNo" runat="server" CssClass="form-control"></asp:TextBox>
+
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label>Department  </label>
+
+                                <asp:DropDownList ID="ddlDepartment" runat="server" CssClass="form-control"></asp:DropDownList>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label>Workflow Status  </label>
+
+                                <asp:DropDownList ID="ddlWorkflowStatus" runat="server" CssClass="form-control"></asp:DropDownList>
+
+                            </div>
+
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                                Requisition
+                            </div>
+                            <div class="panel-body">
+                                <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                        <a href="Requisition.aspx" class="btn btn-primary btnAdd pull-right">Add Requisition</a>
+
+                                    </div>
+                                </div>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Requisition Date</th>
+                                                <th>Requisition No.</th>
+                                                <th>Department</th>
+                                                <th>Designation</th>
+                                                <th>Workflow Current Status</th>
+                                                <th>Workflow Task Assignee</th>
+                                                <th style="width: 170px; text-align: center;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td class="project-title">
+                                                            <%# Convert.ToDateTime(Eval("Date")).ToString(Constant.DateFormat) %>
+
+                                                            <input type="hidden" runat="server" id="hfRequisitionId" class="hfRequisitionId" value='<%# Eval("RequisitionId") %>' />
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("RequisitionNo") %>
+                                                            
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("Department") %>
+                                                            
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("Designation") %>
+                                                          
+                                                        </td>
+
+                                                        <td class="project-title">
+                                                            <%# Eval("WorkflowCurrentStatus") %>
+                                                          
+                                                        </td>
+
+                                                         <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                            <%# GetWorkflowStepName(Convert.ToInt32(Eval("RequisitionId"))) %>
+                                                            <br />
+                                                        </td>
+
+                                                        <td class="project-actions" style="text-align: center;">
+
+                                                            <asp:LinkButton ID="lbEdit"
+                                                                runat="server"
+                                                                CssClass=' <%# Convert.ToString(Convert.ToBoolean(Eval("IsSubmitted")) == false?"btn btn-primary fa fa-edit":"btn btn-warning") %>'
+                                                                Text=' <%# Convert.ToString(Convert.ToBoolean(Eval("IsSubmitted")) == false?"Edit":"View") %>' OnClick="lbEdit_Click">
+                                                               
+                                                            </asp:LinkButton>
+
+
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                            <div class="form-group col-lg-12">
+                                                <div class="pagging">
+                                                    <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                </div>
+                                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <script type="text/javascript">
+
+        function pageLoad() {
+
+            $('.datetime').attr('placeholder', 'dd/mm/yyyy');
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                format: 'mm/dd/yyyy'
+            });
+
+
+        }
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+    </script>
+
+</asp:Content>
+

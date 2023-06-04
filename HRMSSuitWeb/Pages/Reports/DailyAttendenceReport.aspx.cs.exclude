@@ -1,0 +1,116 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.IO;
+
+public partial class Pages_Reports_DailyAttendenceReport : System.Web.UI.Page
+{
+    public int EmployeeId { get; set; }
+    public DateTime DateFrom { get; set; }
+    public DateTime DateTo { get; set; }
+    public bool IsIncharge { get; set; }
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        txtDate.Text = "";
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+    #region Custom Methods
+    private void BindRepeater()
+    {
+        try
+        {
+            DateTime dt = Convert.ToDateTime(txtDate.Text);
+            int InchargeId = baseClass.UserKey;
+
+            var list = from e in context.Setup_Employee.Where(w => w.InchargeId == InchargeId && w.IsActive == true).ToList()
+                       join d in context.TMS_DailyActivity.Where(d => d.CreatedDate == dt).ToList() on e.EmployeeId equals d.EmployeeId into da
+                       from d in da.DefaultIfEmpty()
+                       select new
+                       {   //d != null ? d.CreatedDate.Value.ToString() + ":" + d.CreatedDate.Value.ToString() + ":" + d.CreatedDate.Value.ToString() : "",
+                           CreatedDate = d != null ? d.CreatedDate.Value.ToString(Constant.DateFormatWithDay) : "Off",
+                           InTime = d != null ? d.StartTime.Hours.ToString("D2") + ":" + d.StartTime.Minutes.ToString("D2") + ":" + d.StartTime.Seconds.ToString("D2") : "",
+                           ModifiedDate = d != null ? (d.ModifiedDate.HasValue ? d.ModifiedDate.Value.ToString(Constant.DateFormatWithDay) : "") : "Off",//d != null ? d.ModifiedDate.Value.ToString() + ":" + d.ModifiedDate.Value.ToString() + ":" + d.ModifiedDate.Value.ToString() : "",
+                           OutTime = d != null ? (d.EndTime.HasValue ? (d.EndTime.Value.Hours.ToString("D2") + ":" + d.EndTime.Value.Minutes.ToString("D2") + ":" + d.EndTime.Value.Seconds.ToString("D2")) : "") : "",//d != null ? d.CreatedDate.Value.ToShortDateString() : "Off",
+                           IsLateIn = d != null ? (d.IsLateIn.HasValue ? d.IsLateIn.Value : false) : false,
+                           IsLateOut = d != null ? (d.IsLateOut.HasValue ? d.IsLateOut.Value : false) : false,
+                           EmployeeName = e.FirstName + " " + e.LastName,
+                           EmpCode = e.EmployeeCode
+                          
+                       };
+
+            var list1 = list.ToList();
+            //var list = context.DailyActivities.Where(a => a.IsActive == true && a.CreatedDate == dt && a.Employee.InchargeId == InchargeId
+            //          ).Select(a => new
+            //         {
+            //             CreatedDate = a.CreatedDate,
+            //             InTime = a.StartTime, // a.CreatedDate + " " +
+            //             ModifiedDate = a.ModifiedDate,
+            //             OutTime = a.EndTime, //a.CreatedDate + " " +
+            //             EmployeeName = a.Employee.Name,
+            //             EmpCode = a.Employee.EmployeeCode
+            //         }
+            //         ).ToList();
+
+            if (list1.Count > 0)
+            {
+
+                //LB_Export_To_Excel.Visible = true;
+
+            }
+
+
+            rptInOutTiming.DataSource = list;
+            rptInOutTiming.DataBind();
+        }
+        catch (Exception ex) { }
+    }
+
+    protected void LB_Export_To_Excel_Click(object sender, EventArgs e)
+    {
+
+        try
+        {
+
+            Response.ClearContent();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment; filename=Month_End_Report.xls");
+            Response.ContentType = "application/vnd.ms-excel";
+            Response.Charset = "";
+            StringWriter sw = new StringWriter();
+            HtmlTextWriter htw = new HtmlTextWriter(sw);
+            rptInOutTiming.RenderControl(htw);
+            Response.Output.Write(sw.ToString());
+            Response.Flush();
+            Response.End();
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Visible = true;
+            lblError.InnerText = ex.Message;
+            divError.Attributes.Add("class", "validationSummary");
+            divError.Visible = true;
+        }
+
+
+    }
+    #endregion
+}

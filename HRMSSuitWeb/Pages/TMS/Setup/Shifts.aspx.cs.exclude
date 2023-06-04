@@ -1,0 +1,200 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_TMS_Setup_Shifts : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            Binddropdown();
+            BindRepeater();
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnDelete = (LinkButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+            int shiftId = int.Parse(((HiddenField)rptItem.FindControl("hfId")).Value);//System.Web.UI.HtmlControls.HtmlInputHidden
+
+            //bool childExist = context.Categories.Any(j => j. == categoryId);
+
+            //if (!childExist)
+            //{
+            divError.Visible = false;
+            TMS_Setup_Shift shift = context.TMS_Setup_Shift.FirstOrDefault(j => j.ShiftId == shiftId);
+
+            DateTime dt = DateTime.Now;
+            shift.IsActive = false;
+            shift.ModifiedBy = UserKey;
+            shift.ModifiedDate = dt;
+
+            int mon = Convert.ToInt32(DayOfWeek.Monday);
+            int tue = Convert.ToInt32(DayOfWeek.Tuesday);
+            int wed = Convert.ToInt32(DayOfWeek.Wednesday);
+            int thr = Convert.ToInt32(DayOfWeek.Thursday);
+            int fri = Convert.ToInt32(DayOfWeek.Friday);
+            int sat = Convert.ToInt32(DayOfWeek.Saturday);
+            int sun = Convert.ToInt32(DayOfWeek.Sunday);
+
+
+
+
+            TMS_Setup_ShiftDetail monshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == mon);
+            TMS_Setup_ShiftDetail tueshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == tue);
+            TMS_Setup_ShiftDetail wedshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == wed);
+            TMS_Setup_ShiftDetail thrshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == thr);
+            TMS_Setup_ShiftDetail frishiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == fri);
+            TMS_Setup_ShiftDetail satshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == sat);
+            TMS_Setup_ShiftDetail sunshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == shiftId && p.DayInt == sun);
+
+
+            monshiftdetail.IsActive = false;
+            monshiftdetail.ModifiedBy = UserKey;
+            monshiftdetail.ModifiedDate = dt;
+
+
+            tueshiftdetail.IsActive = false;
+            tueshiftdetail.ModifiedBy = UserKey;
+            tueshiftdetail.ModifiedDate = dt;
+
+
+            wedshiftdetail.IsActive = false;
+            wedshiftdetail.ModifiedBy = UserKey;
+            wedshiftdetail.ModifiedDate = dt;
+
+
+            thrshiftdetail.IsActive = false;
+            thrshiftdetail.ModifiedBy = UserKey;
+            thrshiftdetail.ModifiedDate = dt;
+
+
+            frishiftdetail.IsActive = false;
+            frishiftdetail.ModifiedBy = UserKey;
+            frishiftdetail.ModifiedDate = dt;
+
+
+            satshiftdetail.IsActive = false;
+            satshiftdetail.ModifiedBy = UserKey;
+            satshiftdetail.ModifiedDate = dt;
+
+
+            sunshiftdetail.IsActive = false;
+            sunshiftdetail.ModifiedBy = UserKey;
+            sunshiftdetail.ModifiedDate = dt;
+
+            List<TMS_DepartmentShift> departmentShifts = context.TMS_DepartmentShift.Where(j => j.ShiftId == shiftId).ToList();
+            foreach (TMS_DepartmentShift ds in departmentShifts)
+            {
+                //DateTime dt = DateTime.Now;
+                ds.IsActive = false;
+                ds.ModifiedBy = UserKey;
+                ds.ModifiedDate = dt;
+
+            }
+            //}
+            //else
+            //{
+            //  divError.Visible = true;
+            //  lblError.Text = "This category has sub-category so you cannot delete";
+            //}
+            context.SaveChanges();
+            BindRepeater();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+
+    }
+    private void Binddropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                      .Select(a => new
+                      {
+                          GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                          GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                      })
+                      .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+        ddlGroup_SelectedIndexChanged(null, null);
+
+    }
+    private void BindRepeater()
+    {
+        int companyid = 0;
+        int departmentid = 0;
+        string shiftName = txtSearch.Text.Trim();
+
+        if (ddlCompany.SelectedValue != "0")
+            companyid = Convert.ToInt32(ddlCompany.SelectedItem.Value);
+
+        if (ddlDepartment.SelectedValue != "0")
+            departmentid = Convert.ToInt32(ddlDepartment.SelectedItem.Value);
+
+        var shiftList = context.TMS_Setup_Shift.Where(c => c.IsActive == true
+                && (c.ShiftName.Contains(shiftName) || shiftName == string.Empty)
+                && (c.Setup_Company.IsActive == true)
+                && (c.CompanyId == companyid || companyid == 0)
+                && (c.CompanyId == CompanyId || IsSuperAdmin == true)
+                && (c.TMS_DepartmentShift.Any(ds => ds.DepartmentId == departmentid && ds.IsActive == true) || departmentid == 0)
+            ).Select(c => new
+            {
+                ID = c.ShiftId,
+                Title = c.ShiftName,
+                CompanyName = c.Setup_Company.CompanyName,
+                Company_Id = c.CompanyId
+                //DepartmentName = String.Join(",", c.Description.ToArray()) //AsEnumerable().Aggregate(string.Empty, (s, t) => s + ", " + t)
+                //DepartmentName = c.DepartmentShifts.Select(ds => ds.Department.DepartmentName).AsEnumerable().Aggregate((a,b) => (a + ", " + b))
+            }).OrderBy(s => s.Title).ToList();
+        rpt.DataSource = shiftList;
+        rpt.DataBind();
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyID = ((!IsSuperAdmin || !IsAdmin) ? Convert.ToInt32(ddlCompany.SelectedValue) : CompanyId);
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyID).OrderBy(c => c.DepartmentName).ToList();
+
+
+
+
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+    }
+}

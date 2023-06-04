@@ -1,0 +1,262 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_RequisitionWorkflow_RequisitionListing : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    private void BindDropDown()
+    {
+        var lst = context.HRMS_Setup_WorkflowStepDetail.Where(a => a.IsActive == true && a.WorkflowMasterId == (int)Constant.Workflow.RequisitionWorkflow).ToList();
+        CommonHelper.BindDropDown(ddlWorkflowStatus, lst, "StepName", "WorkflowStepDetailId", true, false);
+
+        if (RoleCode == Convert.ToString((int)Constant.Role.Admin))
+        {
+            var lstDept = context.Setup_Department.Where(a => a.IsActive == true && a.CompanyId == CompanyId)
+                  .Select(a => new
+                  {
+                      DepartmentId = a.DepartmentId,
+                      DepartmentName = a.DepartmentName
+                  })
+                  .ToList().OrderBy(a => a.DepartmentName);
+            CommonHelper.BindDropDown(ddlDepartment, lstDept, "DepartmentName", "DepartmentId", true, false);
+
+
+        }
+        else
+        {
+            var lstDept = context.MIS_EmployeeDepartmentHirerarchy(UserKey, Convert.ToInt32(RoleCode))
+                   .Select(a => new
+                   {
+                       DepartmentId = a.DepartmentId,
+                       DepartmentName = a.FirstName
+                   })
+                   .ToList().OrderBy(a => a.DepartmentName);
+            CommonHelper.BindDropDown(ddlDepartment, lstDept, "DepartmentName", "DepartmentId", true, false);
+        }
+
+        ddlDepartment.SelectedValue = DepatmentId.ToString();
+
+        if (RoleCode == Convert.ToString((int)Constant.Role.Admin))
+        {
+            ddlDepartment.SelectedValue = "0";
+        }
+
+    }
+
+    private void BindRepeater()
+    {
+        int DeptCount = 0;
+        int?[] ArrDeptId = new int?[DeptCount];
+
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+        string RequisitionNo = txtReqNo.Text;
+
+        DateTime? FromDate = null;
+        if (txtDateFrom.Text.Trim() != "")
+        {
+            FromDate = Convert.ToDateTime(txtDateFrom.Text);
+        }
+
+        DateTime? ToDate = null;
+        if (txtDateTo.Text.Trim() != "")
+        {
+            ToDate = Convert.ToDateTime(txtDateTo.Text);
+        }
+
+        //var lstDept ;
+        if (RoleCode == Convert.ToString((int)Constant.Role.Admin))
+        {
+            var lstDept = context.Setup_Department.Where(a => a.IsActive == true && a.CompanyId == CompanyId)
+                  .Select(a => new
+                  {
+                      DepartmentId = a.DepartmentId,
+                      // DepartmentName = a.DepartmentName
+                  })
+                  .ToList();
+
+            DeptCount = lstDept.Count;
+
+            ArrDeptId = new int?[DeptCount];
+
+            for (int i = 0; i < DeptCount; i++)
+            {
+                ArrDeptId[i] = lstDept[i].DepartmentId;
+            }
+        }
+        else
+        {
+            var lstDept = context.MIS_EmployeeDepartmentHirerarchy(UserKey, Convert.ToInt32(RoleCode))
+               .Select(a => new
+               {
+                   DepartmentId = a.DepartmentId,
+                   //DepartmentName = a.FirstName
+               })
+               .ToList();
+
+            DeptCount = lstDept.Count;
+
+            ArrDeptId = new int?[DeptCount];
+
+            for (int i = 0; i < DeptCount; i++)
+            {
+                ArrDeptId[i] = lstDept[i].DepartmentId;
+            }
+        }
+
+        int WorkflowStepDetailId = Convert.ToInt32(ddlWorkflowStatus.SelectedValue);
+
+        int? DepartmentId = null;
+
+        if (ddlDepartment.SelectedValue != "0")
+        {
+            DepartmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        }
+
+        var lst = context.HRMS_Requisition.Where(a => a.IsActive == true)
+            .Where(a => a.RequisitionNo.Contains(RequisitionNo) || RequisitionNo == "")
+            .Where(a => a.CreatedDate >= FromDate && a.CreatedDate <= ToDate || (FromDate == null && ToDate == null))
+            .Where(a => a.DepartmentId == DepartmentId || DepartmentId == null)
+            .Where(a => WorkflowStepDetailId > 0 ? a.WorkflowStepDetailId == WorkflowStepDetailId : true)
+            .Select(a => new
+            {
+                Date = a.CreatedDate,
+                RequisitionId = a.RequisitionId,
+                RequisitionNo = a.RequisitionNo,
+                Department = a.Setup_Department.DepartmentName,
+                Designation = a.Setup_Designation.DesignationName,
+                WorkflowCurrentStatus = a.HRMS_Setup_WorkflowStepDetail.StepName,
+                IsSubmitted = a.IsSubmitted,
+                DepartmentId = a.DepartmentId
+            }).ToList().OrderByDescending(b => b.Date).ThenByDescending(a => a.RequisitionId);
+
+        var filterList = (from e in lst where ArrDeptId.Contains(e.DepartmentId) select e);
+
+        var _List = filterList.Skip(skip).Take(pageSize).ToList();
+        rpt.DataSource = _List;
+        rpt.DataBind();
+        PagingAndSorting.setPagingOptions(filterList.Count());
+
+    }
+
+    public void ResetControl()
+    {
+        try
+        {
+
+            txtReqNo.Text = "";
+            txtDateTo.Text = "";
+            txtDateFrom.Text = "";
+            ddlDepartment.SelectedValue = "0";
+            ddlWorkflowStatus.SelectedValue = "0";
+        }
+        catch (Exception ex) { }
+
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropDown();
+            BindRepeater();
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControl();
+        BindRepeater();
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int RequisitionId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfRequisitionId")).Value);
+
+            Response.Redirect("Requisition.aspx?id=" + RequisitionId);
+        }
+        catch (Exception ex)
+        {
+            lblError.InnerText = ex.ToString();
+            divError.Visible = true;
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    public string GetWorkflowStepName(int WorkflowItemId)
+    {
+        string StepName = "";
+
+        try
+        {
+            int WorkflowMasterId = (int)Constant.Workflow.RequisitionWorkflow;
+
+            int WorkflowTaskMasterId = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true &&
+                                   a.WorkflowMasterId == WorkflowMasterId && a.WorkflowItemId == WorkflowItemId).OrderByDescending(b => b.WorkflowTaskMasterId).FirstOrDefault().WorkflowTaskMasterId;
+
+            if (WorkflowTaskMasterId > 0)
+            {
+                var lstWorkflowTaskDetail = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkflowTaskMasterId)
+                    .ToList().Select(c => new
+                    {
+
+                        StepName = " <ul class='ul'> <li>  " + String.Join("</li><li>", c.HRMS_WorkflowTaskDetail.Where(a => a.IsActive == true && a.WorkflowTaskStatusId == (int)Constant.WorkflowTaskStatus.Pending)
+                        .Select(t => " <strong> " + t.HRMS_Setup_WorkflowStepDetail.StepName + " - " + t.Setup_Employee.FirstName + " " + t.Setup_Employee.LastName + " </strong>  </li> ")) + "</ul>",
+
+                    }).ToList();
+
+                StepName = lstWorkflowTaskDetail[0].StepName.Trim(); ;
+
+                if (StepName == "<ul class='ul'> <li>  </ul>")
+                {
+                    StepName = "";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+
+
+        }
+
+        return StepName;
+    }
+}

@@ -1,0 +1,387 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Transactions;
+
+public partial class Pages_HRMS_Setup_LeaveAdjustment : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            //BindData();
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+    }
+    #region Custom Methods
+    private void BindDropdown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+   
+
+        //var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == UserKey || IsSuperAdmin == true || (RoleCode == roleAdmin && e.CompanyId == CompanyId)))
+        //    .OrderBy(e => e.EmployeeCode)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.EmployeeCode + " - " + e.FirstName
+        //    })
+        //    .ToList();
+
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                      .Select(a => new
+                      {
+                          GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                          GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                      })
+                      .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(e => e.FirstName)
+            .Select(e => new
+            {
+                EmployeeId = e.EmployeeId,
+                Name = e.FirstName + " - " + e.EmployeeCode
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+    private void BindData()
+    {
+        int EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+
+        TMS_EmployeeLeave empLeave = context.TMS_EmployeeLeave.FirstOrDefault(el => el.EmployeeID == EmployeeId && el.Code_ID == (int)Constant.LeaveChangesCode.CR && el.IsActive == true);
+
+        if (empLeave != null)
+        {
+            lblAnnual.Text = Convert.ToString(empLeave.AnualLeavesRemain);
+            lblSick.Text = Convert.ToString(empLeave.SickLeavesRemin);
+            lblCasual.Text = Convert.ToString(empLeave.CasualLeavesRemain);
+            lblMaternity.Text = Convert.ToString(empLeave.MaternityLeavesRemain);
+            lblDefault.Text = Convert.ToString(empLeave.DefaultLeavesRemain);
+
+            txtAnnual.Text = Convert.ToString(empLeave.AnualLeavesRemain);
+            txtSick.Text = Convert.ToString(empLeave.SickLeavesRemin);
+            txtCasual.Text = Convert.ToString(empLeave.CasualLeavesRemain);
+            txtMaternity.Text = Convert.ToString(empLeave.MaternityLeavesRemain);
+            txtDefault.Text = Convert.ToString(empLeave.DefaultLeavesRemain);
+            btnUpdate.Visible = true;
+        }
+        else
+        {
+            lblAnnual.Text = "0";
+            lblSick.Text = "0";
+            lblCasual.Text = "0";
+            lblMaternity.Text = "0";
+            lblDefault.Text = "0";
+
+            txtAnnual.Text = "0";
+            txtSick.Text = "0";
+            txtCasual.Text = "0";
+            txtMaternity.Text = "0";
+            txtDefault.Text = "0";
+
+            divError.Visible = true;
+            lblError.InnerText = "Employee Leave Information doesnt exist";
+            //btnSubmit.Visible = false;
+            //lblSummary.Text = "There is no leave ass";
+            //divSummary.Attributes.Add("class", "validationSummary");
+            //divSummary.Visible = true;
+        }
+    }
+    #endregion
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+
+        ddlLocation_SelectedIndexChanged(null, null);
+    }
+
+
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+        Base UserInfo = new Base();
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        var listEmplyee = context.Setup_Employee.Where(emp => emp.IsActive == true && emp.DepartmentId == departmentId && (emp.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin  )))
+            .OrderBy(emp => emp.FirstName)
+            .Select(emp => new
+            {
+                EmployeeId = emp.EmployeeId,
+                Name = emp.FirstName + " " + emp.LastName + " - " + emp.EmployeeCode
+            })
+            .ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ddlEmployee.SelectedValue = "0";
+        lblAnnual.Text = "";
+        lblSick.Text = "";
+        lblCasual.Text = "";
+        lblMaternity.Text = "";
+        lblDefault.Text = "";
+
+        txtAnnual.Text = "";
+        txtSick.Text = "";
+        txtCasual.Text = "";
+        txtMaternity.Text = "";
+        txtDefault.Text = "";
+
+
+        ddlEmployee_SelectedIndexChanged(null, null);
+      
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        divError.Visible = false;
+        divSuccuss.Visible = false;
+
+        BindData();
+    }
+    protected void btnUpdate_Click(object sender, EventArgs e)
+    {
+        divError.Visible = false;
+        divSuccuss.Visible = false;
+        try
+        {
+            using (TransactionScope ts = new TransactionScope())
+            {
+                DateTime dtNow = DateTime.Now;
+                int EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+                Setup_Employee employee = context.Setup_Employee.FirstOrDefault(emp => emp.EmployeeId == EmployeeId);
+                if (employee != null)
+                {
+                    TMS_Setup_LeaveDefinition leave = context.TMS_Setup_LeaveDefinition.FirstOrDefault(l => l.LeaveDefId == employee.TMSLeaveId);
+
+                    int maxAnnualLeave = leave.AnualLeavesForward == true ? (Convert.ToInt16(leave.AnualLeaves) * 2) : Convert.ToInt16(leave.AnualLeaves);
+                    int maxSickLeave = leave.SickLeavesForward == true ? (Convert.ToInt16(leave.SickLeaves) * 2) : Convert.ToInt16(leave.SickLeaves);
+                    int maxCasualLeave = leave.CasualLeavesFarward == true ? (Convert.ToInt16(leave.CasualLeaves) * 2) : Convert.ToInt16(leave.CasualLeaves);
+                    int maxMaternityLeave = leave.MaternityLeavesForward == true ? (Convert.ToInt16(leave.MaternityLeaves) * 2) : Convert.ToInt16(leave.MaternityLeaves);
+                    int maxDefaultLeave = leave.DefaultLeavesForward == true ? (Convert.ToInt16(leave.DefaultLeaves) * 2) : Convert.ToInt16(leave.DefaultLeaves);
+
+                    int annaulLeave = Convert.ToInt16(txtAnnual.Text);
+                    int sickLeave = Convert.ToInt16(txtSick.Text);
+                    int casualLeave = Convert.ToInt16(txtCasual.Text);
+                    int maternityLeave = Convert.ToInt16(txtMaternity.Text);
+                    int defaultLeave = Convert.ToInt16(txtDefault.Text);
+
+                    if (annaulLeave > maxAnnualLeave)
+                    {
+                        Page.ClientScript.RegisterStartupScript(GetType(), "AnnualLeaveCheck", "alert('Maximum number of annual leaves is " + maxAnnualLeave.ToString() + "');", true);
+                        divError.Visible = true;
+                        lblError.InnerText="Maximum number of annual leaves is " + maxAnnualLeave.ToString();
+                        return;
+                    }
+                    if (sickLeave > maxSickLeave)
+                    {
+                        Page.ClientScript.RegisterStartupScript(GetType(), "SickLeaveCheck", "alert('Maximum number of sick leaves is " + maxSickLeave.ToString() + "');", true);
+                        divError.Visible = true;
+                        lblError.InnerText = "Maximum number of sick leaves is " + maxSickLeave.ToString();
+                        return;
+                    }
+                    if (casualLeave > maxCasualLeave)
+                    {
+                        Page.ClientScript.RegisterStartupScript(GetType(), "CasualLeaveCheck", "alert('Maximum number of casual leaves is " + maxCasualLeave.ToString() + "');", true);
+                        divError.Visible = true;
+                        lblError.InnerText = "Maximum number of casual leaves is " + maxCasualLeave.ToString();
+                        return;
+                    }
+                    if (maternityLeave > maxMaternityLeave)
+                    {
+                        Page.ClientScript.RegisterStartupScript(GetType(), "MaternityLeaveCheck", "alert('Maximum number of maternity leaves is " + maxMaternityLeave.ToString() + "');", true);
+                        divError.Visible = true;
+                        lblError.InnerText = "Maximum number of maternity leaves is " + maxMaternityLeave.ToString();
+                        return;
+                    }
+                    if (defaultLeave > maxDefaultLeave)
+                    {
+                        Page.ClientScript.RegisterStartupScript(GetType(), "DefaultLeaveCheck", "alert('Maximum number of default leaves is " + maxDefaultLeave.ToString() + "');", true);
+                        divError.Visible = true;
+                        lblError.InnerText = "Maximum number of default leaves is " + maxDefaultLeave.ToString();
+                        return;
+                    }
+
+                    // Inactive Current Record
+                    TMS_EmployeeLeave empLeave = context.TMS_EmployeeLeave.FirstOrDefault(el => el.EmployeeID == EmployeeId && el.Code_ID == (int)Constant.LeaveChangesCode.CR && el.IsActive == true);
+
+                    if (empLeave != null)
+                    {
+                        empLeave.IsActive = false;
+                        empLeave.ModifiedDate = dtNow;
+                        empLeave.ModifiedBy = UserKey;
+
+                        context.SaveChanges();
+                    }
+                    else
+                    {
+                        divError.Visible = true;
+                        lblError.InnerText = "This employee do not have the leave record";
+                       
+                        lblSummary.Text = "This employee donot have the leave record";
+                        divSummary.Attributes.Add("class", "validationSummary");
+                        divSummary.Visible = true;
+                        return;
+                    }
+
+                    // Insert Manually Change Record
+                    TMS_EmployeeLeave empLeaveMC = new TMS_EmployeeLeave();
+
+                    empLeaveMC.AnualLeaves = empLeave.AnualLeaves;
+                    empLeaveMC.AnualLeavesRemain = annaulLeave;
+
+                    empLeaveMC.SickLeaves = empLeave.SickLeaves;
+                    empLeaveMC.SickLeavesRemin = sickLeave;
+
+                    empLeaveMC.CasualLeaves = empLeave.CasualLeaves;
+                    empLeaveMC.CasualLeavesRemain = casualLeave;
+
+                    empLeaveMC.MaternityLeaves = empLeave.MaternityLeaves;
+                    empLeaveMC.MaternityLeavesRemain = maternityLeave;
+
+                    empLeaveMC.DefaultLeaves = empLeave.DefaultLeaves;
+                    empLeaveMC.DefaultLeavesRemain = defaultLeave;
+
+                    empLeaveMC.EmployeeID = EmployeeId;
+                    empLeaveMC.IsNewTMS = true;
+                    empLeaveMC.Code_ID = (int)Constant.LeaveChangesCode.MC;
+                    empLeaveMC.Remarks = txtRemarks.Text.Trim();
+                    empLeaveMC.IsActive = true;
+                    empLeaveMC.CreatedDate = dtNow;
+                    empLeaveMC.CreatedBy = UserKey;
+
+                    context.TMS_EmployeeLeave.Add(empLeaveMC);
+                    context.SaveChanges();
+
+                    // Insert New Current Record
+                    TMS_EmployeeLeave empLeaveCR = new TMS_EmployeeLeave();
+
+                    empLeaveCR.AnualLeaves = annaulLeave; //empLeave.AnualLeaves;
+                    empLeaveCR.AnualLeavesRemain = annaulLeave;
+
+                    empLeaveCR.SickLeaves = sickLeave;// empLeave.SickLeaves;
+                    empLeaveCR.SickLeavesRemin = sickLeave;
+
+                    empLeaveCR.CasualLeaves = casualLeave;// empLeave.CasualLeaves;
+                    empLeaveCR.CasualLeavesRemain = casualLeave;
+
+                    empLeaveCR.MaternityLeaves = maternityLeave;// empLeave.MaternityLeaves;
+                    empLeaveCR.MaternityLeavesRemain = maternityLeave;
+
+                    empLeaveCR.DefaultLeaves = defaultLeave;// empLeave.DefaultLeaves;
+                    empLeaveCR.DefaultLeavesRemain = defaultLeave;
+
+                    empLeaveCR.EmployeeID = EmployeeId;
+                    empLeaveCR.IsNewTMS = true;
+                    empLeaveCR.Code_ID = (int)Constant.LeaveChangesCode.CR;
+                    empLeaveCR.Remarks = txtRemarks.Text.Trim();
+                    empLeaveCR.IsActive = true;
+                    empLeaveCR.CreatedDate = dtNow;
+                    empLeaveCR.CreatedBy = UserKey;
+
+                    context.TMS_EmployeeLeave.Add(empLeaveCR);
+                    context.SaveChanges();
+
+                    ts.Complete();
+                }
+
+
+                //lblSummary.Text = "Leave Updated Successfully";
+                //divSummary.Attributes.Add("class", "okMessage");
+                //divSummary.Visible = true;
+                divSuccuss.Visible = true;
+                //lblError.InnerText = "This employee do not have the leave record";
+                BindData();
+                      
+            }
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+    protected void ddlEmployee_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (ddlEmployee.SelectedValue == "0")
+        {
+            lblAnnual.Text = "";
+            lblSick.Text = "";
+            lblCasual.Text = "";
+            lblMaternity.Text = "";
+            lblDefault.Text = "";
+
+            txtAnnual.Text = "";
+            txtSick.Text = "";
+            txtCasual.Text = "";
+            txtMaternity.Text = "";
+            txtDefault.Text = "";
+
+            btnUpdate.Visible = false;
+            //divSuccuss.Visible = false;
+        }
+        divSuccuss.Visible = false;
+ 
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int LocationID = Convert.ToInt32(ddlLocation.SelectedValue);
+        int CompanyId=Convert.ToInt32(ddlCompany.SelectedValue);
+
+        var department=context.Setup_Department.Where(x=>x.IsActive==true && x.CompanyId==CompanyId)
+            .OrderBy(a=>a.DepartmentId).Select
+            (s=>new
+            {
+                 DepartmentId = s.DepartmentId,
+       DepartmentName =s.DepartmentName
+            }).ToList();
+         
+
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", true, false);
+        ddlDepartment_SelectedIndexChanged(null, null);
+    }
+}

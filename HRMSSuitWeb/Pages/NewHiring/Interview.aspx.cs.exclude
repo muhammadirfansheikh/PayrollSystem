@@ -1,0 +1,513 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+
+
+public partial class Pages_NewHiring_Interview : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    public string CandidateIdQueryStr = "";
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+
+
+            if (Request.QueryString["CandidateId"] != null)
+            {
+                int CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+                CandidateIdQueryStr = Convert.ToString(CandidateId);
+                
+                BindData(CandidateId);
+            }
+        }
+    }
+
+    public void BindData(int CandidateId)
+    {
+        try
+        {
+            //Applicant information 
+            var listCandidate = context.HRMS_CandidateInfo.Where(a => a.IsActive == true && a.CandidateId == CandidateId)
+                .Select(c => new
+                {
+                    CandidateName = c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.HRMS_ApplicantGeneralInfo.Where(d => d.IsActive == true
+                        && d.ApplicantId == c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.ApplicantID)
+                        .Select(e => new
+                        {
+                            ApplicantName = e.FirstName + " " + e.MiddleName + " " + e.LastName,
+                            ContactNo = e.CellNo,
+                        }),
+                    Qualificaion = c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.HRMS_ApplicantEducation.Where(e => e.IsActive == true
+                    && e.ApplicantId == c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.ApplicantID).Select(d => new { d.degree }).FirstOrDefault(),
+                    DOJ = c.HRMS_ApplicantApplication.HRMS_Requisition.ExpectedJoiningDate,
+                    Department = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Department.DepartmentName,
+                    LastDrawnSalary = c.HRMS_ApplicantApplication.LastDrawnSalary,
+                    NoticePeriodDays = c.HRMS_ApplicantApplication.NoticePeriodDays,
+
+                    Designation = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Designation.DesignationName,
+                    //InterviewerName = c.HRMS_InterviewSlot.FirstOrDefault(h=>h.IsActive == true && h.HRMS_InterviewerInfo.Where(j=>j.IsActive == true)
+                    //    .Select(k=>new{ Name = k.Setup_Employee.FirstName +" "+ k.Setup_Employee.LastName  })),
+                    //Interviewerid = c.HRMS_InterviewSlot.Where(h=>h.IsActive == true ).Select(i=>new{i.HRMS_InterviewerInfo.FirstOrDefault(k=>k.IsActive=true).Setup_Employee.FirstName}),
+                    ExpectedSalary = c.HRMS_ApplicantApplication.ExpectedSalary,
+                    InterviewDate = c.HRMS_InterviewSlot.Where(a => a.IsActive == true).Select(d => new { InterviewDate = d.InterviewDate }).FirstOrDefault()
+                }).ToList();
+
+            lblCandidateName.Text = listCandidate[0].CandidateName == null ? "NA" : listCandidate[0].CandidateName.FirstOrDefault().ApplicantName;
+            lblCandidateContactNo.Text = listCandidate[0].CandidateName == null ? "NA" : Convert.ToString(listCandidate[0].CandidateName.FirstOrDefault().ContactNo);
+            lblCandidateDesignation.Text = listCandidate[0].Designation == null ? "NA" : listCandidate[0].Designation.ToString();
+            lblLastQualification.Text = listCandidate[0].Qualificaion == null ? "NA" : listCandidate[0].Qualificaion.degree.ToString();
+            lblCandidateLastDrawnSalary.Text = listCandidate[0].LastDrawnSalary == null ? "NA" : listCandidate[0].LastDrawnSalary.ToString();
+            lblCandidateExpectedSalary.Text = listCandidate[0].ExpectedSalary == null ? "NA" : listCandidate[0].ExpectedSalary.ToString();
+            lblDOJ.Text = listCandidate[0].DOJ == null ? "NA" : listCandidate[0].DOJ.ToString(Constant.DateFormat2);
+            lblNoticePeriod.Text = listCandidate[0].NoticePeriodDays == null ? "NA" : listCandidate[0].NoticePeriodDays.ToString();
+           // lblProbationaryPeriod.Text = listCandidate[0].Designation == null ? "NA" : listCandidate[0].Designation.ToString();
+
+            lblCandidateDepartment.Text = listCandidate[0].Department == null ? "NA" : listCandidate[0].Department.ToString();
+
+            lblCandidateSupervisorName.Text = "";
+            lblCandidateInterviewDate.Text = Convert.ToString(DateTime.Now.ToString(Constant.DateFormat2));
+
+
+            //listCandidate.FirstOrDefault().InterviewDate.InterviewDate == null ? "" : listCandidate.FirstOrDefault().InterviewDate.InterviewDate.ToString(Constant.DateFormat2);
+            //InterviewDate.FirstOrDefault().InterviewDate.ToString(Constant.DateFormat2);
+
+            //var Lsit = context.HRMS_InterviewSlot.Where(a => a.IsActive == true && a.CandidateId == CandidateId)
+            //    .Select(c => new 
+            //    { 
+            //     SupervisorName = c.HRMS_InterviewerInfo.Where(d=>d.IsActive == true).Select(e=>new { e.Setup_Employee.FirstName +""+ e.Setup_Employee.MiddleName + " "+ e.Setup_Employee.LastName })
+
+
+            //    });
+
+            //InterviewSteps
+
+            //int _InterViewSteps = (int)Constant.SetupMaster.InterviewSteps;
+
+            //var ListInterViewSteps = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == _InterViewSteps)
+            //    .Select(c => new
+            //    {
+            //        Id = c.SetupDetailId,
+            //        Value = c.SetupDetailName
+            //    }).ToList();
+
+
+            // 
+
+            int CountInterview = context.HRMS_InterviewMaster.Where(a => a.IsActive == true && a.CandidateId == CandidateId).Count() + 1;
+            lblInterCount.Text = CountInterview.ToString();
+
+            if (CountInterview > 1)
+            {
+                //btnInterViewHistory.Visible = true;
+                divInterviewHistory.Visible = true;
+            }
+            // CommonHelper.BindDropDown(dllInterviewSteps, ListInterViewSteps, "Value", "Id", true, false);
+
+
+
+
+            //Interview Evaluation
+            int _interViewEvaluation = (int)Constant.SetupMaster.InterviewEvaluation;
+            var ListInterViewEvaluation = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == _interViewEvaluation)
+               .Select(c => new
+               {
+                   EvaluationId = c.SetupDetailId,
+                   Value = c.SetupDetailName
+               }).ToList();
+
+            rpt.DataSource = ListInterViewEvaluation;
+            rpt.DataBind();
+
+
+            //ApplicantSkillStatus Status
+            int _ApplicantSkills = (int)Constant.SetupMaster.ApplicantSkillStatus;
+            var ListApplicantSkillStatus = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == _ApplicantSkills)
+             .Select(c => new
+             {
+                 Id = c.SetupDetailId,
+                 Value = c.SetupDetailName
+             }).ToList();
+
+
+
+            CommonHelper.BindDropDown(ddlApplicantSkillStatus, ListApplicantSkillStatus, "Value", "Id", true, false);
+
+            //CandidateStatus Status
+            int _CandidateStatus = (int)Constant.SetupMaster.CandidateStatus;
+
+            int _ShortListed = (int)Constant.CandidateStatus.ShortListed;
+            int _InterviewSchedule = (int)Constant.CandidateStatus.InterviewScheduled;
+            int _Hire = (int)Constant.CandidateStatus.Hire;
+            int _CEOApprovalRequired = (int)Constant.CandidateStatus.CEOApprovalRequired;
+            int _CEOApproved = (int)Constant.CandidateStatus.CEOApproved;
+            int _CEOReject = (int)Constant.CandidateStatus.CEOReject;
+            int _OfferAccept = (int)Constant.CandidateStatus.OfferAccept;
+            int _OfferReject = (int)Constant.CandidateStatus.OfferReject;
+            int _OnTraining = (int)Constant.CandidateStatus.OnTraining;
+            int _SendOfferLetter = (int)Constant.CandidateStatus.SendOfferLetter;
+
+
+
+
+
+            var ListCandidateStatus = context.HRMS_SetupDetail.Where(a => a.IsActive == true
+                  && a.SetupMasterId == _CandidateStatus
+                  && a.SetupDetailId != _ShortListed
+                  && a.SetupDetailId != _InterviewSchedule
+                  && a.SetupDetailId != _Hire
+                  && a.SetupDetailId != _CEOApprovalRequired
+                  && a.SetupDetailId != _CEOApproved
+                  && a.SetupDetailId != _CEOReject
+                  && a.SetupDetailId != _OfferAccept
+                  && a.SetupDetailId != _OfferReject
+                  && a.SetupDetailId != _OnTraining
+                  && a.SetupDetailId != _SendOfferLetter
+                )
+             .Select(c => new
+             {
+                 Id = c.SetupDetailId,
+                 Value = c.SetupDetailName
+             }).ToList();
+
+
+            CommonHelper.BindDropDown(ddlCandidateSkillStatus, ListCandidateStatus, "Value", "Id", true, false);
+
+
+
+
+            //interview Status
+            //int _InterviewStatus = (int)Constant.SetupMaster.InterviewStatus;
+            //var ListInterviewStatus = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == _InterviewStatus)
+            // .Select(c => new
+            // {
+            //     Id = c.SetupDetailId,
+            //     Value = c.SetupDetailName
+            // }).ToList();
+
+
+            // CommonHelper.BindDropDown(ddlInterviewStatus, ListInterviewStatus, "Value", "Id", true, false);
+
+            //interviewer Detail
+
+            int EmployeeId = UserKey;
+
+
+            var listInterviewerDetail = context.Setup_Employee.Where(a => a.IsActive == true && a.EmployeeId == EmployeeId)
+                .Select(c => new
+                {
+                    Name = c.FirstName + " " + c.MiddleName + " " + c.LastName,
+                    Position = c.Setup_Designation.DesignationName,
+                }).FirstOrDefault();
+
+            lblCandidateSupervisorName.Text = listInterviewerDetail.Name;
+
+
+            lblInterviewerName.Text = listInterviewerDetail.Name;
+            lblInterviewerPosition.Text = listInterviewerDetail.Position;
+            lblInterviewDate.Text = Convert.ToString(DateTime.Now.Date.ToString(Constant.DateFormat2));
+
+
+        }
+        catch (Exception ex)
+        {
+
+            string _Message = ex.InnerException.ToString();
+
+            string PageRedirectUrl = "#";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+
+        }
+    }
+
+    protected void rpt_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            //EvaluationStatus Status
+            int _interViewEvaluationStatus = (int)Constant.SetupMaster.EvaluationStatus;
+            var ListInterViewEvaluationStatus = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == _interViewEvaluationStatus)
+                .Select(c => new
+                {
+                    Id = c.SetupDetailId,
+                    Value = c.SetupDetailName
+                }).ToList();
+
+            if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+            {
+                RadioButtonList dllEvaluationStatus = (RadioButtonList)e.Item.FindControl("dllEvaluationStatus");
+
+
+
+                CommonHelper.BindRadioButtonList(dllEvaluationStatus, ListInterViewEvaluationStatus, "Value", "Id", false, false);
+
+                dllEvaluationStatus.Items[ListInterViewEvaluationStatus.Count - 1].Selected = true;
+            }
+        }
+        catch (Exception ex) {
+
+            string _Message = ex.InnerException.ToString();
+
+            string PageRedirectUrl = "#";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            int _CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+            HRMS_InterviewMaster objHRMS_InterviewMaster = new HRMS_InterviewMaster();
+
+
+            objHRMS_InterviewMaster.InterviewNo = context.HRMS_InterviewMaster.Where(a => a.IsActive == true && a.CandidateId == _CandidateId).Count() + 1;
+            objHRMS_InterviewMaster.InterviewSlotId = context.HRMS_InterviewSlot.FirstOrDefault(a => a.IsActive == true
+                                                      && a.CandidateId == _CandidateId && a.IsCompleted == false).InterviewSlotId;
+
+            objHRMS_InterviewMaster.ApplicantSkillStatusId = Convert.ToInt32(ddlApplicantSkillStatus.SelectedValue);
+
+            objHRMS_InterviewMaster.CandidateId = _CandidateId;
+
+            objHRMS_InterviewMaster.Remarks = txtComment.Text.Trim();
+            objHRMS_InterviewMaster.IsActive = true;
+            objHRMS_InterviewMaster.CreatedDate = DateTime.Now;
+            objHRMS_InterviewMaster.CreatedBy = UserKey;
+            objHRMS_InterviewMaster.UserIP = UserIP;
+            objHRMS_InterviewMaster.CandidateStatusId = Convert.ToInt32(ddlCandidateSkillStatus.SelectedValue);
+
+            context.HRMS_InterviewMaster.Add(objHRMS_InterviewMaster);
+            context.SaveChanges();
+
+            for (int i = 0; i < rpt.Items.Count; i++)
+            {
+                HtmlInputHidden HfEvaluationId = (HtmlInputHidden)rpt.Items[i].FindControl("hfEvaluationId");
+
+                RadioButtonList dllEvaluationStatus = (RadioButtonList)rpt.Items[i].FindControl("dllEvaluationStatus");
+
+                int EvaluationStatusId = Convert.ToInt32(dllEvaluationStatus.SelectedValue);
+                int EvaluationId = Convert.ToInt32(HfEvaluationId.Value);
+
+                //insert into  interview detail
+
+                HRMS_InterviewDetail objHRMS_InterviewDetail = new HRMS_InterviewDetail();
+                objHRMS_InterviewDetail.InterviewMasterId = objHRMS_InterviewMaster.InterviewMasterId;
+                objHRMS_InterviewDetail.InterviewEvaluationId = EvaluationId;
+                objHRMS_InterviewDetail.EvaluationStatusId = EvaluationStatusId;
+                objHRMS_InterviewDetail.IsActive = true;
+                objHRMS_InterviewDetail.CreatedDate = DateTime.Now;
+                objHRMS_InterviewDetail.CreatedBy = UserKey;
+                objHRMS_InterviewDetail.UserIP = UserIP;
+
+                context.HRMS_InterviewDetail.Add(objHRMS_InterviewDetail);
+                context.SaveChanges();
+
+            }
+
+            HRMS_CandidateInfo obj = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == _CandidateId);
+
+
+
+            //insert new row with old data
+            HRMS_CandidateInfo objHRMS_CandidateInfo = new HRMS_CandidateInfo();
+
+          //  objHRMS_CandidateInfo.CandidateId = _CandidateId;
+            objHRMS_CandidateInfo.ApplicantApplicationId = obj.ApplicantApplicationId;
+            objHRMS_CandidateInfo.CandidateStatusId = obj.CandidateStatusId;
+            objHRMS_CandidateInfo.FileTypeId = obj.FileTypeId;
+            objHRMS_CandidateInfo.FileName = obj.FileName;
+            objHRMS_CandidateInfo.IsActive = false;
+            objHRMS_CandidateInfo.CreatedDate = DateTime.Now;
+            objHRMS_CandidateInfo.CreatedBy = UserKey;
+            objHRMS_CandidateInfo.UserIP = UserIP;
+            context.HRMS_CandidateInfo.Add(objHRMS_CandidateInfo);
+            context.SaveChanges();
+
+            //update old row
+
+            obj.CandidateStatusId = Convert.ToInt32(ddlCandidateSkillStatus.SelectedValue);
+            obj.ModifiedBy = UserKey;
+            obj.ModifiedDate = DateTime.Now;
+            obj.UserIP = UserIP;
+            context.SaveChanges();
+
+
+            //interview slot Iscomplete bit field true. 
+
+            HRMS_InterviewSlot objHRMS_InterviewSlot = context.HRMS_InterviewSlot.FirstOrDefault(a => a.IsActive == true
+                                                            && a.CandidateId == _CandidateId && a.IsOccupied == true && a.IsCompleted == false);
+            objHRMS_InterviewSlot.IsCompleted = true;
+            objHRMS_InterviewSlot.ModifiedBy = UserKey;
+            objHRMS_InterviewSlot.ModifiedDate = DateTime.Now;
+            objHRMS_InterviewSlot.UserIP = UserIP;
+            context.SaveChanges();
+
+            if (Convert.ToInt32(ddlCandidateSkillStatus.SelectedValue) == (int)Constant.CandidateStatus.BlackList)
+            {
+                int ApplicantId = obj.HRMS_ApplicantApplication.HRMS_Setup_Applicant.ApplicantID;
+
+
+                var listApplicant = context.HRMS_Setup_Applicant.FirstOrDefault(a => a.IsActive == true && a.ApplicantID == ApplicantId);
+
+                listApplicant.IsBlacklisted = true;
+                listApplicant.IsActive = false;
+                listApplicant.ModifiedDate = DateTime.Now;
+                listApplicant.ModifiedBy = UserKey;
+                listApplicant.UserIP = UserIP;
+
+                context.SaveChanges();
+            }
+            //calling Nadra varisus function
+            else if (Convert.ToInt32(ddlCandidateSkillStatus.SelectedValue) == (int)Constant.CandidateStatus.Finalize)
+            {
+                GenerateNewHiringWorkFlow(_CandidateId);
+            }
+
+            //Response.Redirect("/Pages/NewHiring/JobApplications.aspx");
+            //?RequisitionId=" + objHRMS_CandidateInfo.HRMS_ApplicantApplication.RequisitionId
+            //Response.Redirect("");
+
+            string _Message = "Saved Successfully";
+
+            string PageRedirectUrl = "/Pages/NewHiring/JobApplications.aspx?RequisitionId=" + obj.HRMS_ApplicantApplication.RequisitionId;
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+
+        }
+        catch (Exception ex) {
+
+
+            string _Message = ex.InnerException.ToString();
+
+            string PageRedirectUrl = "#";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+    }
+
+    private void GenerateNewHiringWorkFlow(int CandidateId)
+    {
+
+        bool IsEmailRequired = true;
+        int WorkflowTaskMasterId = 0;
+        int WorkflowStepDetailId = (int)Constant.WorkflowStepNewHiring.NadraVerisys;
+
+
+        //  int NxtWorkflowStepDetailId = (int)Constant.WorkflowStepRequisition.HODApproval;
+
+        HRMS_WorkFlowTaskMaster task = new HRMS_WorkFlowTaskMaster();
+
+        task.WorkflowItemId = CandidateId;
+        task.WorkflowStatusId = (int)Constant.WorkflowStatus.InProgress;
+        task.Remarks = "";
+        task.IsActive = true;
+        task.CreatedDate = DateTime.Now;
+        task.CreatedBy = UserKey;
+        task.UserIP = UserIP;
+        task.WorkflowMasterId = (int)Constant.Workflow.NewHiringWorkflow;
+
+        context.HRMS_WorkFlowTaskMaster.Add(task);
+        context.SaveChanges();
+
+        WorkflowTaskMasterId = task.WorkflowTaskMasterId;
+
+        var lst = context.HRMS_WorkflowMemberDetail.Where(a => a.IsActive == true /*&& a.DepartmentId == (int)Constant.Department.HumanResources*/)
+       .Where(a => a.WorkflowStepDetailId == WorkflowStepDetailId)
+       .Where(a => a.MemberCategoryId == (int)Constant.WorkflowMemberCategory.Management).ToList();
+
+        if (lst.Count > 0 && lst != null)
+        {
+            //var lstSetupWorkflowStepDetail = context .HRMS_Setup_WorkflowStepDetail.Where(a => a.IsActive == true && a.WorkflowStepDetailId )
+
+            for (int i = 0; i < lst.Count; i++)
+            {
+                int MemberCategoryId = lst[i].MemberCategoryId;
+                int DeptId = lst[i].DepartmentId;
+
+                var lstAssignee = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true && a.MemberCategoryId == MemberCategoryId &&
+                    a.DepartmentID == DeptId)
+                    .Select(a => new
+                    {
+                        AssigneeId = a.EmployeeID
+                    })
+                    .ToList();
+
+
+                for (int j = 0; j < lstAssignee.Count; j++)
+                {
+                    int AssigneeId = lstAssignee[j].AssigneeId;
+
+                    HRMS_WorkflowTaskDetail taskDetail = new HRMS_WorkflowTaskDetail();
+
+                    taskDetail.WorkflowTaskMasterId = WorkflowTaskMasterId;
+                    taskDetail.AssigneeID = AssigneeId;
+                    taskDetail.IsDelegated = false;
+                    // taskDetail.WorkflowStepDetailId = NxtWorkflowStepDetailId;
+                    taskDetail.WorkflowStepDetailId = WorkflowStepDetailId;
+                    taskDetail.StartDate = DateTime.Now;
+                    taskDetail.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Pending;
+                    taskDetail.Remarks = "";
+                    taskDetail.IsActive = true;
+                    taskDetail.CreatedBy = UserKey;
+                    taskDetail.CreatedDate = DateTime.Now;
+                    taskDetail.UserIP = UserIP;
+
+                    context.HRMS_WorkflowTaskDetail.Add(taskDetail);
+                    context.SaveChanges();
+
+                    if (IsEmailRequired) // send email
+                    {
+                        string ToEmail = context.Setup_Employee.Where(a => a.EmployeeId == AssigneeId).FirstOrDefault().OfficeEmailAddress;
+
+                        string Msg = "Your approval is required for New hiring request. \n" +
+                            "<html>  <a href='" + CommonHelper.URL + "Pages/NewHiring/Approval.aspx?id=" + CandidateId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + Convert.ToString((int)Constant.Workflow.NewHiringWorkflow) + "'>Click Here</a>  </html>";
+
+                        //NewHiring/Approval.aspx?id=" + CandidateId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + Convert.ToString( (int)Constant.Workflow.NewHiringWorkflow)
+
+                        CommonHelper.GenerateWorkflowEmail(ToEmail, "", WorkflowStepDetailId, Msg);
+                    }
+                }
+            }
+
+           
+        }
+        else
+        {
+            bool IsAssign = CommonHelper.AssignTaskToHR(WorkflowTaskMasterId, WorkflowStepDetailId, DateTime.Now);
+
+            if (IsAssign)
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "Alert", "alert('No Mapping Exist Against this Workflow Step, The Task is assigned to HRMS Admin');", true);
+            }
+        }
+        //}
+    }
+
+    protected void btnInterViewHistory_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+
+            Response.Redirect("/Pages/NewHiring/InterviewHistory.aspx?CandidateId=" + CandidateId);
+
+
+        }
+        catch (Exception ex) { }
+    }
+}

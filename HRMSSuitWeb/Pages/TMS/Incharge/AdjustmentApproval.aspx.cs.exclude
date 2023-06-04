@@ -1,0 +1,612 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+public partial class Pages_TMS_Incharge_AdjustmentApproval : System.Web.UI.Page
+{
+    public int EmployeeId { get; set; }
+    public DateTime DateFrom { get; set; }
+    public DateTime DateTo { get; set; }
+    public bool IsIncharge { get; set; }
+    Base baseClass = new Base();
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+        try
+        {
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+
+            if (baseClass.IsSuperAdmin || (baseClass.RoleCode == roleAdmin))
+            {
+                divDept.Visible = true;
+                //tdDepartmentControl.Visible = true;
+                //tdEmployeeCaption.Visible = true;
+                divEmployee.Visible = true;
+                //tdEmployeeControl.Visible = true;
+                divSearch.Visible = true;
+                //   rfvddlDepartment.Enabled = false;
+
+                //   rfvddlDepartment.Enabled = false;
+
+            }
+            else
+            {
+
+
+                divSearch.Visible = false;
+
+                RequiredFieldValidator16.Enabled = false;
+
+            }
+
+
+
+            if (!IsPostBack)
+            {
+                BindDropdown();
+                BindRepeater();
+                //lblTats.Text = string.IsNullOrEmpty(baseClass.RoleTats) ? "0" : (Convert.ToInt32(baseClass.RoleTats) / 24).ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    private void BindRepeater()
+    {
+        try
+        {
+
+            //  int userId =context.Users.First(p =>p.Full_Name == b.FullName ).User_Code;
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+            string roleIncharge = Convert.ToString((int)Constant.Role.Incharge);
+
+            DateTime NowDateIs = DateTime.Now;
+
+
+            //DateTime CreatedDateIs = new DateTime();
+
+            //if (NowDateIs.Day > 22)
+            //{
+            //    CreatedDateIs = new DateTime(NowDateIs.Year, NowDateIs.Month, 22);
+
+            //}
+            //else
+            //{
+            //    CreatedDateIs = new DateTime(NowDateIs.Year, NowDateIs.Month - 1, 23);
+
+            //}
+
+
+
+
+
+
+            int departmentId = 0;
+            if ((baseClass.RoleCode == roleAdmin))
+            {
+                departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+                EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+
+            }
+
+
+
+            DateTime CreatedDateIs = DateTime.Now.AddDays(-30);
+
+            var getTimeAjd = from Emp in context.Setup_Employee
+                             join timeAdj in context.TMS_TimeAdjustmentRequest on Emp.EmployeeId equals timeAdj.EmployeeId
+                             join ApplyBy_Emp in context.Setup_Employee on timeAdj.CreatedBy equals ApplyBy_Emp.EmployeeId
+                             where (baseClass.RoleCode == roleIncharge && Emp.InchargeId == baseClass.UserKey
+
+                                   || (baseClass.IsSuperAdmin == true //&& Emp.EmployeeId == EmployeeId && Emp.DepartmentId == departmentId
+                                        && ((timeAdj.Setup_Employee.EmployeeId == EmployeeId || (EmployeeId == 0) &&
+                                        timeAdj.Setup_Employee.DepartmentId == departmentId
+                                          )))
+
+                                   || (baseClass.RoleCode == roleAdmin && Emp.CompanyId == baseClass.CompanyId
+                                       && ((timeAdj.Setup_Employee.EmployeeId == EmployeeId || (EmployeeId == 0) &&
+                                       timeAdj.Setup_Employee.DepartmentId == departmentId
+                                        )
+                                        )))
+
+                                   && timeAdj.StatusId == 1 && timeAdj.IsActive == true && timeAdj.CreatedDate >= CreatedDateIs
+                             orderby timeAdj.CreatedDate descending
+                             select new { timeAdj, ApplyBy_Emp };
+
+            // List<TimeAdjustmentRequest> AllTmAdj = new List<TimeAdjustmentRequest>();
+            List<showResult> AllTimeAdjRest = new List<showResult>();
+            List<showResult> Old_TimeAdjRest = new List<showResult>();
+
+            int i = 0;
+            foreach (var item in getTimeAjd)
+            {
+                try
+                {
+                    DateTime AppliedDate = Convert.ToDateTime(item.timeAdj.CreatedDate);
+                    int tat = Convert.ToInt32(new Base().RoleTats);
+                    int offHours = CommonHelper.GetTotalOffHours(AppliedDate, DateTime.Now, new Base().UserKey);
+                    int Total_Hours = Convert.ToInt32((DateTime.Now - AppliedDate).TotalHours);
+
+                    showResult sr = new showResult();
+
+                    sr.object1 = Convert.ToDateTime(item.timeAdj.CreatedDate).ToString("dd-MMM-yyyy");
+                    sr.object2 = item.ApplyBy_Emp.FirstName;
+                    sr.object3 = item.timeAdj.OriginalDateTime.ToString();
+                    sr.object4 = item.timeAdj.RequestedDateTime.ToString();
+                    sr.object5 = item.timeAdj.IsTimeOutRequest == true ? "Out" : "In";
+                    sr.object6 = item.timeAdj.EmployeeComment;
+                    sr.object7 = item.timeAdj.ApproverComment;
+                    sr.object8 = item.timeAdj.StatusId.ToString();
+                    sr.object9 = item.timeAdj.TimeAdjustmentRequestId.ToString();
+
+                    //sr.object11 = Convert.ToString(item.timeAdj.AdjustmentAttachments.Any(a => a.IsActive == true));
+
+                    //int TimeAdjustmentRequestId = Convert.ToInt32(item.timeAdj.TimeAdjustmentRequestId.ToString());
+
+                    //DataTable dt = context.AdjustmentAttachments.Where(a => a.IsActive == true && a.TimeAdjustmentRequestId == )
+
+                    if (item.timeAdj.TMS_AdjustmentReason != null)
+                    {
+                        sr.object10 = item.timeAdj.TMS_AdjustmentReason.AdjustmentReason;
+                    }
+                    else
+                    {
+                        sr.object10 = "";
+                    }
+
+                    if (Total_Hours < (tat + offHours)
+                        && (item.timeAdj.TMS_DailyActivity.Processed == false || item.timeAdj.TMS_DailyActivity.Processed == null)
+                        && (item.timeAdj.Processed == false || item.timeAdj.Processed == null))
+                    {
+                        AllTimeAdjRest.Add(sr);
+                    }
+                    else
+                    {
+                        Old_TimeAdjRest.Add(sr);
+                    }
+                    i++;
+                }
+                catch
+                {
+
+                }
+
+                //if (Total_Hours < (tat + offHours) && (item.timeAdj.Processed == false || item.timeAdj.Processed == null))
+                //{
+                //    AllTimeAdjRest.Add(sr);
+                //}
+                //else
+                //{
+                //    Old_TimeAdjRest.Add(sr);
+                //}
+            }
+
+            RepeaterTimeAdj.DataSource = AllTimeAdjRest;
+            RepeaterTimeAdj.DataBind();
+
+            RepeaterOldTimeAdjestment.DataSource = Old_TimeAdjRest;
+            RepeaterOldTimeAdjestment.DataBind();
+
+            if (AllTimeAdjRest.Count == 0)
+            {
+                UpdateTimeAdj.Visible = false;
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+        ddlDepartment_SelectedIndexChanged(null, null);
+    }
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        var listEmplyee = context.Setup_Employee.Where(emp => emp.IsActive == true && emp.DepartmentId == departmentId && (emp.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && emp.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(emp => emp.FirstName)
+            .Select(emp => new
+            {
+                EmployeeId = emp.EmployeeId,
+                Name = emp.FirstName + " " + emp.LastName + " - " + emp.EmployeeCode
+            })
+            .ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+    private void BindDropdown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", true, false);
+
+        //var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == UserKey || IsSuperAdmin == true || (RoleCode == roleAdmin && e.CompanyId == CompanyId)))
+        //    .OrderBy(e => e.EmployeeCode)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.EmployeeCode + " - " + e.FirstName
+        //    })
+        //    .ToList();
+
+
+
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey)
+                      .Select(a => new
+                      {
+                          GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                          GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                      })
+                      .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == baseClass.CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(e => e.FirstName)
+            .Select(e => new
+            {
+                EmployeeId = e.EmployeeId,
+                Name = e.FirstName + " - " + e.EmployeeCode
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+
+    protected void ddlEmployee_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+    protected void RepeaterOldTimeAdjestment_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            if (RepeaterOldTimeAdjestment.Items.Count < 1)
+            {
+                if (e.Item.ItemType == ListItemType.Footer)
+                {
+                    System.Web.UI.HtmlControls.HtmlTableRow trEmptyData = (System.Web.UI.HtmlControls.HtmlTableRow)e.Item.FindControl("trEmptyData");
+                    trEmptyData.Visible = true;
+                }
+            }
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void RepeaterTimeAdj_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        try
+        {
+            if (e.CommandName == "Download")
+            {
+                string AdjID = e.CommandArgument.ToString();
+                // ImageButton btnEdit = (ImageButton)source;
+                // RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+                //  int adjid = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("HFAdjID")).Value);
+
+                //var Itemcount = context.AdjustmentAttachments.Where(c => c.TimeAdjustmentRequestId== Convert.ToInt32(AdjID) );
+
+                //if(Itemcount.Count()>0)
+                //{
+                string URL = "/pages/incharge/DownlodAttachment.aspx?AdjID=" + AdjID.ToString();
+                openPopupFancy(URL);
+                //}
+
+
+                //ScriptManager.RegisterStartupScript(this, GetType(), "CloseFancyBox", "CloseFancyBox();", true);
+            }
+        }
+        catch (Exception ex) { }
+    }
+    public void openPopupFancy(string URL)
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup", "OpenPopup('" + URL + "');", true);
+    }
+    protected void AproveTimeStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            RadioButtonList radioStatus = (RadioButtonList)sender;
+            RepeaterItem Rep = (RepeaterItem)radioStatus.NamingContainer;
+
+            TextBox ApproverComment = (TextBox)Rep.FindControl("Remarks");
+
+            RequiredFieldValidator RFV = (RequiredFieldValidator)Rep.FindControl("RequiredFieldValidatorForRemarks");
+            if (radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved) || radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Rejected))
+            {
+                ApproverComment.Enabled = true;
+                RFV.Enabled = true;
+                UpdateTimeAdj.Enabled = true;
+                UpdateTimeAdj.Visible = true;
+            }
+            else
+            {
+                ApproverComment.Enabled = false;
+                RFV.Enabled = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    protected void RepeaterTimeAdj_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+            {
+                //ScriptManager.RegisterPostBackControl(e.Item.FindControl("btn_attachment"));
+                HiddenField HFstatus = (HiddenField)e.Item.FindControl("HFStatus");
+                ImageButton imgbutton = (ImageButton)e.Item.FindControl("btn_attachment");
+
+                HiddenField HFAdjID = (HiddenField)e.Item.FindControl("HFAdjID");
+                Repeater rptAttachment = (Repeater)e.Item.FindControl("rptAttachment");
+                int timeAdjRequestId = Convert.ToInt32(HFAdjID.Value);
+                var attachments = context.AdjustmentAttachments.Where(a => a.IsActive == true && a.TimeAdjustmentRequestId == timeAdjRequestId)
+                    .Select(a => new
+                    {
+                        FilePath = a.FilePath,
+                        FileName = a.FileName
+                    })
+                    .ToList();
+                rptAttachment.DataSource = attachments;
+                rptAttachment.DataBind();
+
+                RadioButtonList radioStatus = (RadioButtonList)e.Item.FindControl("AdjStatus");
+
+
+
+                if (radioStatus != null)
+                {
+                    radioStatus.SelectedValue = (HFstatus.Value);
+                }
+
+                if (RepeaterTimeAdj.Items.Count < 1)
+                {
+                    if (e.Item.ItemType == ListItemType.Footer)
+                    {
+                        System.Web.UI.HtmlControls.HtmlTableRow trEmptyData = (System.Web.UI.HtmlControls.HtmlTableRow)e.Item.FindControl("trEmptyData");
+                        trEmptyData.Visible = true;
+                    }
+                }
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void UpdateTimeAdj_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            foreach (RepeaterItem repeated in RepeaterTimeAdj.Items)
+            {
+                TextBox ApproverComment = (TextBox)repeated.FindControl("Remarks");
+                RadioButtonList radioStatus = (RadioButtonList)repeated.FindControl("AdjStatus");
+                HiddenField AdjID = (HiddenField)repeated.FindControl("HFAdjID");
+                HiddenField hfType = (HiddenField)repeated.FindControl("hfType");
+                Base UserInfo = new Base();
+                int AdjID_Int = Convert.ToInt32(AdjID.Value);
+
+                TMS_TimeAdjustmentRequest GetAdjRec = new TMS_TimeAdjustmentRequest();
+
+                if (radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved) || radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Rejected))
+                {
+                    try
+                    {
+                        GetAdjRec = context.TMS_TimeAdjustmentRequest.First(p => p.TimeAdjustmentRequestId == AdjID_Int);
+                        GetAdjRec.StatusId = Convert.ToInt32(radioStatus.SelectedValue);
+                        GetAdjRec.ApproverComment = ApproverComment.Text;
+                        GetAdjRec.ApprovedDateTime = DateTime.Now;
+                        GetAdjRec.ModifiedBy = UserInfo.UserKey;
+                        GetAdjRec.ModifiedDate = DateTime.Now;
+
+                        context.Entry(GetAdjRec).State = EntityState.Modified;
+                        context.SaveChanges();
+
+                        //string Emp_Email = context.Users.First(p => p.EmployeeId == GetAdjRec.EmployeeId).Email_Address;
+                        //string incharge_Email = UserInfo.EmailAddress;
+                        //Email.SendMail(Emp_Email, "Time Adjustment Approve", "Requested Time Adjustment Is Approve by " + UserInfo.FullName, incharge_Email);
+
+                        TMS_DailyActivity GetDailyActiviy = new TMS_DailyActivity();
+                        GetDailyActiviy = context.TMS_DailyActivity.First(p => p.DailyActivityId == GetAdjRec.DailyActivityId);
+
+                        if (radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved))
+                        {
+                            if (GetAdjRec.IsTimeOutRequest)
+                            {
+                                TimeSpan EndTime = new TimeSpan(GetAdjRec.RequestedDateTime.Hour, GetAdjRec.RequestedDateTime.Minute, GetAdjRec.RequestedDateTime.Second);
+
+                                //DateTime dtShiftStartTime = new DateTime(GetDailyActiviy.OrignalCreatedDate.Value.Year
+                                //                                        , GetDailyActiviy.OrignalCreatedDate.Value.Month
+                                //                                        , GetDailyActiviy.OrignalCreatedDate.Value.Day
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Hours + GetDailyActiviy.FlexiIn.Value.Hours)
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Minutes + GetDailyActiviy.FlexiIn.Value.Minutes)
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Seconds + GetDailyActiviy.FlexiIn.Value.Seconds));
+
+                                DateTime dtShiftStartTime = new DateTime(GetDailyActiviy.OrignalCreatedDate.Value.Year
+                                                                        , GetDailyActiviy.OrignalCreatedDate.Value.Month
+                                                                        , GetDailyActiviy.OrignalCreatedDate.Value.Day
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Hours)
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Minutes)
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Seconds));
+
+                                dtShiftStartTime = dtShiftStartTime.AddHours(GetDailyActiviy.FlexiIn.Value.Hours).AddMinutes(GetDailyActiviy.FlexiIn.Value.Minutes).AddSeconds(GetDailyActiviy.FlexiIn.Value.Seconds);
+
+                                // + GetDailyActiviy.FlexiIn.Value.Hours
+                                // + GetDailyActiviy.FlexiIn.Value.Minutes
+                                // + GetDailyActiviy.FlexiIn.Value.Seconds
+
+                                if (GetAdjRec.RequestedDateTime >= dtShiftStartTime && EndTime >= GetDailyActiviy.ShiftEndTime)
+                                {
+                                    GetDailyActiviy.IsLateOut = GetAdjRec.StatusId == (int)Constant.TMSStatus.Approved ? false : GetDailyActiviy.IsLateOut;
+                                }
+                                else
+                                {
+                                    if (GetDailyActiviy.EndTime == null)
+                                    {
+                                        GetDailyActiviy.IsLateOut = GetDailyActiviy.IsLateOut == null ? true : GetDailyActiviy.IsLateOut;
+                                    }
+                                }
+
+                                GetDailyActiviy.EndTime = EndTime;
+                                GetDailyActiviy.ModifiedDate = GetAdjRec.RequestedDateTime;
+                            }
+                            else
+                            {
+                                TimeSpan StartTime = new TimeSpan(GetAdjRec.RequestedDateTime.Hour, GetAdjRec.RequestedDateTime.Minute, GetAdjRec.RequestedDateTime.Second);
+
+                                GetDailyActiviy.StartTime = StartTime;
+                                GetDailyActiviy.CreatedDate = GetAdjRec.RequestedDateTime;
+
+                                //DateTime dtShiftStartTime = new DateTime(GetDailyActiviy.OrignalCreatedDate.Value.Year
+                                //                                        , GetDailyActiviy.OrignalCreatedDate.Value.Month
+                                //                                        , GetDailyActiviy.OrignalCreatedDate.Value.Day
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Hours + GetDailyActiviy.FlexiIn.Value.Hours)
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Minutes + GetDailyActiviy.FlexiIn.Value.Minutes)
+                                //                                        , (GetDailyActiviy.ShiftStartTime.Value.Seconds + GetDailyActiviy.FlexiIn.Value.Seconds));
+
+                                DateTime dtShiftStartTime = new DateTime(GetDailyActiviy.OrignalCreatedDate.Value.Year
+                                                                        , GetDailyActiviy.OrignalCreatedDate.Value.Month
+                                                                        , GetDailyActiviy.OrignalCreatedDate.Value.Day
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Hours)
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Minutes)
+                                                                        , (GetDailyActiviy.ShiftStartTime.Value.Seconds));
+
+                                dtShiftStartTime = dtShiftStartTime.AddHours(GetDailyActiviy.FlexiIn.Value.Hours).AddMinutes(GetDailyActiviy.FlexiIn.Value.Minutes).AddSeconds(GetDailyActiviy.FlexiIn.Value.Seconds);
+
+                                // + GetDailyActiviy.FlexiIn.Value.Hours
+                                // + GetDailyActiviy.FlexiIn.Value.Minutes
+                                // + GetDailyActiviy.FlexiIn.Value.Seconds
+
+                                if (GetAdjRec.RequestedDateTime <= dtShiftStartTime)
+                                {
+                                    GetDailyActiviy.IsLateIn = GetAdjRec.StatusId == (int)Constant.TMSStatus.Approved ? false : GetDailyActiviy.IsLateIn;
+                                }
+                            }
+                        }
+                        context.Entry(GetDailyActiviy).State = EntityState.Modified;
+                        context.SaveChanges();
+                    }
+                    catch { }
+                }
+            }
+            BindRepeater();
+
+            LB_Error.Visible = true;
+            RightContentError.Attributes.Add("class", "okMessage");
+            LB_Error.Text = "Time Adjustment Update Successfully";
+            RightContentError.Visible = true;
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+}

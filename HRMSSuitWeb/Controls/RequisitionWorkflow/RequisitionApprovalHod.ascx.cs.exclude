@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_RequisitionWorkflow_RequisitionApprovalHod : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+
+    public int RequisitionId { get { return Convert.ToInt32(hfRequisitionId.Value); } set { hfRequisitionId.Value = value.ToString(); } }
+
+    public void BindRequisition(int RequisitionId)
+    {
+        var Lst = context.HRMS_Requisition.Where(a => a.IsActive == true && a.RequisitionId == RequisitionId).FirstOrDefault();
+
+        if (Lst != null)
+        {
+            lblRequisitionNo.Text = Lst.RequisitionNo;
+            lblCountry.Text = Lst.Setup_Country.CountryName;
+            lblLocation.Text = Lst.Setup_Location.LocationName;
+            lblDepartment.Text = Lst.Setup_Department.DepartmentName;
+            lblDesignation.Text = Lst.Setup_Designation.DesignationName;
+            lblJobType.Text = Lst.Setup_EmployeeType.TypeName;
+            lblTotalVacancies.Text = Lst.RequestedVacancy.ToString();
+            lblJoiningDate.Text = Lst.ExpectedJoiningDate.ToString(Constant.DateFormat);
+            lblLastApplyDate.Text = Lst.LastApplyDate.ToString(Constant.DateFormat);
+            lblMinDegreeReq.Text = Lst.HRMS_Setup_EducationType.educationType;
+            lblExpReq.Text = Lst.HRMS_SetupDetail.SetupDetailName;
+            lblPlacementType.Text = Lst.HRMS_SetupDetail.SetupDetailName;
+            lblHiringReason.Text = Lst.HRMS_SetupDetail.SetupDetailName;
+            chkbxIsBudgeted.Checked = Lst.IsBudgeted == null ? false : Convert.ToBoolean(Lst.IsBudgeted);
+            chkIsReplacement.Checked = Lst.IsReplacementRequest;
+            lblSalaryRange.Text = Lst.HRMS_SetupDetail.SetupDetailName;
+            txtRemarks.Text = Lst.Remarks;
+        }
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+}

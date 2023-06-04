@@ -1,0 +1,44 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using Microsoft.Reporting.WebForms;
+using HRMSDAL;
+using System.Configuration;
+
+public partial class Pages_DACReport : Base
+{
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            loadreport();
+        }
+
+    }
+
+
+    private void loadreport()
+    {
+        try
+        {
+            string connstr = ConfigurationSettings.AppSettings["ReportPath"];
+            string userid = Convert.ToString(UserKey);
+
+            HRMSEntities context = new HRMSEntities();
+
+            string reportPath = "/DAC_SSRS/DAC_Report_HRMS";
+            ReportViewer1.ProcessingMode = Microsoft.Reporting.WebForms.ProcessingMode.Remote;
+            ReportViewer1.ServerReport.ReportServerUrl = new Uri(connstr);
+            ReportViewer1.ServerReport.ReportPath = reportPath;
+            ReportParameter param = new ReportParameter("USERID", userid);
+            ReportViewer1.ServerReport.SetParameters(param);
+            ReportViewer1.ServerReport.Refresh();
+          
+        }
+        catch (Exception ex) { }
+    }
+}

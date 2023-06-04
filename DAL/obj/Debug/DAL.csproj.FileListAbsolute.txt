@@ -1,0 +1,64 @@
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\bin\Debug\EntityFramework.dll
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+D:\SybridProjects\LatestHCM\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\HRMSSuitWeb\HRMSSuitWeb\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\New Changes HCM\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+E:\Ammar Projects\HRMS_Suite\General\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+D:\Office Work\HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll.config
+D:\Office Work\HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.dll
+D:\Office Work\HCM\HRMSSuitWeb\DAL\bin\Debug\DAL.pdb
+D:\Office Work\HCM\HRMSSuitWeb\DAL\obj\Debug\DAL.dll
+D:\Office Work\HCM\HRMSSuitWeb\DAL\obj\Debug\DAL.pdb
+D:\Office Work\HCM_Payroll\DAL\bin\Debug\DAL.dll.config
+D:\Office Work\HCM_Payroll\DAL\bin\Debug\DAL.dll
+D:\Office Work\HCM_Payroll\DAL\bin\Debug\DAL.pdb
+D:\Office Work\HCM_Payroll\DAL\obj\Debug\DAL.dll
+D:\Office Work\HCM_Payroll\DAL\obj\Debug\DAL.pdb
+D:\Office Work\HCM_Payroll\DAL\obj\Debug\DAL.csprojResolveAssemblyReference.cache
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\DAL.dll.config
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\DAL.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\DAL.pdb
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\EntityFramework.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\System.Data.Entity.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Debug\EntityFramework.xml
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Debug\DAL.csproj.AssemblyReference.cache
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Debug\DAL.csproj.CoreCompileInputs.cache
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Debug\DAL.csproj.CopyComplete
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Debug\DAL.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Debug\DAL.pdb
+D:\Projects\HCM_Payroll_Collgate\DAL\obj\Debug\DAL.csproj.CoreCompileInputs.cache
+D:\Projects\HCM_Payroll_Collgate\DAL\obj\Debug\DAL.csproj.AssemblyReference.cache
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\DAL.dll.config
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\DAL.dll
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\DAL.pdb
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\EntityFramework.dll
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\System.Data.Entity.dll
+D:\Projects\HCM_Payroll_Collgate\DAL\bin\Debug\EntityFramework.xml
+D:\Projects\HCM_Payroll_Collgate\DAL\obj\Debug\DAL.csproj.CopyComplete
+D:\Projects\HCM_Payroll_Collgate\DAL\obj\Debug\DAL.dll
+D:\Projects\HCM_Payroll_Collgate\DAL\obj\Debug\DAL.pdb

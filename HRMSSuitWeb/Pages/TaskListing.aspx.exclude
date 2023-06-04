@@ -1,0 +1,255 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="TaskListing.aspx.cs" Inherits="Pages_TaskListing" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+
+            
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">From</label>
+                                <asp:TextBox ID="txtDateFrom" runat="server" CssClass="form-control SearchDatePicker datetime"></asp:TextBox>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">To</label>
+                                <asp:TextBox ID="txtDateTo" runat="server" CssClass="form-control SearchDatePicker datetime"></asp:TextBox>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label>Workflow  </label>
+
+                                 <asp:DropDownList ID="ddlWorkflow" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlWorkflow_SelectedIndexChanged" AutoPostBack ="true"></asp:DropDownList>
+
+                            </div>
+
+                            <div class="form-group col-lg-3">
+                                <label>Workflow Step  </label>
+
+                                 <asp:DropDownList ID="ddlWorkflowStep" runat="server" CssClass="form-control" ></asp:DropDownList>
+
+                            </div>
+
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                                My Tasks
+                                <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Task</th>
+                                                <th>Workflow </th>
+                                                <th>Assignee</th>
+
+                                                <th style="width: 170px; text-align: center;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td class="project-title">
+                                                            <%# Convert.ToDateTime(Eval("StartDate")).ToString(Constant.DateFormat) %>
+
+                                                            <input type="hidden" runat="server" id="hfWorkflowTaskDetailId" class="hfWorkflowTaskDetailId"
+                                                                value='<%# Eval("WorkflowTaskDetailId") %>' />
+                                                            <input type="hidden" runat="server" id="hfStepDetailId" class="hfStepDetailId"
+                                                                value='<%# Eval("StepDetailId") %>' />
+                                                            <input type="hidden" runat="server" id="hfWorkflowItemId" class="hfWorkflowItemId"
+                                                                value='<%# Eval("WorkflowItemId") %>' />
+                                                            <input type="hidden" runat="server" id="hfWorkflowMasterId" class="hfWorkflowMasterId"
+                                                                value='<%# Eval("WorkflowMasterId") %>' />
+                                                            <input type="hidden" runat="server" id="hfWorkflowTaskMasterId" class="hfWorkflowTaskMasterId"
+                                                                value='<%# Eval("WorkflowTaskMasterId") %>' />
+                                                            <input type="hidden" runat="server" id="hfWorkflowTaskStatusId" class="hfWorkflowTaskStatusId"
+                                                                value='<%# Eval("WorkflowTaskStatusId") %>' />
+
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("TaskName") %>
+                                                            
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("WorkflowName") %>
+                                                            
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <%# Eval("Assignee") %>
+                                                          
+                                                        </td>
+
+
+
+                                                        <td class="project-actions" style="text-align: center;">
+
+                                                            <asp:LinkButton ID="lbEdit"
+                                                                runat="server"
+                                                                CssClass="btn btn-warning"
+                                                                Text="View" OnClick="lbEdit_Click">
+                                                               
+                                                            </asp:LinkButton>
+
+
+                                                            <asp:Button ID="btnDelegate" runat="server" CssClass="btn btn-primary" Text="Delegate" OnClick="btnDelegate_Click"></asp:Button>
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                            <div class="form-group col-lg-12">
+                                                <div class="pagging">
+                                                    <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                </div>
+                                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <%-- Create Project Modal End--%>
+    <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Delegate Task</h4>
+
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>
+
+                        <input type="hidden" runat="server" id="hfParentWorkflowTaskDetailId" class="hfParentWorkflowTaskDetailId" value="0" />
+                        <input type="hidden" runat="server" id="hfWorkflowTaskMasterIdPopup" class="hfWorkflowTaskMasterIdPopup" value="0" />
+                        <input type="hidden" runat="server" id="hfWorkflowStepDetailIdPopup" class="hfWorkflowStepDetailIdPopup" value="0" />
+                        <input type="hidden" runat="server" id="hfWorkflowItemIdPopup" class="hfWorkflowStepDetailIdPopup" value="0" />
+                        <input type="hidden" runat="server" id="hfWorkflowMasterIdPopup" class="hfWorkflowMasterIdPopup" value="0" />
+                        <input type="hidden" runat="server" id="hfWorkflowTaskStatusIdPopup" class="hfWorkflowTaskStatusIdPopup" value="0" />
+
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px; height: 400px; overflow-y: scroll;">
+                            <%--<input type="hidden" id="hfSlotId" runat="server" class="hfSlotId" />--%>
+                            <div class="panel panel-danger" id="divErrorPopup" runat="server" visible="false">
+                                <div class="panel-heading" id="lblErrorPopup" runat="server"></div>
+                            </div>
+
+                            <div class="form-group">
+
+                                <div class="col-lg-6">
+                                    <label>Department <em>*</em></label>
+                                    <asp:RequiredFieldValidator ID="rfvdllDepartment" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                        Display="Dynamic" InitialValue="0" ControlToValidate="ddlDepartment" CssClass="dllDepartment"></asp:RequiredFieldValidator>
+                                    <asp:DropDownList runat="server" ID="ddlDepartment" class="form-control dllDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged" />
+
+                                </div>
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <div class="col-lg-6">
+                                    <label>InterViewer <em>*</em></label>
+                                    <div class="col-lg-12" style="height: 200px; overflow-y: scroll;">
+
+                                        <asp:CheckBoxList ID="chkbxlst" runat="server" CssClass="chkbxlst"
+                                            RepeatDirection="Horizontal" RepeatColumns="1">
+                                        </asp:CheckBoxList>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <label id="lbl" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button Text="Save" class="btn btn-primary" ID="btnSave" ValidationGroup="Add" OnClick="btnSave_Click" runat="server" />
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <asp:UpdateProgress ID="UpdateProgress2" runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="ucInprogress2" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function pageLoad() {
+            $('.datetime').attr('placeholder', 'dd/mm/yyyy');
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                format: 'mm/dd/yyyy'
+            });
+        }
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+        function OpenModal() {
+            $('.openmodal').click();
+        }
+
+    </script>
+</asp:Content>
+

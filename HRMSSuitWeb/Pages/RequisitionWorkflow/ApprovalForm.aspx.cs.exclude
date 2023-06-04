@@ -1,0 +1,58 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_RequisitionWorkflow_ApprovalForm : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+
+    #region Properties
+    public string Id
+    {
+        get
+        {
+            return Request.QueryString["id"];
+        }
+    }
+    #endregion
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            if (Id != "" && Id != "0")
+            {
+                int ReqId = Convert.ToInt32(Id);
+
+                var lst = context.HRMS_Requisition.Where(a => a.IsActive == true && a.RequisitionId == ReqId).ToList();
+
+                if (lst != null && lst.Count > 0)
+                {
+                    if (lst[0].WorkflowStepDetailId == (int)Constant.WorkflowStepRequisition.JobPosting)
+                    {
+                        ucRequisitionDetail.RequisitionId = ReqId;
+                        ucRequisitionJobPosting.Visible = true;
+                        ucRequisitionJobPosting.RequisitionId = ReqId;
+                        ucRequisitionApproval.Visible = false;
+                        ucRequisitionApprovedHistory.Visible = false;
+                    }
+                    else
+                    {
+                        ucRequisitionDetail.RequisitionId = ReqId;
+                        ucRequisitionJobPosting.Visible = false;
+                        ucRequisitionApproval.IsControlInitialize = true;
+                        ucRequisitionApproval.WorkflowStepDetailId = lst[0].WorkflowStepDetailId;
+                        ucRequisitionApproval.RequisitionId = ReqId;
+                        ucRequisitionApprovedHistory.RequisitionId = ReqId;
+                        ucRequisitionApproval.BindReplacement(Convert.ToInt32(Id));
+                    }
+                }
+            }
+        }
+    }
+}

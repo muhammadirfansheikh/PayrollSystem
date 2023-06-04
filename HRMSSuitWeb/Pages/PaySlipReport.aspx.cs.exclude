@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using Microsoft.Reporting.WebForms;
+using HRMSDAL;
+using System.Configuration;
+
+
+public partial class Pages_PaySlipReport : Base
+{
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            loadreport();
+        }
+
+    }
+
+
+    private void loadreport()
+    {
+        try
+        {
+            //string connstr = ConfigurationSettings.AppSettings["ReportPath"];
+            string connstr = ConfigurationSettings.AppSettings["ReportPathPaySlip"];
+            int userid = UserKey;
+
+            HRMSEntities context = new HRMSEntities();
+
+            Setup_Employee empCode = context.Setup_Employee.Where(c => c.EmployeeId == userid).FirstOrDefault();
+
+            string Usercode = empCode.EmployeeCode;
+
+            string reportPath = "/PaySlip_SSRS/Payslip_updated";
+            ReportViewer1.ProcessingMode = Microsoft.Reporting.WebForms.ProcessingMode.Remote;
+            ReportViewer1.ServerReport.ReportServerUrl = new Uri(connstr);
+
+            ReportViewer1.ServerReport.ReportPath = reportPath;
+
+            ReportParameter param = new ReportParameter("Emp_ID", Usercode);
+
+
+            ReportViewer1.ServerReport.SetParameters(param);
+            ReportViewer1.ServerReport.Refresh();
+        }
+        catch (Exception ex) { }
+    }
+}

@@ -1,0 +1,680 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+
+public partial class Pages_HCM_Setup_EmployeeAllowanceMapping : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        if (ddlCompany.Items.Count > 1)
+        {            ddlCompany.SelectedIndex = 1;
+
+        }
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyId && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(a => a.IsActive == true && a.InchargeId == UserKey))).OrderBy(c => c.BusinessUnitName).ToList();
+        CommonHelper.BindDropDown(ddlBusinessUnit, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", listBusinessUnit.Count > 1 ? true : false, false);
+        ddlBusinessUnit_SelectedIndexChanged(null, null);
+
+        if (ddlLocation.Items.Count > 1)
+        {
+            ddlLocation.SelectedIndex = 1;
+        }
+
+
+        var ListDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.Setup_Category.CompanyId == CompanyId).OrderBy(c => c.DesignationName).ToList();
+        //var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+
+
+
+
+        CommonHelper.BindDropDown(ddlDesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        //CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        var LstBusinessUnitCostCenterMapping = context.Setup_CostCenter.Where(a => a.IsActive == true && a.CompanyId == CompanyId).ToList();
+
+
+
+        CommonHelper.BindDropDown(ddlCostCenter, LstBusinessUnitCostCenterMapping, "CostCenterName", "CostCenterId", true, false);
+
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void ddlBusinessUnit_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BUID = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BUID && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(x => x.IsActive == true && x.InchargeId == UserKey)))
+            .Select(b => new
+            {
+                DepartmentId = b.DepartmentId,
+                DepartmentName = b.DepartmentName
+            })
+            .OrderBy(c => c.DepartmentName).ToList();
+        //&& c.TS_Setup_BusinessUnitDeptMapping.Any(s => s.BusinessUnitId == BUID)).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", ListDepartment.Count > 1 ? true : false, false);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        if (chkboxDesigOnly.Checked == true && int.Parse(ddlDesignation.SelectedValue) != 0 ) 
+        {
+            DesigOnly();
+        }
+        else
+        BindRepeaterEmployee();
+    }
+
+    private void BindRepeaterEmployee()
+    {
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+        DateTime? DateTimeNull = null;
+        int DesignationId = 0;
+        int DepartmentId = 0;
+        string FirstName = txtFirstName.Text.Trim();
+        string LastName = txtLastName.Text.Trim();
+
+        string EmployeeCode = txtEmployeeCode.Text;
+
+
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        int LocationId = Convert.ToInt32(ddlLocation.SelectedValue);
+        int BU = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+        int CostCenter = Convert.ToInt32(ddlCostCenter.SelectedValue);
+
+
+        if (ddlDesignation.SelectedIndex != -1)
+            DesignationId = Convert.ToInt32(ddlDesignation.SelectedItem.Value);
+
+        if (ddlDepartment.SelectedIndex != -1)
+            DepartmentId = Convert.ToInt32(ddlDepartment.SelectedItem.Value);
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+        ////////DataTable dt = context.TS_EmployeeHirerarchy(UserKey).ToList().ToDataTable();
+        ////////List<int> _EmpHirarchy = dt.AsEnumerable().Select(s => s.Field<int>("Employeeid")).ToList();
+
+
+        int?[] ArrLocationId = null;
+        string LocationIdStr = "";
+
+        var Lst = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey).ToList();
+
+        for (int i = 0; i < Lst.Count; i++)
+        {
+            LocationIdStr += Lst[i].LocationId.ToString() + ",";
+        }
+
+        if (LocationIdStr.Length > 1)
+        {
+            LocationIdStr = LocationIdStr.Substring(0, LocationIdStr.Length - 1);
+
+            ArrLocationId = LocationIdStr.Split(',')
+                .Select(x =>
+                {
+                    int value;
+                    return int.TryParse(x, out value) ? value : (int?)null;
+                })
+                .ToArray();
+        }
+
+        var Employees = context.Setup_Employee.Where(c => c.IsActive == true
+                                && (c.DesignationId == DesignationId || DesignationId == 0)
+                                 && (c.DepartmentId == DepartmentId || DepartmentId == 0)
+            //&& (c.OfficeEmailAddress.Contains(OffEmail) || OffEmail == string.Empty)
+                                      && (c.FirstName.Contains(FirstName) || FirstName == string.Empty)
+                                      && (c.LastName.Contains(LastName) || LastName == string.Empty)
+            //&& (c.CNIC == CNIC || CNIC == string.Empty)
+                                      && (c.EmployeeCode == EmployeeCode || EmployeeCode == string.Empty)
+            //&& (c.DateOfDirth == DateOfBirth || DateOfBirth == null)
+            //&& (c.JoiningDate == DateOfJoin || DateOfJoin == null)
+            //&& (c.EmployeeId == UserKey || c.InchargeId == UserKey || IsSuperAdmin == true
+            //|| IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))
+                                      && (c.InchargeId == UserKey || c.EmployeeId == UserKey
+            //|| _EmpHirarchy.Contains(c.EmployeeId)
+                                      || IsSuperAdmin == true || IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))
+            // && (c.Setup_Location.Setup_Company.GroupId == GroupId || GroupId == 0)
+            //&& (c.Setup_Location.CompanyId == CompanyId || CompanyId == 0)
+                                      && (c.LocationId == LocationId || LocationId == 0)
+                                      && (c.BusinessUnitID == BU || BU == 0)
+                                      && (c.CostCenterId == CostCenter || CostCenter == 0)
+
+
+            ).Select(c => new
+            {
+                EmployeeId = c.EmployeeId,
+                EmployeeCode = c.EmployeeCode,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                CNIC = c.CNIC,
+                Designation = c.Setup_Designation.DesignationName,
+                Department = c.Setup_Department.DepartmentName,
+                DateOfBirth = c.DateOfDirth,
+                JoiningDate = c.JoiningDate,
+                PersonalEmail = c.PersonalEmailAddress,
+                OfficalEmail = c.OfficeEmailAddress,
+                Gender = c.HRMS_Setup_Gender.GenderTitle,
+                EmployeeType = c.Setup_EmployeeType.TypeName,
+                IsActive = c.IsActive,
+                Company = c.Setup_Location.Setup_Company.CompanyName,
+                Location = c.Setup_Location.LocationName,
+                LocationId = c.LocationId,
+                EmployeeImage = c.PictureName,
+                Extension = c.Extension
+            }).ToList();
+        if (ArrLocationId != null)
+        {
+            var filterList = (from e in Employees where ArrLocationId.Contains(e.LocationId) select e);
+
+            RptEmployee.DataSource = filterList;
+            RptEmployee.DataBind();
+
+            var List = filterList
+                .OrderBy(a => a.Company).ThenBy(b => b.Location).ThenBy(c => c.FirstName)
+                .Skip(skip).Take(pageSize).ToList();
+            RptEmployee.DataSource = List;
+            RptEmployee.DataBind();
+            PagingAndSorting.setPagingOptions(filterList.Count());
+        }
+        else
+        {
+            RptEmployee.DataSource = Employees;
+            RptEmployee.DataBind();
+        }
+
+        if (RptEmployee.Items.Count > 0)
+        {
+            dvSave.Visible = true;
+        }
+        else
+        {
+            dvSave.Visible = false;
+        }
+    }
+    private void BindDropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                        .Select(a => new
+                        {
+                            GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                            GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                        })
+                        .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+
+        if (ddlGroup.Items.Count > 1)
+        {
+            ddlGroup.SelectedIndex = 1;
+
+            
+        }
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        BindSalary();
+    }
+
+    private void BindSalary()
+    {
+/*        var lst = context.HCM_Setup_Detail.Where(a => a.IsActive == true && a.ParentId == (int)Constant.FormulaElement.Salary)
+             .Select(a => new
+             {
+                 Id = a.SetupDetailID,
+                 Value = a.ColumnValue
+             })
+            .ToList();
+
+        CommonHelper.BindDropDown(ddlSalaryType, lst, "Value", "Id", false, false);*/
+    }
+
+    public bool CheckAlreadyExists(int EmployeeId)
+    {
+
+        HCM_EmployeeSalary obj = context.HCM_EmployeeSalary.FirstOrDefault(j => j.EmployeeID == EmployeeId && j.IsActive == true);
+        if (obj != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            DateTime dt = DateTime.Now;
+            for (int i = 0; i < RptEmployee.Items.Count; i++)
+            {
+                int EmployeeId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)RptEmployee.Items[i].FindControl("hfEmployeeId")).Value);
+                //double Salary = double.Parse(((TextBox)RptEmployee.Items[i].FindControl("hfEmployeeId")).Text);
+                TextBox txtSalary = (TextBox)RptEmployee.Items[i].FindControl("txtSalary");
+
+                double Salary = Convert.ToDouble(txtSalary.Text == string.Empty ? "0" : txtSalary.Text);
+                bool IsExist = CheckAlreadyExists(EmployeeId);
+
+                if (!IsExist)
+                {
+                    Add(EmployeeId, Salary);
+                    Success("Salary has been saved successfully.");
+                }
+                else
+                {
+                    
+                    var obj = context.HCM_EmployeeSalary.Where(j => j.EmployeeID == EmployeeId && j.IsActive == true).ToList();
+
+                    //if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.BasicSalary)
+                    //{
+                    //    obj.ForEach(a => a.BasicSalary = Salary);
+                    //}
+                    //else if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.GrossSalary)
+                    //{
+                    //    obj.ForEach(a => a.GrossSalary = Salary);
+                    //}
+
+                    obj.ForEach(a => a.IsActive = false );
+                    obj.ForEach(a => a.ModifiedBy = UserKey);
+                    obj.ForEach(a => a.ModifiedDate = dt); 
+                    obj.ForEach(a => a.UserIP = UserIP);
+
+                    context.SaveChanges();
+
+                    Add(EmployeeId, Salary);
+
+                    Success("Salary has been updated successfully.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Error(ex.ToString());
+
+            
+        }
+    }
+
+    private void Add(int EmployeeId, double Salary)
+    {
+        DateTime dt = DateTime.Now;
+        HCM_EmployeeSalary obj = new HCM_EmployeeSalary();
+
+        obj.EmployeeID = EmployeeId;
+
+/*        if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.BasicSalary)
+        {
+            obj.BasicSalary = Salary;
+        }
+        else if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.GrossSalary)
+        {
+            obj.GrossSalary = Salary;
+        }
+*/
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = UserIP;
+        context.HCM_EmployeeSalary.Add(obj);
+        context.SaveChanges();
+
+    }
+    protected void btnCancelSave_Click(object sender, EventArgs e)
+    {
+
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    protected void RptEmployee_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+
+        //int EmployeeID = int.Parse(DataBinder.Eval(e.Item.DataItem, "EmployeeId").ToString());
+        //string allowances = GetAllowancesName(EmployeeID);
+    }
+
+    public string GetAllowancesName(int EmployeeAllowanceId)
+    {
+        string AllowanceName = "";
+
+        try
+        {
+
+                var lstWorkflowTaskDetail = context.HCM_EmployeeAllowanceMapping.Where(a => a.IsActive == true && a.EmployeeID == EmployeeAllowanceId)
+                    .Select(c => new
+                    {
+
+                        AllowanceName = "<strong>" + c.HCM_Setup_Allowance.AllowanceName + "</strong>",
+//                        AllowanceName = " <ul class='ul'> <li>  " + String.Join("</li><li>", c.HCM_Setup_Allowance.AllowanceName + " </strong>  </li> ") + "</ul>",
+                        
+                    }).ToList();
+
+                for (var i = 0; i < lstWorkflowTaskDetail.Count; i++)
+                {
+                    AllowanceName = AllowanceName + " <ul class='ul'> <li>  " + String.Join("</li><li>", lstWorkflowTaskDetail[i].AllowanceName.Trim() + " </li> ") + "</ul>";
+                }    
+
+
+                if (AllowanceName == "<ul class='ul'> <li>  </ul>")
+                {
+                    AllowanceName = "";
+                }
+            }
+
+        catch (Exception ex)
+        {
+
+        }
+
+        return AllowanceName;
+    }
+
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+
+        /*        // To display a message on screen
+        Type cstype = this.GetType();
+
+        // Get a ClientScriptManager reference from the Page class.
+        ClientScriptManager cs = Page.ClientScript;
+
+        // Check to see if the startup script is already registered.
+        if (!cs.IsStartupScriptRegistered(cstype, "PopupScript"))
+        {
+            String cstext = "alert('Hello World');";
+            cs.RegisterStartupScript(cstype, "PopupScript", cstext, true);
+        }
+        */ // end of message procedure
+
+        LinkButton btnEdit = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+        int ID = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfEmployeeId")).Value);
+        lblEmpID.Text = (((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfEmployeeId")).Value);
+        lblComp.Text = ((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfComp")).Value;
+        lblECode.Text = ((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfEcode")).Value;
+        lblEName.Text = ((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfEname")).Value;
+
+        var lstAll = context.HCM_Setup_Allowance.Where(j => j.IsActive == true)
+            .Select(b => new
+            {
+                b.AllowanceID,
+                b.AllowanceName
+
+            }).ToList();
+
+
+/*        var lstSelected = context.HCM_EmployeeAllowanceMapping.Where(a => a.IsActive == true && a.EmployeeID == ID)
+            .Select(c => new
+            {
+                AllowanceID = c.HCM_Setup_Allowance.AllowanceID,
+            }).ToList();
+        */
+        chkboxlistAllowances.DataSource = lstAll;
+        chkboxlistAllowances.DataTextField = "AllowanceName";
+        chkboxlistAllowances.DataValueField = "AllowanceID";
+        chkboxlistAllowances.DataBind();
+
+//        var lstEdit = context.HCM_EmployeeAllowanceMapping.Where(x => x.EmployeeID == ID).FirstOrDefault();
+        
+//        if (lstEdit != null)
+//        {
+            hfModalId.Value = ID.ToString();
+//            lblComp.Text = rptItem.FindControl("Company");
+            OpenPopup();
+
+//        }
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+
+        if (hfModalId.Value == string.Empty)
+            Add();
+        else
+            Update();
+    }
+    #region Custom Methods
+    private void Add()
+    {
+        DateTime dt = DateTime.Now;
+        HCM_Setup_Allowance obj = new HCM_Setup_Allowance();
+        obj.AllowanceName = txtNameAdd.Text.Trim();
+//        obj.IsDeduction = chkIsDeduction.Checked;
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        //obj.UserIP = UserIP;
+        //obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        bool checkIsExist = CheckAlreadyNameExists(txtNameAdd.Text.Trim());
+
+        if (!checkIsExist)
+        {
+            context.HCM_Setup_Allowance.Add(obj);
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Education Score has been added successfully.", MessageType.Success);
+            Success("Allowance has been added successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            // ShowMessage(");
+
+            //MessageCtrl.showMessageBox("Education Score Already Exist.", MessageType.Validation);
+            Error("Country Already Exist.");
+            ClosePopup();
+        }
+//        BindRepeater();
+
+//        ResetControls();
+    }
+
+
+    private void Update()
+    {
+        DateTime dt = DateTime.Now;
+
+        int Id = Convert.ToInt32(hfModalId.Value);
+//        int AllowanceId = Convert.ToInt32(hfModalId.Value);
+//        HCM_EmployeeAllowanceMapping obj = context.HCM_EmployeeAllowanceMapping.FirstOrDefault(j => j.EmployeeID == Id);
+        var obj = context.HCM_EmployeeAllowanceMapping.Where(j => j.EmployeeID == Id && j.IsActive == true).ToList();
+
+//        var lst2del = context.HCM_EmployeeAllowanceMapping.Where(j => j.EmployeeID == Id).Select(k=>new{k.EmployeeID, k.AllowanceID}).ToList();
+
+        //        obj.IsDeduction = chkIsDeduction.Checked;
+
+        //        obj.AllowanceName = txtNameAdd.Text.Trim();
+        if (obj != null)
+        {
+            obj.ForEach(a => a.IsActive = false);
+            obj.ForEach(a => a.ModifiedBy = UserKey);
+            obj.ForEach(a => a.ModifiedDate = dt);
+
+//            Add(Id, AllowanceId);
+            
+            context.SaveChanges();
+        }
+            
+
+            //            Success("Deleted successfully.");
+
+            //            BindRepeater();
+        
+
+        HCM_EmployeeAllowanceMapping obj2 = new HCM_EmployeeAllowanceMapping();
+        for (var aa = 0; aa < chkboxlistAllowances.Items.Count; aa++)
+        {
+            if (chkboxlistAllowances.Items[aa].Selected == true)
+            {
+                obj2.EmployeeID = Id;
+                obj2.AllowanceID = int.Parse(chkboxlistAllowances.Items[aa].Value);
+                obj2.CreatedBy = UserKey;
+                obj2.CreatedDate = dt;
+                obj2.IsActive = true;
+//                context.SaveChanges();
+                context.HCM_EmployeeAllowanceMapping.Add(obj2);
+                context.SaveChanges();
+//                Add(Id, obj2.AllowanceID);
+            }
+        }
+        //MessageCtrl.showMessageBox("Education Score has been updated successfully.", MessageType.Success);
+        Success("Allowance has been updated successfully.");
+        ClosePopup();
+        BindRepeaterEmployee();
+//                BindRepeater();
+//                ResetControls();
+    }
+        public bool CheckAlreadyNameExists(string title)
+    {
+        int ModalId = 0;
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+        if (hfModalId.Value != "")
+        {
+            ModalId = Convert.ToInt32(hfModalId.Value);
+        }
+        else
+        {
+            ModalId = 0;
+        }
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+
+        HCM_Setup_Allowance obj = context.HCM_Setup_Allowance.FirstOrDefault(j => j.AllowanceName == title && j.IsActive == true && j.AllowanceID != ModalId);
+        if (obj != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected void beforeDataBound(object sender, EventArgs e)
+    {
+
+        if (chkboxDesigOnly.Checked == true && int.Parse(ddlDesignation.SelectedValue) != 0) 
+        {
+            //        int ID = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfEmployeeId")).Value);
+            foreach (ListItem item in chkboxlistAllowances.Items)
+            {
+                //            var lstsel = context.HCM_EmployeeAllowanceMapping.Where(a => a.IsActive == true && a.EmployeeID == int.Parse(lblEmpID.Text) && a.AllowanceID == int.Parse(item.Value));
+                //            var EmpID = int.Parse(lblEmpID.Text);
+                //            var AllID = int.Parse(item.Value);
+                //            var lstsel = context.HCM_EmployeeAllowanceMapping.FirstOrDefault(a => a.IsActive == true && a.EmployeeID == EmpID && a.AllowanceID == AllID);
+                 int _Desgid = Convert.ToInt32(ddlDesignation.SelectedValue);
+                 int _Allid = Convert.ToInt32(item.Value);
+                 var lsst = context.HCM_EmployeeAllowanceMapping.Where(x => x.Setup_Employee.DesignationId == _Desgid && x.AllowanceID == _Allid && x.IsActive == true).ToList();
+
+                if (lsst.Count > 0)
+                    item.Selected = true;
+                else
+                    item.Selected = false;
+            }
+        }
+        else 
+        {
+            foreach (ListItem item in chkboxlistAllowances.Items)
+            {
+                //            var lstsel = context.HCM_EmployeeAllowanceMapping.Where(a => a.IsActive == true && a.EmployeeID == int.Parse(lblEmpID.Text) && a.AllowanceID == int.Parse(item.Value));
+                var EmpID = int.Parse(lblEmpID.Text);
+                var AllID = int.Parse(item.Value);
+                var lstsel = context.HCM_EmployeeAllowanceMapping.FirstOrDefault(a => a.IsActive == true && a.EmployeeID == EmpID && a.AllowanceID == AllID);
+                if (lstsel != null)
+                    item.Selected = true;
+                else
+                    item.Selected = false;
+            }
+        }
+    }
+
+    protected void DesigOnly()
+    {
+        lblEName.Text = ddlDesignation.SelectedValue;
+
+        var lstAll = context.HCM_Setup_Allowance.Where(j => j.IsActive == true)
+            .Select(b => new
+            {
+                b.AllowanceID,
+                b.AllowanceName
+
+            }).ToList();
+
+        chkboxlistAllowances.DataSource = lstAll;
+        chkboxlistAllowances.DataTextField = "AllowanceName";
+        chkboxlistAllowances.DataValueField = "AllowanceID";
+        chkboxlistAllowances.DataBind();
+
+        hfModalId.Value = ID.ToString();
+
+        OpenPopup();
+
+    }
+
+
+    #endregion Custom Methods
+}

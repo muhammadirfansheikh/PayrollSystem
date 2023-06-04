@@ -1,0 +1,331 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="StepMappingNotExist.aspx.cs" Inherits="Pages_RequisitionWorkflow_Setup_StepMappingNotExist" %>
+
+
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Workflow Default Mapping</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Workflow Default Mapping</a>
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+
+
+
+                                <div class="col-lg-3">
+
+
+                                    <label for="exampleInputEmail2">Work Flow</label>
+                                    <asp:DropDownList runat="server" ID="ddlWorkFlowSearch" class="form-control ddlWorkFlowSearch" AutoPostBack="true" OnSelectedIndexChanged="ddlWorkFlowSearch_SelectedIndexChanged" />
+
+                                </div>
+
+                                <div class="col-lg-3">
+
+                                    <label for="exampleInputEmail2">Work Flow Step</label>
+                                    <asp:DropDownList runat="server" ID="ddlWorkFlowStepSearch" class="form-control ddlWorkFlowStepSearch" />
+
+                                </div>
+                                <div class="col-lg-3">
+
+                                    <label for="exampleInputEmail2">Department</label>
+                                    <asp:DropDownList runat="server" ID="ddlDepartmentSearch" class="form-control ddlDepartmentSearch" />
+
+                                </div>
+                               <%-- <div class="col-lg-3">
+
+                                    <label for="exampleInputEmail2">Category</label>
+                                    <asp:DropDownList runat="server" ID="ddlCategorySearch" class="form-control ddlCategorySearch" />
+
+                                </div>--%>
+                            </div>
+                            <div class="form-group col-lg-12" style="margin-top:10px;">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                              Workflow Step Mapping
+                            </div>
+                            <div class="panel-body">
+                                <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                        <a href="#" class="btn btn-primary btnAdd pull-right">Add</a>
+                                        <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                    </div>
+                                </div>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                               
+                                                <th>Department </th>
+                                                <th>Employee </th>
+                                                <th>Workflow </th>
+                                                <th>Workflow Step Name </th>
+                                               
+
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+
+
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("Department") %>
+                                                            <input type="hidden" runat="server" id="hfDepartmentId" class="hfDepartmentId" value='<%# Eval("DepartmentId") %>' />
+
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("EmployeeName") %>
+                                                            <input type="hidden" runat="server" id="hfEmployeeId" class="hfEmployeeId" value='<%# Eval("EmployeeId") %>' />
+                                                               <input type="hidden" runat="server" id="hfStepMappingId" class="hfStepMappingId" value='<%# Eval("StepMappingId") %>' />
+
+                                                            <br />
+                                                        </td>
+
+                                                         <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("WorkflowName") %>
+                                                            
+                                                            <br />
+                                                        </td>
+
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("WorkflowStepName") %>
+                                                            <input type="hidden" runat="server" id="hfWorkflowStepDetailId" class="hfWorkflowStepDetailId" value='<%# Eval("WorkflowStepDetailId") %>' />
+
+                                                            <br />
+                                                        </td>
+                                                       
+                                                        <td class="project-actions" style="font-size: 14px; font-weight: 600; text-align: center;">
+
+                                                            <%--<asp:LinkButton ID="btnEdit"
+                                                                runat="server"
+                                                                CssClass="fa fa-edit text-navy"
+                                                                OnClick="btnEdit_Click">
+                                                            </asp:LinkButton>--%>
+                                                            <%--<span aria-hidden="true" class="fa fa-edit text-navy"></span>View--%>
+                                                            <asp:LinkButton ID="btnDelete"
+                                                                runat="server"
+                                                                OnClientClick="return confirm('Are you sure you want to delete the data?')"
+                                                                CssClass="fa fa-remove text-navy"
+                                                                ForeColor="Red"
+                                                                OnClick="btnDelete_Click"><%--<span aria-hidden="true" class="fa fa-remove text-navy"></span>View--%>
+                                                            </asp:LinkButton>
+
+                                                        </td>
+                                                    </tr>
+
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                            <div class="form-group col-lg-12">
+                                                <div class="pagging">
+                                                    <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                </div>
+                                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress3" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+
+    <%-- offer Letter PopUp End --%>
+
+    <%-- Create Project Modal start--%>
+    <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Add Department Workflow Step Mapping</h4>
+
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px; height: 200px; overflow-y: scroll;">
+                            <input type="hidden" id="hfSlotId" runat="server" class="hfSlotId" />
+                            <div id="div2" runat="server" visible="false" class="alert alert-warning">
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-lg-4">
+
+                                    <label>Work Flow<em>*</em></label>
+
+                                    <asp:DropDownList runat="server" ID="ddlWorkFlow" class="form-control ddlWorkFlow" AutoPostBack="true" OnSelectedIndexChanged="ddlWorkFlow_SelectedIndexChanged" />
+                                    <asp:RequiredFieldValidator ID="rfvddlWorkFlow" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                        Display="Dynamic" InitialValue="0" ControlToValidate="ddlWorkFlow" CssClass="ddlWorkFlow"></asp:RequiredFieldValidator>
+
+                                </div>
+
+                                <div class="col-lg-4">
+                                    <label>Work Flow Step <em>*</em></label>
+
+                                    <asp:DropDownList runat="server" ID="ddlWorkFlowStep" class="form-control dllDepartment" />
+                                    <asp:RequiredFieldValidator ID="rfvddlWorkFlowStep" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                        Display="Dynamic" InitialValue="0" ControlToValidate="ddlWorkFlowStep" CssClass="dllDepartment"></asp:RequiredFieldValidator>
+
+                                </div>
+                                <div class="col-lg-4">
+                                    <label>Department <em>*</em></label>
+
+                                    <asp:DropDownList runat="server" ID="ddlDepartment" class="form-control dllDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged"/>
+                                    <asp:RequiredFieldValidator ID="rfvdllDepartment" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                        Display="Dynamic" InitialValue="0" ControlToValidate="ddlDepartment" CssClass="dllDepartment"></asp:RequiredFieldValidator>
+
+                                </div>
+
+                            </div>
+                            <div class="form-group">
+                                <div class="col-lg-12">
+
+                                    <div class="col-lg-12">
+                                        <label>Member :<em>*</em></label>
+                                        <asp:CheckBoxList ID="chkbxlstemp" runat="server" CssClass="cblCheckAll"
+                                            RepeatDirection="Horizontal" RepeatColumns="1">
+                                        </asp:CheckBoxList>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <label id="lbl" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" ValidationGroup="Add" OnClick="btnAdd_Click" runat="server" />
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <%--<asp:UpdateProgress ID="UpdateProgress2" runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="ucInprogress2" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>--%>
+            </div>
+        </div>
+    </div>
+    <%-- Modal End Here --%>
+
+
+    <script type="text/javascript">
+        function pageLoad() {
+            $(".btnAdd").click(function () {
+               
+                //reset();
+                $('.openmodal').click();
+            });
+
+            //$('.timePicker').datetimepicker({
+            //    datepicker: false,
+            //    format: 'H:i'
+            //});
+
+
+
+            //$('.DatePicker').datepicker({
+            //    todayBtn: "linked",
+            //    keyboardNavigation: false,
+            //    forceParse: false,
+            //    calendarWeeks: true,
+            //    startDate: '+0d',
+            //    autoclose: true
+            //});
+            //$(".numeric").numeric();
+
+            //function reset() {
+            //    $(".txtAdd").val('');
+            //    $(".hfModalId").val('');
+            //}
+        }
+
+        function OpenDialog(a, b, c) {
+            sweetAlert(a, b, c);
+        }
+
+
+
+        function ApplyJob() {
+            
+            $('.ApplyJob').click();
+        }
+
+        function OpenDialogError(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+    </script>
+
+</asp:Content>
+
+
+

@@ -1,0 +1,1565 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Transactions;
+using System.Configuration;
+
+public partial class Pages_TMS_Setup_AddShifts : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    int mon = Convert.ToInt32(DayOfWeek.Monday);
+    int tue = Convert.ToInt32(DayOfWeek.Tuesday);
+    int wed = Convert.ToInt32(DayOfWeek.Wednesday);
+    int thr = Convert.ToInt32(DayOfWeek.Thursday);
+    int fri = Convert.ToInt32(DayOfWeek.Friday);
+    int sat = Convert.ToInt32(DayOfWeek.Saturday);
+    int sun = Convert.ToInt32(DayOfWeek.Sunday);
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            FillTime();
+            BindDropdown();
+            if (Request.QueryString["ShiftId"] != null)
+            {
+
+                FillControls(Convert.ToInt32(Request.QueryString["ShiftId"]));
+                //FillControls(17);
+            }
+
+
+        }
+
+    }
+
+    private void BindDropdown()
+    {
+        var listCompany = context.Setup_Company.Where(c => c.IsActive == true).OrderBy(c => c.CompanyName).ToList();
+        CommonHelper.BindDropDown(ddlCompany, listCompany, "CompanyName", "CompanyId", true, false);
+        //CommonHelper.BindDropDown(ddlCompanyNameSearch, listCompany, "CompanyName", "CompanyId", true, false);
+
+        int? companyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        //int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        var listDepartment = context.Setup_Department.Where(d => d.IsActive == true && d.CompanyId == companyId)
+            .OrderBy(d => d.DepartmentName)
+            .Select(d => new
+            {
+                DepartmentId = d.DepartmentId,
+                DepartmentName = d.DepartmentName
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+
+        ListBoxDepartment.DataSource = listDepartment;
+        ListBoxDepartment.DataTextField = "DepartmentName";
+        ListBoxDepartment.DataValueField = "DepartmentId";
+        ListBoxDepartment.DataBind();
+
+        //var listDepartment = context.Departments.Where(c => c.IsActive == true && c.CompanyId == companyId).OrderBy(c => c.DepartmentName).ToList();
+        //CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+    }
+
+    protected void FillControls(int id)
+    {
+
+        var shifts = context.TMS_Setup_ShiftDetail.Where(p => p.IsActive == true && p.ShiftId == id).OrderBy(v => v.ShiftDetailId).ToList();
+
+
+        TMS_Setup_ShiftDetail monshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == mon);
+        TMS_Setup_ShiftDetail tueshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == tue);
+        TMS_Setup_ShiftDetail wedshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == wed);
+        TMS_Setup_ShiftDetail thrshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == thr);
+        TMS_Setup_ShiftDetail frishiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == fri);
+        TMS_Setup_ShiftDetail satshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == sat);
+        TMS_Setup_ShiftDetail sunshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == sun);
+
+
+        TMS_Setup_Shift detail = context.TMS_Setup_Shift.First(p => p.IsActive == true && p.ShiftId == id);
+
+
+        hfShiftId.Value = Convert.ToString(id);
+        txtShiftName.Value = detail.ShiftName;
+        if (detail.CompanyId != null)
+        {
+            ddlCompany.SelectedValue = Convert.ToString(detail.CompanyId);
+            ddlCompany_SelectedIndexChanged(null, null);
+        }
+        txtDescription.Value = detail.Description;
+
+        //if (detail.DepartmentId != null)
+        //{
+        //    ddlDepartment.SelectedValue = Convert.ToString(detail.DepartmentId);
+        //}
+
+        List<TMS_DepartmentShift> departmentShift = context.TMS_DepartmentShift.Where(ds => ds.ShiftId == detail.ShiftId && ds.IsActive == true).ToList();
+        if (departmentShift.Count > 0)
+        {
+            foreach (TMS_DepartmentShift ds in departmentShift)
+            {
+                foreach (ListItem listItem in ListBoxDepartment.Items)
+                {
+                    if (listItem.Value == ds.DepartmentId.ToString())
+                    {
+                        listItem.Selected = true;
+                    }
+                }
+            }
+        }
+
+
+        if (monshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnMonWorking.Checked = true;
+        }
+
+        if (monshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnMonAlternate.Checked = true;
+        }
+
+        if (monshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnMonHoliday.Checked = true; ;
+        }
+
+        if (tueshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnTueWorking.Checked = true;
+        }
+
+        if (tueshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnTueAlternate.Checked = true;
+        }
+
+        if (tueshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnTueHoliday.Checked = true; ;
+        }
+
+        if (wedshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnWedWorking.Checked = true;
+        }
+
+        if (wedshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnWedAlternate.Checked = true;
+        }
+
+        if (wedshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnWedHoliday.Checked = true; ;
+        }
+
+        if (thrshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnThrWorking.Checked = true;
+        }
+
+        if (thrshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnThrAlternate.Checked = true;
+        }
+
+        if (thrshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnThrHoliday.Checked = true; ;
+        }
+
+
+        if (frishiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnFriWorking.Checked = true;
+        }
+
+        if (frishiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnFriAlternate.Checked = true;
+        }
+
+        if (frishiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnFriHoliday.Checked = true; ;
+        }
+
+
+        if (satshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnSatWorking.Checked = true;
+        }
+
+        if (satshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnSatAlternate.Checked = true;
+        }
+
+        if (satshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnSatHoliday.Checked = true; ;
+        }
+
+        if (sunshiftdetail.ShiftDayTypeId == 1)
+        {
+            rbtnSunWorking.Checked = true;
+        }
+
+        if (sunshiftdetail.ShiftDayTypeId == 2)
+        {
+            rbtnSunAlternate.Checked = true;
+        }
+
+        if (sunshiftdetail.ShiftDayTypeId == 3)
+        {
+            rbtnSunHoliday.Checked = true; ;
+        }
+
+        ddlMonStartTimeHrs.SelectedValue = monshiftdetail.StartTimeSt.Split(':')[0];
+        ddlMonStartTimeMins.SelectedValue = monshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlMonBreakDurHrs.SelectedValue = monshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlMonBreakDurMins.SelectedValue = monshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlMonShiftEndHrs.SelectedValue = monshiftdetail.EndTimeSt.Split(':')[0];
+        ddlMonShiftEndMins.SelectedValue = monshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlMonFlexiInHrs.SelectedValue = monshiftdetail.FlixeInSt.Split(':')[0];
+        ddlMonFlexiInMins.SelectedValue = monshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlMonFlexiOutHrs.SelectedValue = monshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlMonFlexiOutMins.SelectedValue = monshiftdetail.FlixeOutSt.Split(':')[1];
+
+
+        ddlTueStartTimeHrs.SelectedValue = tueshiftdetail.StartTimeSt.Split(':')[0];
+        ddlTueStartTimeMins.SelectedValue = tueshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlTueBreakDurHrs.SelectedValue = tueshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlTueBreakDurMins.SelectedValue = tueshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlTueShiftEndHrs.SelectedValue = tueshiftdetail.EndTimeSt.Split(':')[0];
+        ddlTueShiftEndMins.SelectedValue = tueshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlTueFlexiInHrs.SelectedValue = tueshiftdetail.FlixeInSt.Split(':')[0];
+        ddlTueFlexiInMins.SelectedValue = tueshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlTueFlexiOutHrs.SelectedValue = tueshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlTueFlexiOutMins.SelectedValue = tueshiftdetail.FlixeOutSt.Split(':')[1];
+
+        ddlWedStartTimeHrs.SelectedValue = wedshiftdetail.StartTimeSt.Split(':')[0];
+        ddlWedStartTimeMins.SelectedValue = wedshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlWedBreakDurHrs.SelectedValue = wedshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlWedBreakDurMins.SelectedValue = wedshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlWedShiftEndHrs.SelectedValue = wedshiftdetail.EndTimeSt.Split(':')[0];
+        ddlWedShiftEndMins.SelectedValue = wedshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlWedFlexiInHrs.SelectedValue = wedshiftdetail.FlixeInSt.Split(':')[0];
+        ddlWedFlexiInMins.SelectedValue = wedshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlWedFlexiOutHrs.SelectedValue = wedshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlWedFlexiOutMins.SelectedValue = wedshiftdetail.FlixeOutSt.Split(':')[1];
+
+        ddlThrStartTimeHrs.SelectedValue = thrshiftdetail.StartTimeSt.Split(':')[0];
+        ddlThrStartTimeMins.SelectedValue = thrshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlThrBreakDurHrs.SelectedValue = thrshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlThrBreakDurMins.SelectedValue = thrshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlThrShiftEndHrs.SelectedValue = thrshiftdetail.EndTimeSt.Split(':')[0];
+        ddlThrShiftEndMins.SelectedValue = thrshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlThrFlexiInHrs.SelectedValue = thrshiftdetail.FlixeInSt.Split(':')[0];
+        ddlThrFlexiInMins.SelectedValue = thrshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlThrFlexiOutHrs.SelectedValue = thrshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlThrFlexiOutMins.SelectedValue = thrshiftdetail.FlixeOutSt.Split(':')[1];
+
+        ddlFriStartTimeHrs.SelectedValue = frishiftdetail.StartTimeSt.Split(':')[0];
+        ddlFriStartTimeMins.SelectedValue = frishiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlFriBreakDurHrs.SelectedValue = frishiftdetail.BreakTimeSt.Split(':')[0];
+        ddlFriBreakDurMins.SelectedValue = frishiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlFriShiftEndHrs.SelectedValue = frishiftdetail.EndTimeSt.Split(':')[0];
+        ddlFriShiftEndMins.SelectedValue = frishiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlFriFlexiInHrs.SelectedValue = frishiftdetail.FlixeInSt.Split(':')[0];
+        ddlFriFlexiInMins.SelectedValue = frishiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlFriFlexiOutHrs.SelectedValue = frishiftdetail.FlixeOutSt.Split(':')[0];
+        ddlFriFlexiOutMins.SelectedValue = frishiftdetail.FlixeOutSt.Split(':')[1];
+
+        ddlSatStartTimeHrs.SelectedValue = satshiftdetail.StartTimeSt.Split(':')[0];
+        ddlSatStartTimeMins.SelectedValue = satshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlSatBreakDurHrs.SelectedValue = satshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlSatBreakDurMins.SelectedValue = satshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlSatShiftEndHrs.SelectedValue = satshiftdetail.EndTimeSt.Split(':')[0];
+        ddlSatShiftEndMins.SelectedValue = satshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlSatFlexiInHrs.SelectedValue = satshiftdetail.FlixeInSt.Split(':')[0];
+        ddlSatFlexiInMins.SelectedValue = satshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlSatFlexiOutHrs.SelectedValue = satshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlSatFlexiOutMins.SelectedValue = satshiftdetail.FlixeOutSt.Split(':')[1];
+
+        ddlSunStartTimeHrs.SelectedValue = sunshiftdetail.StartTimeSt.Split(':')[0];
+        ddlSunStartTimeMins.SelectedValue = sunshiftdetail.StartTimeSt.Split(':')[1];
+
+        ddlSunBreakDurHrs.SelectedValue = sunshiftdetail.BreakTimeSt.Split(':')[0];
+        ddlSunBreakDurMins.SelectedValue = sunshiftdetail.BreakTimeSt.Split(':')[1];
+
+        ddlSunShiftEndHrs.SelectedValue = sunshiftdetail.EndTimeSt.Split(':')[0];
+        ddlSunShiftEndMins.SelectedValue = sunshiftdetail.EndTimeSt.Split(':')[1];
+
+        ddlSunFlexiInHrs.SelectedValue = sunshiftdetail.FlixeInSt.Split(':')[0];
+        ddlSunFlexiInMins.SelectedValue = sunshiftdetail.FlixeInSt.Split(':')[1];
+
+        ddlSunFlexiOutHrs.SelectedValue = sunshiftdetail.FlixeOutSt.Split(':')[0];
+        ddlSunFlexiOutMins.SelectedValue = sunshiftdetail.FlixeOutSt.Split(':')[1];
+
+        //ddlMonStartTimeHrs.SelectedValue = shifts[0].StartTimeSt.Split(':')[0];
+        //ddlMonStartTimeMins.SelectedValue = shifts[0].StartTimeSt.Split(':')[1];
+
+        //ddlMonBreakDurHrs.SelectedValue = shifts[0].BreakTimeSt.Split(':')[0];
+        //ddlMonBreakDurMins.SelectedValue = shifts[0].BreakTimeSt.Split(':')[1];
+
+        //ddlMonShiftEndHrs.SelectedValue = shifts[0].EndTimeSt.Split(':')[0];
+        //ddlMonShiftEndMins.SelectedValue = shifts[0].EndTimeSt.Split(':')[1];
+
+        //ddlMonFlexiInHrs.SelectedValue = shifts[0].FlixeInSt.Split(':')[0];
+        //ddlMonFlexiInMins.SelectedValue = shifts[0].FlixeInSt.Split(':')[1];
+
+        //ddlMonFlexiOutHrs.SelectedValue = shifts[0].FlixeOutSt.Split(':')[0];
+        //ddlMonFlexiOutMins.SelectedValue = shifts[0].FlixeOutSt.Split(':')[1];
+
+
+        //ddlTueStartTimeHrs.SelectedValue = shifts[1].StartTimeSt.Split(':')[0];
+        //ddlTueStartTimeMins.SelectedValue = shifts[1].StartTimeSt.Split(':')[1];
+
+        //ddlTueBreakDurHrs.SelectedValue = shifts[1].BreakTimeSt.Split(':')[0];
+        //ddlTueBreakDurMins.SelectedValue = shifts[1].BreakTimeSt.Split(':')[1];
+
+        //ddlTueShiftEndHrs.SelectedValue = shifts[1].EndTimeSt.Split(':')[0];
+        //ddlTueShiftEndMins.SelectedValue = shifts[1].EndTimeSt.Split(':')[1];
+
+        //ddlTueFlexiInHrs.SelectedValue = shifts[1].FlixeInSt.Split(':')[0];
+        //ddlTueFlexiInMins.SelectedValue = shifts[1].FlixeInSt.Split(':')[1];
+
+        //ddlTueFlexiOutHrs.SelectedValue = shifts[1].FlixeOutSt.Split(':')[0];
+        //ddlTueFlexiOutMins.SelectedValue = shifts[1].FlixeOutSt.Split(':')[1];
+
+        //ddlWedStartTimeHrs.SelectedValue = shifts[2].StartTimeSt.Split(':')[0];
+        //ddlWedStartTimeMins.SelectedValue = shifts[2].StartTimeSt.Split(':')[1];
+
+        //ddlWedBreakDurHrs.SelectedValue = shifts[2].BreakTimeSt.Split(':')[0];
+        //ddlWedBreakDurMins.SelectedValue = shifts[2].BreakTimeSt.Split(':')[1];
+
+        //ddlWedShiftEndHrs.SelectedValue = shifts[2].EndTimeSt.Split(':')[0];
+        //ddlWedShiftEndMins.SelectedValue = shifts[2].EndTimeSt.Split(':')[1];
+
+        //ddlWedFlexiInHrs.SelectedValue = shifts[2].FlixeInSt.Split(':')[0];
+        //ddlWedFlexiInMins.SelectedValue = shifts[2].FlixeInSt.Split(':')[1];
+
+        //ddlWedFlexiOutHrs.SelectedValue = shifts[2].FlixeOutSt.Split(':')[0];
+        //ddlWedFlexiOutMins.SelectedValue = shifts[2].FlixeOutSt.Split(':')[1];
+
+        //ddlThrStartTimeHrs.SelectedValue = shifts[3].StartTimeSt.Split(':')[0];
+        //ddlThrStartTimeMins.SelectedValue = shifts[3].StartTimeSt.Split(':')[1];
+
+        //ddlThrBreakDurHrs.SelectedValue = shifts[3].BreakTimeSt.Split(':')[0];
+        //ddlThrBreakDurMins.SelectedValue = shifts[3].BreakTimeSt.Split(':')[1];
+
+        //ddlThrShiftEndHrs.SelectedValue = shifts[3].EndTimeSt.Split(':')[0];
+        //ddlThrShiftEndMins.SelectedValue = shifts[3].EndTimeSt.Split(':')[1];
+
+        //ddlThrFlexiInHrs.SelectedValue = shifts[3].FlixeInSt.Split(':')[0];
+        //ddlThrFlexiInMins.SelectedValue = shifts[3].FlixeInSt.Split(':')[1];
+
+        //ddlThrFlexiOutHrs.SelectedValue = shifts[3].FlixeOutSt.Split(':')[0];
+        //ddlThrFlexiOutMins.SelectedValue = shifts[3].FlixeOutSt.Split(':')[1];
+
+        //ddlFriStartTimeHrs.SelectedValue = shifts[4].StartTimeSt.Split(':')[0];
+        //ddlFriStartTimeMins.SelectedValue = shifts[4].StartTimeSt.Split(':')[1];
+
+        //ddlFriBreakDurHrs.SelectedValue = shifts[4].BreakTimeSt.Split(':')[0];
+        //ddlFriBreakDurMins.SelectedValue = shifts[4].BreakTimeSt.Split(':')[1];
+
+        //ddlFriShiftEndHrs.SelectedValue = shifts[4].EndTimeSt.Split(':')[0];
+        //ddlFriShiftEndMins.SelectedValue = shifts[4].EndTimeSt.Split(':')[1];
+
+        //ddlFriFlexiInHrs.SelectedValue = shifts[4].FlixeInSt.Split(':')[0];
+        //ddlFriFlexiInMins.SelectedValue = shifts[4].FlixeInSt.Split(':')[1];
+
+        //ddlFriFlexiOutHrs.SelectedValue = shifts[4].FlixeOutSt.Split(':')[0];
+        //ddlFriFlexiOutMins.SelectedValue = shifts[4].FlixeOutSt.Split(':')[1];
+
+        //ddlSatStartTimeHrs.SelectedValue = shifts[5].StartTimeSt.Split(':')[0];
+        //ddlSatStartTimeMins.SelectedValue = shifts[5].StartTimeSt.Split(':')[1];
+
+        //ddlSatBreakDurHrs.SelectedValue = shifts[5].BreakTimeSt.Split(':')[0];
+        //ddlSatBreakDurMins.SelectedValue = shifts[5].BreakTimeSt.Split(':')[1];
+
+        //ddlSatShiftEndHrs.SelectedValue = shifts[5].EndTimeSt.Split(':')[0];
+        //ddlSatShiftEndMins.SelectedValue = shifts[5].EndTimeSt.Split(':')[1];
+
+        //ddlSatFlexiInHrs.SelectedValue = shifts[5].FlixeInSt.Split(':')[0];
+        //ddlSatFlexiInMins.SelectedValue = shifts[5].FlixeInSt.Split(':')[1];
+
+        //ddlSatFlexiOutHrs.SelectedValue = shifts[5].FlixeOutSt.Split(':')[0];
+        //ddlSatFlexiOutMins.SelectedValue = shifts[5].FlixeOutSt.Split(':')[1];
+
+        //ddlSunStartTimeHrs.SelectedValue = shifts[6].StartTimeSt.Split(':')[0];
+        //ddlSunStartTimeMins.SelectedValue = shifts[6].StartTimeSt.Split(':')[1];
+
+        //ddlSunBreakDurHrs.SelectedValue = shifts[6].BreakTimeSt.Split(':')[0];
+        //ddlSunBreakDurMins.SelectedValue = shifts[6].BreakTimeSt.Split(':')[1];
+
+        //ddlSunShiftEndHrs.SelectedValue = shifts[6].EndTimeSt.Split(':')[0];
+        //ddlSunShiftEndMins.SelectedValue = shifts[6].EndTimeSt.Split(':')[1];
+
+        //ddlSunFlexiInHrs.SelectedValue = shifts[6].FlixeInSt.Split(':')[0];
+        //ddlSunFlexiInMins.SelectedValue = shifts[6].FlixeInSt.Split(':')[1];
+
+        //ddlSunFlexiOutHrs.SelectedValue = shifts[6].FlixeOutSt.Split(':')[0];
+        //ddlSunFlexiOutMins.SelectedValue = shifts[6].FlixeOutSt.Split(':')[1];
+
+    }
+
+
+    protected void FillTime()
+    {
+
+        for (int i = 0; i <= 23; i++)
+        {
+            ddlMonStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlTueStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlWedStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlThrStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlFriStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlSatStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlSunStartTimeHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunBreakDurHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunShiftEndHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunFlexiInHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunFlexiOutHrs.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+        }
+
+        for (int i = 0; i <= 59; i++)
+        {
+            ddlMonStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlMonFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlTueStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlTueFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlWedStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlWedFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlThrStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlThrFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlFriStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlFriFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlSatStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSatFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+
+            ddlSunStartTimeMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunBreakDurMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunShiftEndMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunFlexiInMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+            ddlSunFlexiOutMins.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+        }
+
+
+
+        //for (int weekday = 1; weekday <= 7; weekday++)
+        //    for (int i = 0; i <= 24; i++)
+        //        ddl1StartTimeHrs
+        //    ((DropDownList)("ddl" + weekday.ToString() + "StartTimeHrs")).Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+    }
+
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        if (hfShiftId.Value != string.Empty)
+            UpdateShift(Convert.ToInt32(hfShiftId.Value));
+        else
+            AddShift();
+
+    }
+
+    protected void UpdateShift(int id)
+    {
+        try
+        {
+            using (TransactionScope scope = new TransactionScope())
+            {
+                DateTime dt = DateTime.Now;
+
+                //var shifts = context.ShiftDetails.Where(p => p.IsActive == true && p.ShiftId == id).OrderBy(v => v.ShiftDetailId).ToList();
+
+
+                //**updating shift
+                TMS_Setup_Shift detail = context.TMS_Setup_Shift.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id);
+
+                detail.ShiftName = txtShiftName.Value.Trim();
+                if (ddlCompany.SelectedValue != "0")
+                    detail.CompanyId = Convert.ToInt16(ddlCompany.SelectedValue);
+                detail.Description = txtDescription.Value.Trim();
+                //if (ddlDepartment.SelectedValue != "0")
+                //    detail.DepartmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+                detail.ModifiedBy = UserKey;
+                detail.ModifiedDate = dt;
+                detail.IsActive = true;
+                detail.UserIP = UserIP;
+                detail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+
+                foreach (ListItem li in ListBoxDepartment.Items)
+                {
+                    int departmentId = Convert.ToInt32(li.Value);
+                    if (li.Selected)
+                    {
+                        bool departmentShiftCheck = context.TMS_DepartmentShift.Any(ds => ds.ShiftId == detail.ShiftId && ds.DepartmentId == departmentId && ds.IsActive == true);
+                        if (!departmentShiftCheck)
+                        {
+                            TMS_DepartmentShift departmentShift = new TMS_DepartmentShift();
+                            departmentShift.DepartmentId = departmentId;
+                            departmentShift.ShiftId = detail.ShiftId;
+
+                            departmentShift.CreatedBy = UserKey;
+                            departmentShift.CreatedDate = dt;
+                            departmentShift.IsActive = true;
+                            departmentShift.UserIP = UserIP;
+                            departmentShift.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                            context.TMS_DepartmentShift.Add(departmentShift);
+                            context.SaveChanges();
+                        }
+                    }
+                    else
+                    {
+                        TMS_DepartmentShift departmentShift = context.TMS_DepartmentShift.FirstOrDefault(ds => ds.ShiftId == detail.ShiftId && ds.DepartmentId == departmentId && ds.IsActive == true);
+                        if (departmentShift != null)
+                        {
+                            departmentShift.ModifiedBy = UserKey;
+                            departmentShift.ModifiedDate = dt;
+                            departmentShift.IsActive = false;
+                            departmentShift.UserIP = UserIP;
+                            departmentShift.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                            context.SaveChanges();
+                        }
+                    }
+                }
+
+                //**updating shiftdetail
+
+                TMS_Setup_ShiftDetail monshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == mon);
+                TMS_Setup_ShiftDetail tueshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == tue);
+                TMS_Setup_ShiftDetail wedshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == wed);
+                TMS_Setup_ShiftDetail thrshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == thr);
+                TMS_Setup_ShiftDetail frishiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == fri);
+                TMS_Setup_ShiftDetail satshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == sat);
+                TMS_Setup_ShiftDetail sunshiftdetail = context.TMS_Setup_ShiftDetail.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == sun);
+
+                //monshiftdetail.StartTimeSt = ddlMonStartTimeHrs.SelectedValue + ":" + ddlMonStartTimeMins.SelectedValue;
+                //monshiftdetail.StartTimeInt = Convert.ToInt32( ddlMonStartTimeHrs.SelectedValue + ddlMonStartTimeMins.SelectedValue);
+
+                //monshiftdetail.BreakTimeSt = ddlMonBreakDurHrs.SelectedValue + ":" + ddlMonBreakDurMins.SelectedValue;
+                //monshiftdetail.BreakTimeInt = Convert.ToInt32(ddlMonBreakDurHrs.SelectedValue + ddlMonBreakDurMins.SelectedValue);
+
+                //monshiftdetail.EndTimeSt = ddlMonShiftEndHrs.SelectedValue + ":" + ddlMonShiftEndMins.SelectedValue;
+                //monshiftdetail.EndTimeInt = Convert.ToInt32(ddlMonShiftEndHrs.SelectedValue + ddlMonShiftEndMins.SelectedValue);
+
+                //monshiftdetail.FlixeInSt = ddlMonFlexiInHrs.SelectedValue + ":" + ddlMonFlexiInMins.SelectedValue;
+                //monshiftdetail.FlixeInInt = Convert.ToInt32(ddlMonFlexiInHrs.SelectedValue + ddlMonFlexiInMins.SelectedValue);
+
+                //monshiftdetail.FlixeOutSt = ddlMonFlexiOutHrs.SelectedValue + ":" + ddlMonFlexiOutMins.SelectedValue;
+                //monshiftdetail.FlixeOutInt = Convert.ToInt32(ddlMonFlexiOutHrs.SelectedValue + ddlMonFlexiOutMins.SelectedValue);
+
+                int startTime = 0, endTime = 0, breakTime = 0, flexiIn = 0, flexiOut = 0;
+
+                #region MONDAY
+
+                startTime = (Convert.ToInt32(ddlMonStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlMonBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlMonShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlMonFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlMonFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                monshiftdetail.StartTimeSt = ddlMonStartTimeHrs.SelectedValue + ":" + ddlMonStartTimeMins.SelectedValue;
+                monshiftdetail.StartTimeInt = startTime; //Convert.ToInt32(ddlMonStartTimeHrs.SelectedValue.ToString() + ddlMonStartTimeMins.SelectedValue.ToString());
+
+                monshiftdetail.BreakTimeSt = ddlMonBreakDurHrs.SelectedValue + ":" + ddlMonBreakDurMins.SelectedValue;
+                monshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlMonBreakDurHrs.SelectedValue.ToString() + ddlMonBreakDurMins.SelectedValue.ToString());
+
+                monshiftdetail.EndTimeSt = ddlMonShiftEndHrs.SelectedValue + ":" + ddlMonShiftEndMins.SelectedValue;
+                monshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlMonShiftEndHrs.SelectedValue.ToString() + ddlMonShiftEndMins.SelectedValue.ToString());
+
+                monshiftdetail.FlixeInSt = ddlMonFlexiInHrs.SelectedValue + ":" + ddlMonFlexiInMins.SelectedValue;
+                monshiftdetail.FlixeInInt = flexiIn; //Convert.ToInt32(ddlMonFlexiInHrs.SelectedValue.ToString() + ddlMonFlexiInMins.SelectedValue.ToString());
+
+                monshiftdetail.FlixeOutSt = ddlMonFlexiOutHrs.SelectedValue + ":" + ddlMonFlexiOutMins.SelectedValue;
+                monshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlMonFlexiOutHrs.SelectedValue.ToString() + ddlMonFlexiOutMins.SelectedValue.ToString());
+
+                if (rbtnMonWorking.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonWorking.Value);
+                }
+
+                if (rbtnMonAlternate.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonAlternate.Value);
+                }
+
+                if (rbtnMonHoliday.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonHoliday.Value);
+                }
+
+
+                monshiftdetail.Day = DayOfWeek.Monday.ToString();
+                monshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Monday);
+
+                monshiftdetail.ModifiedBy = UserKey;
+                monshiftdetail.ModifiedDate = dt;
+                monshiftdetail.IsActive = true;
+                monshiftdetail.UserIP = UserIP;
+                monshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+                context.SaveChanges();
+
+                #endregion
+
+                #region TUESDAY
+                startTime = (Convert.ToInt32(ddlTueStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlTueBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlTueShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlTueFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlTueFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueFlexiOutMins.SelectedValue.ToString()) * 60);
+
+
+                tueshiftdetail.StartTimeSt = ddlTueStartTimeHrs.SelectedValue + ":" + ddlTueStartTimeMins.SelectedValue;
+                tueshiftdetail.StartTimeInt = startTime;//Convert.ToInt32(ddlTueStartTimeHrs.SelectedValue + ddlTueStartTimeMins.SelectedValue);
+
+                tueshiftdetail.BreakTimeSt = ddlTueBreakDurHrs.SelectedValue + ":" + ddlTueBreakDurMins.SelectedValue;
+                tueshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlTueBreakDurHrs.SelectedValue + ddlTueBreakDurMins.SelectedValue);
+
+                tueshiftdetail.EndTimeSt = ddlTueShiftEndHrs.SelectedValue + ":" + ddlTueShiftEndMins.SelectedValue;
+                tueshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlTueShiftEndHrs.SelectedValue + ddlTueShiftEndMins.SelectedValue);
+
+                tueshiftdetail.FlixeInSt = ddlTueFlexiInHrs.SelectedValue + ":" + ddlTueFlexiInMins.SelectedValue;
+                tueshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlTueFlexiInHrs.SelectedValue + ddlTueFlexiInMins.SelectedValue);
+
+                tueshiftdetail.FlixeOutSt = ddlTueFlexiOutHrs.SelectedValue + ":" + ddlTueFlexiOutMins.SelectedValue;
+                tueshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlTueFlexiOutHrs.SelectedValue + ddlTueFlexiOutMins.SelectedValue);
+
+                //tueshiftdetail.StartTimeSt = ddlTueStartTimeHrs.SelectedValue + ":" + ddlTueStartTimeMins.SelectedValue;
+                //tueshiftdetail.StartTimeInt = Convert.ToInt32(ddlTueStartTimeHrs.SelectedValue + ddlTueStartTimeMins.SelectedValue);
+
+                //tueshiftdetail.BreakTimeSt = ddlTueBreakDurHrs.SelectedValue + ":" + ddlTueBreakDurMins.SelectedValue;
+                //tueshiftdetail.BreakTimeInt = Convert.ToInt32(ddlTueBreakDurHrs.SelectedValue + ddlTueBreakDurMins.SelectedValue);
+
+                //tueshiftdetail.EndTimeSt = ddlTueShiftEndHrs.SelectedValue + ":" + ddlTueShiftEndMins.SelectedValue;
+                //tueshiftdetail.EndTimeInt = Convert.ToInt32(ddlTueShiftEndHrs.SelectedValue + ddlTueShiftEndMins.SelectedValue);
+
+                //tueshiftdetail.FlixeInSt = ddlTueFlexiInHrs.SelectedValue + ":" + ddlTueFlexiInMins.SelectedValue;
+                //tueshiftdetail.FlixeInInt = Convert.ToInt32(ddlTueFlexiInHrs.SelectedValue + ddlTueFlexiInMins.SelectedValue);
+
+                //tueshiftdetail.FlixeOutSt = ddlTueFlexiOutHrs.SelectedValue + ":" + ddlTueFlexiOutMins.SelectedValue;
+                //tueshiftdetail.FlixeOutInt = Convert.ToInt32(ddlTueFlexiOutHrs.SelectedValue + ddlTueFlexiOutMins.SelectedValue);
+
+                if (rbtnTueWorking.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueWorking.Value);
+                }
+
+                if (rbtnTueAlternate.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueAlternate.Value);
+                }
+
+                if (rbtnTueHoliday.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueHoliday.Value);
+                }
+
+                tueshiftdetail.Day = DayOfWeek.Tuesday.ToString();
+                tueshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Tuesday);
+
+                tueshiftdetail.ModifiedBy = UserKey;
+                tueshiftdetail.ModifiedDate = dt;
+                tueshiftdetail.IsActive = true;
+                tueshiftdetail.UserIP = UserIP;
+                tueshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                #endregion
+
+                #region WEDNESDAY
+
+                startTime = (Convert.ToInt32(ddlWedStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlWedBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlWedShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlWedFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlWedFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                wedshiftdetail.StartTimeSt = ddlWedStartTimeHrs.SelectedValue + ":" + ddlWedStartTimeMins.SelectedValue;
+                wedshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlWedStartTimeHrs.SelectedValue + ddlWedStartTimeMins.SelectedValue);
+
+                wedshiftdetail.BreakTimeSt = ddlWedBreakDurHrs.SelectedValue + ":" + ddlWedBreakDurMins.SelectedValue;
+                wedshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlWedBreakDurHrs.SelectedValue + ddlWedBreakDurMins.SelectedValue);
+
+                wedshiftdetail.EndTimeSt = ddlWedShiftEndHrs.SelectedValue + ":" + ddlWedShiftEndMins.SelectedValue;
+                wedshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlWedShiftEndHrs.SelectedValue + ddlWedShiftEndMins.SelectedValue);
+
+                wedshiftdetail.FlixeInSt = ddlWedFlexiInHrs.SelectedValue + ":" + ddlWedFlexiInMins.SelectedValue;
+                wedshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlWedFlexiInHrs.SelectedValue + ddlWedFlexiInMins.SelectedValue);
+
+                wedshiftdetail.FlixeOutSt = ddlWedFlexiOutHrs.SelectedValue + ":" + ddlWedFlexiOutMins.SelectedValue;
+                wedshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlWedFlexiOutHrs.SelectedValue + ddlWedFlexiOutMins.SelectedValue);
+
+                //wedshiftdetail.StartTimeSt = ddlWedStartTimeHrs.SelectedValue + ":" + ddlWedStartTimeMins.SelectedValue;
+                //wedshiftdetail.StartTimeInt = Convert.ToInt32(ddlWedStartTimeHrs.SelectedValue + ddlWedStartTimeMins.SelectedValue);
+
+                //wedshiftdetail.BreakTimeSt = ddlWedBreakDurHrs.SelectedValue + ":" + ddlWedBreakDurMins.SelectedValue;
+                //wedshiftdetail.BreakTimeInt = Convert.ToInt32(ddlWedBreakDurHrs.SelectedValue + ddlWedBreakDurMins.SelectedValue);
+
+                //wedshiftdetail.EndTimeSt = ddlWedShiftEndHrs.SelectedValue + ":" + ddlWedShiftEndMins.SelectedValue;
+                //wedshiftdetail.EndTimeInt = Convert.ToInt32(ddlWedShiftEndHrs.SelectedValue + ddlWedShiftEndMins.SelectedValue);
+
+                //wedshiftdetail.FlixeInSt = ddlWedFlexiInHrs.SelectedValue + ":" + ddlWedFlexiInMins.SelectedValue;
+                //wedshiftdetail.FlixeInInt = Convert.ToInt32(ddlWedFlexiInHrs.SelectedValue + ddlWedFlexiInMins.SelectedValue);
+
+                //wedshiftdetail.FlixeOutSt = ddlWedFlexiOutHrs.SelectedValue + ":" + ddlWedFlexiOutMins.SelectedValue;
+                //wedshiftdetail.FlixeOutInt = Convert.ToInt32(ddlWedFlexiOutHrs.SelectedValue + ddlWedFlexiOutMins.SelectedValue);
+
+                if (rbtnWedWorking.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedWorking.Value);
+                }
+
+                if (rbtnWedAlternate.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedAlternate.Value);
+                }
+
+                if (rbtnWedHoliday.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedHoliday.Value);
+                }
+
+                wedshiftdetail.Day = DayOfWeek.Wednesday.ToString();
+                wedshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Wednesday);
+
+                wedshiftdetail.ModifiedBy = UserKey;
+                wedshiftdetail.ModifiedDate = dt;
+                wedshiftdetail.IsActive = true;
+                wedshiftdetail.UserIP = UserIP;
+                wedshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+                #endregion
+
+                #region THURSDAY
+
+                startTime = (Convert.ToInt32(ddlThrStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlThrBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlThrShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlThrFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlThrFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                thrshiftdetail.StartTimeSt = ddlThrStartTimeHrs.SelectedValue + ":" + ddlThrStartTimeMins.SelectedValue;
+                thrshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlThrStartTimeHrs.SelectedValue + ddlThrStartTimeMins.SelectedValue);
+
+                thrshiftdetail.BreakTimeSt = ddlThrBreakDurHrs.SelectedValue + ":" + ddlThrBreakDurMins.SelectedValue;
+                thrshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlThrBreakDurHrs.SelectedValue + ddlThrBreakDurMins.SelectedValue);
+
+                thrshiftdetail.EndTimeSt = ddlThrShiftEndHrs.SelectedValue + ":" + ddlThrShiftEndMins.SelectedValue;
+                thrshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlThrShiftEndHrs.SelectedValue + ddlThrShiftEndMins.SelectedValue);
+
+                thrshiftdetail.FlixeInSt = ddlThrFlexiInHrs.SelectedValue + ":" + ddlThrFlexiInMins.SelectedValue;
+                thrshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlThrFlexiInHrs.SelectedValue + ddlThrFlexiInMins.SelectedValue);
+
+                thrshiftdetail.FlixeOutSt = ddlThrFlexiOutHrs.SelectedValue + ":" + ddlThrFlexiOutMins.SelectedValue;
+                thrshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlThrFlexiOutHrs.SelectedValue + ddlThrFlexiOutMins.SelectedValue);
+
+                //thrshiftdetail.StartTimeSt = ddlThrStartTimeHrs.SelectedValue + ":" + ddlThrStartTimeMins.SelectedValue;
+                //thrshiftdetail.StartTimeInt = Convert.ToInt32(ddlThrStartTimeHrs.SelectedValue + ddlThrStartTimeMins.SelectedValue);
+
+                //thrshiftdetail.BreakTimeSt = ddlThrBreakDurHrs.SelectedValue + ":" + ddlThrBreakDurMins.SelectedValue;
+                //thrshiftdetail.BreakTimeInt = Convert.ToInt32(ddlThrBreakDurHrs.SelectedValue + ddlThrBreakDurMins.SelectedValue);
+
+                //thrshiftdetail.EndTimeSt = ddlThrShiftEndHrs.SelectedValue + ":" + ddlThrShiftEndMins.SelectedValue;
+                //thrshiftdetail.EndTimeInt = Convert.ToInt32(ddlThrShiftEndHrs.SelectedValue + ddlThrShiftEndMins.SelectedValue);
+
+                //thrshiftdetail.FlixeInSt = ddlThrFlexiInHrs.SelectedValue + ":" + ddlThrFlexiInMins.SelectedValue;
+                //thrshiftdetail.FlixeInInt = Convert.ToInt32(ddlThrFlexiInHrs.SelectedValue + ddlThrFlexiInMins.SelectedValue);
+
+                //thrshiftdetail.FlixeOutSt = ddlThrFlexiOutHrs.SelectedValue + ":" + ddlThrFlexiOutMins.SelectedValue;
+                //thrshiftdetail.FlixeOutInt = Convert.ToInt32(ddlThrFlexiOutHrs.SelectedValue + ddlThrFlexiOutMins.SelectedValue);
+
+                if (rbtnThrWorking.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrWorking.Value);
+                }
+
+                if (rbtnThrAlternate.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrAlternate.Value);
+                }
+
+                if (rbtnThrHoliday.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrHoliday.Value);
+                }
+
+                thrshiftdetail.Day = DayOfWeek.Thursday.ToString();
+                thrshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Thursday);
+
+                thrshiftdetail.ModifiedBy = UserKey;
+                thrshiftdetail.ModifiedDate = dt;
+                thrshiftdetail.IsActive = true;
+                thrshiftdetail.UserIP = UserIP;
+                thrshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+                #endregion
+
+                #region FRIDAY
+                startTime = (Convert.ToInt32(ddlFriStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlFriBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlFriShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlFriFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlFriFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                frishiftdetail.StartTimeSt = ddlFriStartTimeHrs.SelectedValue + ":" + ddlFriStartTimeMins.SelectedValue;
+                frishiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlFriStartTimeHrs.SelectedValue + ddlFriStartTimeMins.SelectedValue);
+
+                frishiftdetail.BreakTimeSt = ddlFriBreakDurHrs.SelectedValue + ":" + ddlFriBreakDurMins.SelectedValue;
+                frishiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlFriBreakDurHrs.SelectedValue + ddlFriBreakDurMins.SelectedValue);
+
+                frishiftdetail.EndTimeSt = ddlFriShiftEndHrs.SelectedValue + ":" + ddlFriShiftEndMins.SelectedValue;
+                frishiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlFriShiftEndHrs.SelectedValue + ddlFriShiftEndMins.SelectedValue);
+
+                frishiftdetail.FlixeInSt = ddlFriFlexiInHrs.SelectedValue + ":" + ddlFriFlexiInMins.SelectedValue;
+                frishiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlFriFlexiInHrs.SelectedValue + ddlFriFlexiInMins.SelectedValue);
+
+                frishiftdetail.FlixeOutSt = ddlFriFlexiOutHrs.SelectedValue + ":" + ddlFriFlexiOutMins.SelectedValue;
+                frishiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlFriFlexiOutHrs.SelectedValue + ddlFriFlexiOutMins.SelectedValue);
+
+                //frishiftdetail.StartTimeSt = ddlFriStartTimeHrs.SelectedValue + ":" + ddlFriStartTimeMins.SelectedValue;
+                //frishiftdetail.StartTimeInt = Convert.ToInt32(ddlFriStartTimeHrs.SelectedValue + ddlFriStartTimeMins.SelectedValue);
+
+                //frishiftdetail.BreakTimeSt = ddlFriBreakDurHrs.SelectedValue + ":" + ddlFriBreakDurMins.SelectedValue;
+                //frishiftdetail.BreakTimeInt = Convert.ToInt32(ddlFriBreakDurHrs.SelectedValue + ddlFriBreakDurMins.SelectedValue);
+
+                //frishiftdetail.EndTimeSt = ddlFriShiftEndHrs.SelectedValue + ":" + ddlFriShiftEndMins.SelectedValue;
+                //frishiftdetail.EndTimeInt = Convert.ToInt32(ddlFriShiftEndHrs.SelectedValue + ddlFriShiftEndMins.SelectedValue);
+
+                //frishiftdetail.FlixeInSt = ddlFriFlexiInHrs.SelectedValue + ":" + ddlFriFlexiInMins.SelectedValue;
+                //frishiftdetail.FlixeInInt = Convert.ToInt32(ddlFriFlexiInHrs.SelectedValue + ddlFriFlexiInMins.SelectedValue);
+
+                //frishiftdetail.FlixeOutSt = ddlFriFlexiOutHrs.SelectedValue + ":" + ddlFriFlexiOutMins.SelectedValue;
+                //frishiftdetail.FlixeOutInt = Convert.ToInt32(ddlFriFlexiOutHrs.SelectedValue + ddlFriFlexiOutMins.SelectedValue);
+
+                if (rbtnFriWorking.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriWorking.Value);
+                }
+
+                if (rbtnFriAlternate.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriAlternate.Value);
+                }
+
+                if (rbtnFriHoliday.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriHoliday.Value);
+                }
+
+                frishiftdetail.Day = DayOfWeek.Friday.ToString();
+                frishiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Friday);
+
+                frishiftdetail.ModifiedBy = UserKey;
+                frishiftdetail.ModifiedDate = dt;
+                frishiftdetail.IsActive = true;
+                frishiftdetail.UserIP = UserIP;
+                frishiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+                #endregion
+
+                #region SATURDAY
+
+                startTime = (Convert.ToInt32(ddlSatStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlSatBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlSatShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlSatFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlSatFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                satshiftdetail.StartTimeSt = ddlSatStartTimeHrs.SelectedValue + ":" + ddlSatStartTimeMins.SelectedValue;
+                satshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlSatStartTimeHrs.SelectedValue + ddlSatStartTimeMins.SelectedValue);
+
+                satshiftdetail.BreakTimeSt = ddlSatBreakDurHrs.SelectedValue + ":" + ddlSatBreakDurMins.SelectedValue;
+                satshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlSatBreakDurHrs.SelectedValue + ddlSatBreakDurMins.SelectedValue);
+
+                satshiftdetail.EndTimeSt = ddlSatShiftEndHrs.SelectedValue + ":" + ddlSatShiftEndMins.SelectedValue;
+                satshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlSatShiftEndHrs.SelectedValue + ddlSatShiftEndMins.SelectedValue);
+
+                satshiftdetail.FlixeInSt = ddlSatFlexiInHrs.SelectedValue + ":" + ddlSatFlexiInMins.SelectedValue;
+                satshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlSatFlexiInHrs.SelectedValue + ddlSatFlexiInMins.SelectedValue);
+
+                satshiftdetail.FlixeOutSt = ddlSatFlexiOutHrs.SelectedValue + ":" + ddlSatFlexiOutMins.SelectedValue;
+                satshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlSatFlexiOutHrs.SelectedValue + ddlSatFlexiOutMins.SelectedValue);
+
+
+                //satshiftdetail.StartTimeSt = ddlSatStartTimeHrs.SelectedValue + ":" + ddlSatStartTimeMins.SelectedValue;
+                //satshiftdetail.StartTimeInt = Convert.ToInt32(ddlSatStartTimeHrs.SelectedValue + ddlSatStartTimeMins.SelectedValue);
+
+                //satshiftdetail.BreakTimeSt = ddlSatBreakDurHrs.SelectedValue + ":" + ddlSatBreakDurMins.SelectedValue;
+                //satshiftdetail.BreakTimeInt = Convert.ToInt32(ddlSatBreakDurHrs.SelectedValue + ddlSatBreakDurMins.SelectedValue);
+
+                //satshiftdetail.EndTimeSt = ddlSatShiftEndHrs.SelectedValue + ":" + ddlSatShiftEndMins.SelectedValue;
+                //satshiftdetail.EndTimeInt = Convert.ToInt32(ddlSatShiftEndHrs.SelectedValue + ddlSatShiftEndMins.SelectedValue);
+
+                //satshiftdetail.FlixeInSt = ddlSatFlexiInHrs.SelectedValue + ":" + ddlSatFlexiInMins.SelectedValue;
+                //satshiftdetail.FlixeInInt = Convert.ToInt32(ddlSatFlexiInHrs.SelectedValue + ddlSatFlexiInMins.SelectedValue);
+
+                //satshiftdetail.FlixeOutSt = ddlSatFlexiOutHrs.SelectedValue + ":" + ddlSatFlexiOutMins.SelectedValue;
+                //satshiftdetail.FlixeOutInt = Convert.ToInt32(ddlSatFlexiOutHrs.SelectedValue + ddlSatFlexiOutMins.SelectedValue);
+
+                if (rbtnSatWorking.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatWorking.Value);
+                }
+
+                if (rbtnSatAlternate.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatAlternate.Value);
+                }
+
+                if (rbtnSatHoliday.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatHoliday.Value);
+                }
+
+                satshiftdetail.Day = DayOfWeek.Saturday.ToString();
+                satshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Saturday);
+
+                satshiftdetail.ModifiedBy = UserKey;
+                satshiftdetail.ModifiedDate = dt;
+                satshiftdetail.IsActive = true;
+                satshiftdetail.UserIP = UserIP;
+                satshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                #endregion
+
+                #region SUNDAY
+
+                startTime = (Convert.ToInt32(ddlSunStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlSunBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlSunShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlSunFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlSunFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                sunshiftdetail.StartTimeSt = ddlSunStartTimeHrs.SelectedValue + ":" + ddlSunStartTimeMins.SelectedValue;
+                sunshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlSunStartTimeHrs.SelectedValue + ddlSunStartTimeMins.SelectedValue);
+
+                sunshiftdetail.BreakTimeSt = ddlSunBreakDurHrs.SelectedValue + ":" + ddlSunBreakDurMins.SelectedValue;
+                sunshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlSunBreakDurHrs.SelectedValue + ddlSunBreakDurMins.SelectedValue);
+
+                sunshiftdetail.EndTimeSt = ddlSunShiftEndHrs.SelectedValue + ":" + ddlSunShiftEndMins.SelectedValue;
+                sunshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlSunShiftEndHrs.SelectedValue + ddlSunShiftEndMins.SelectedValue);
+
+                sunshiftdetail.FlixeInSt = ddlSunFlexiInHrs.SelectedValue + ":" + ddlSunFlexiInMins.SelectedValue;
+                sunshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlSunFlexiInHrs.SelectedValue + ddlSunFlexiInMins.SelectedValue);
+
+                sunshiftdetail.FlixeOutSt = ddlSunFlexiOutHrs.SelectedValue + ":" + ddlSunFlexiOutMins.SelectedValue;
+                sunshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlSunFlexiOutHrs.SelectedValue + ddlSunFlexiOutMins.SelectedValue);
+
+                //sunshiftdetail.StartTimeSt = ddlSunStartTimeHrs.SelectedValue + ":" + ddlSunStartTimeMins.SelectedValue;
+                //sunshiftdetail.StartTimeInt = Convert.ToInt32(ddlSunStartTimeHrs.SelectedValue + ddlSunStartTimeMins.SelectedValue);
+
+                //sunshiftdetail.BreakTimeSt = ddlSunBreakDurHrs.SelectedValue + ":" + ddlSunBreakDurMins.SelectedValue;
+                //sunshiftdetail.BreakTimeInt = Convert.ToInt32(ddlSunBreakDurHrs.SelectedValue + ddlSunBreakDurMins.SelectedValue);
+
+                //sunshiftdetail.EndTimeSt = ddlSunShiftEndHrs.SelectedValue + ":" + ddlSunShiftEndMins.SelectedValue;
+                //sunshiftdetail.EndTimeInt = Convert.ToInt32(ddlSunShiftEndHrs.SelectedValue + ddlSunShiftEndMins.SelectedValue);
+
+                //sunshiftdetail.FlixeInSt = ddlSunFlexiInHrs.SelectedValue + ":" + ddlSunFlexiInMins.SelectedValue;
+                //sunshiftdetail.FlixeInInt = Convert.ToInt32(ddlSunFlexiInHrs.SelectedValue + ddlSunFlexiInMins.SelectedValue);
+
+                //sunshiftdetail.FlixeOutSt = ddlSunFlexiOutHrs.SelectedValue + ":" + ddlSunFlexiOutMins.SelectedValue;
+                //sunshiftdetail.FlixeOutInt = Convert.ToInt32(ddlSunFlexiOutHrs.SelectedValue + ddlSunFlexiOutMins.SelectedValue);
+
+                if (rbtnSunWorking.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunWorking.Value);
+                }
+
+                if (rbtnSunAlternate.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunAlternate.Value);
+                }
+
+                if (rbtnSunHoliday.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunHoliday.Value);
+                }
+
+                sunshiftdetail.Day = DayOfWeek.Sunday.ToString();
+                sunshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Sunday);
+
+                sunshiftdetail.ModifiedBy = UserKey;
+                sunshiftdetail.ModifiedDate = dt;
+                sunshiftdetail.IsActive = true;
+                sunshiftdetail.UserIP = UserIP;
+                sunshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                #endregion
+
+                context.SaveChanges();
+
+                scope.Complete();
+            }
+            //BindRepeater();
+            //BindDropdown();
+            //ResetControls();
+            lblSummary.Text = "Record Inserted Successfully";
+            divSummary.Attributes.Add("class", "okMessage");
+            divSummary.Visible = true;
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+
+    protected void AddShift()
+    {
+
+        try
+        {
+            using (TransactionScope scope = new TransactionScope())
+            {
+                DateTime dt = DateTime.Now;
+                //var shifts = context.ShiftDetails.Where(p => p.IsActive == true && p.ShiftId == id).OrderBy(v => v.ShiftDetailId).ToList();
+
+                //**adding shift
+                TMS_Setup_Shift shift = new TMS_Setup_Shift();//context.Shifts.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id);
+
+                shift.ShiftName = txtShiftName.Value.Trim();
+                if (ddlCompany.SelectedValue != "0")
+                    shift.CompanyId = Convert.ToInt16(ddlCompany.SelectedValue);
+                shift.Description = txtDescription.Value.Trim();
+                //if (ddlDepartment.SelectedValue != "0")
+                //    shift.DepartmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+                shift.CreatedBy = UserKey;
+                shift.CreatedDate = dt;
+                shift.IsActive = true;
+                shift.UserIP = UserIP;
+                shift.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                context.TMS_Setup_Shift.Add(shift);
+                context.SaveChanges();
+
+                foreach (ListItem li in ListBoxDepartment.Items)
+                {
+                    if (li.Selected)
+                    {
+                        TMS_DepartmentShift departmentShift = new TMS_DepartmentShift();
+                        departmentShift.DepartmentId = Convert.ToInt32(li.Value);
+                        departmentShift.ShiftId = shift.ShiftId;
+
+                        departmentShift.CreatedBy = UserKey;
+                        departmentShift.CreatedDate = dt;
+                        departmentShift.IsActive = true;
+                        departmentShift.UserIP = UserIP;
+                        departmentShift.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                        context.TMS_DepartmentShift.Add(departmentShift);
+                        context.SaveChanges();
+                    }
+                }
+
+                //**adding shiftdetail
+
+                TMS_Setup_ShiftDetail monshiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Monday));
+                TMS_Setup_ShiftDetail tueshiftdetail = new TMS_Setup_ShiftDetail(); //context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Tuesday));
+                TMS_Setup_ShiftDetail wedshiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Wednesday));
+                TMS_Setup_ShiftDetail thrshiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Thursday));
+                TMS_Setup_ShiftDetail frishiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Friday));
+                TMS_Setup_ShiftDetail satshiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Saturday));
+                TMS_Setup_ShiftDetail sunshiftdetail = new TMS_Setup_ShiftDetail();//context.ShiftDetails.FirstOrDefault(p => p.IsActive == true && p.ShiftId == id && p.DayInt == Convert.ToInt32(DayOfWeek.Sunday));
+
+                int startTime = 0, endTime = 0, breakTime = 0, flexiIn = 0, flexiOut = 0;
+
+                #region MONDAY
+
+                startTime = (Convert.ToInt32(ddlMonStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlMonBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlMonShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlMonFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlMonFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlMonFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                monshiftdetail.StartTimeSt = ddlMonStartTimeHrs.SelectedValue + ":" + ddlMonStartTimeMins.SelectedValue;
+                monshiftdetail.StartTimeInt = startTime; //Convert.ToInt32(ddlMonStartTimeHrs.SelectedValue.ToString() + ddlMonStartTimeMins.SelectedValue.ToString());
+
+                monshiftdetail.BreakTimeSt = ddlMonBreakDurHrs.SelectedValue + ":" + ddlMonBreakDurMins.SelectedValue;
+                monshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlMonBreakDurHrs.SelectedValue.ToString() + ddlMonBreakDurMins.SelectedValue.ToString());
+
+                monshiftdetail.EndTimeSt = ddlMonShiftEndHrs.SelectedValue + ":" + ddlMonShiftEndMins.SelectedValue;
+                monshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlMonShiftEndHrs.SelectedValue.ToString() + ddlMonShiftEndMins.SelectedValue.ToString());
+
+                monshiftdetail.FlixeInSt = ddlMonFlexiInHrs.SelectedValue + ":" + ddlMonFlexiInMins.SelectedValue;
+                monshiftdetail.FlixeInInt = flexiIn; //Convert.ToInt32(ddlMonFlexiInHrs.SelectedValue.ToString() + ddlMonFlexiInMins.SelectedValue.ToString());
+
+                monshiftdetail.FlixeOutSt = ddlMonFlexiOutHrs.SelectedValue + ":" + ddlMonFlexiOutMins.SelectedValue;
+                monshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlMonFlexiOutHrs.SelectedValue.ToString() + ddlMonFlexiOutMins.SelectedValue.ToString());
+
+                if (rbtnMonWorking.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonWorking.Value);
+                }
+
+                if (rbtnMonAlternate.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonAlternate.Value);
+                }
+
+                if (rbtnMonHoliday.Checked)
+                {
+                    monshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnMonHoliday.Value);
+                }
+
+
+                monshiftdetail.Day = DayOfWeek.Monday.ToString();
+                monshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Monday);
+
+                monshiftdetail.CreatedBy = UserKey;
+                monshiftdetail.CreatedDate = dt;
+                monshiftdetail.IsActive = true;
+                monshiftdetail.UserIP = UserIP;
+                monshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                monshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(monshiftdetail);
+                #endregion
+
+                #region TUESDAY
+
+                startTime = (Convert.ToInt32(ddlTueStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlTueBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlTueShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlTueFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlTueFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlTueFlexiOutMins.SelectedValue.ToString()) * 60);
+
+
+                tueshiftdetail.StartTimeSt = ddlTueStartTimeHrs.SelectedValue + ":" + ddlTueStartTimeMins.SelectedValue;
+                tueshiftdetail.StartTimeInt = startTime;//Convert.ToInt32(ddlTueStartTimeHrs.SelectedValue + ddlTueStartTimeMins.SelectedValue);
+
+                tueshiftdetail.BreakTimeSt = ddlTueBreakDurHrs.SelectedValue + ":" + ddlTueBreakDurMins.SelectedValue;
+                tueshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlTueBreakDurHrs.SelectedValue + ddlTueBreakDurMins.SelectedValue);
+
+                tueshiftdetail.EndTimeSt = ddlTueShiftEndHrs.SelectedValue + ":" + ddlTueShiftEndMins.SelectedValue;
+                tueshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlTueShiftEndHrs.SelectedValue + ddlTueShiftEndMins.SelectedValue);
+
+                tueshiftdetail.FlixeInSt = ddlTueFlexiInHrs.SelectedValue + ":" + ddlTueFlexiInMins.SelectedValue;
+                tueshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlTueFlexiInHrs.SelectedValue + ddlTueFlexiInMins.SelectedValue);
+
+                tueshiftdetail.FlixeOutSt = ddlTueFlexiOutHrs.SelectedValue + ":" + ddlTueFlexiOutMins.SelectedValue;
+                tueshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlTueFlexiOutHrs.SelectedValue + ddlTueFlexiOutMins.SelectedValue);
+
+                if (rbtnTueWorking.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueWorking.Value);
+                }
+
+                if (rbtnTueAlternate.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueAlternate.Value);
+                }
+
+                if (rbtnTueHoliday.Checked)
+                {
+                    tueshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnTueHoliday.Value);
+                }
+
+                tueshiftdetail.Day = DayOfWeek.Tuesday.ToString();
+                tueshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Tuesday);
+
+                tueshiftdetail.CreatedBy = UserKey;
+                tueshiftdetail.CreatedDate = dt;
+                tueshiftdetail.IsActive = true;
+                tueshiftdetail.UserIP = UserIP;
+                tueshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                tueshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(tueshiftdetail);
+                #endregion
+
+                #region WEDNESDAY
+
+                startTime = (Convert.ToInt32(ddlWedStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlWedBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlWedShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlWedFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlWedFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlWedFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                wedshiftdetail.StartTimeSt = ddlWedStartTimeHrs.SelectedValue + ":" + ddlWedStartTimeMins.SelectedValue;
+                wedshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlWedStartTimeHrs.SelectedValue + ddlWedStartTimeMins.SelectedValue);
+
+                wedshiftdetail.BreakTimeSt = ddlWedBreakDurHrs.SelectedValue + ":" + ddlWedBreakDurMins.SelectedValue;
+                wedshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlWedBreakDurHrs.SelectedValue + ddlWedBreakDurMins.SelectedValue);
+
+                wedshiftdetail.EndTimeSt = ddlWedShiftEndHrs.SelectedValue + ":" + ddlWedShiftEndMins.SelectedValue;
+                wedshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlWedShiftEndHrs.SelectedValue + ddlWedShiftEndMins.SelectedValue);
+
+                wedshiftdetail.FlixeInSt = ddlWedFlexiInHrs.SelectedValue + ":" + ddlWedFlexiInMins.SelectedValue;
+                wedshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlWedFlexiInHrs.SelectedValue + ddlWedFlexiInMins.SelectedValue);
+
+                wedshiftdetail.FlixeOutSt = ddlWedFlexiOutHrs.SelectedValue + ":" + ddlWedFlexiOutMins.SelectedValue;
+                wedshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlWedFlexiOutHrs.SelectedValue + ddlWedFlexiOutMins.SelectedValue);
+
+                if (rbtnWedWorking.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedWorking.Value);
+                }
+
+                if (rbtnWedAlternate.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedAlternate.Value);
+                }
+
+                if (rbtnWedHoliday.Checked)
+                {
+                    wedshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnWedHoliday.Value);
+                }
+
+                wedshiftdetail.Day = DayOfWeek.Wednesday.ToString();
+                wedshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Wednesday);
+
+                wedshiftdetail.CreatedBy = UserKey;
+                wedshiftdetail.CreatedDate = dt;
+                wedshiftdetail.IsActive = true;
+                wedshiftdetail.UserIP = UserIP;
+                wedshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                wedshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(wedshiftdetail);
+
+                #endregion
+
+                #region THURSDAY
+
+                startTime = (Convert.ToInt32(ddlThrStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlThrBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlThrShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlThrFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlThrFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlThrFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                thrshiftdetail.StartTimeSt = ddlThrStartTimeHrs.SelectedValue + ":" + ddlThrStartTimeMins.SelectedValue;
+                thrshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlThrStartTimeHrs.SelectedValue + ddlThrStartTimeMins.SelectedValue);
+
+                thrshiftdetail.BreakTimeSt = ddlThrBreakDurHrs.SelectedValue + ":" + ddlThrBreakDurMins.SelectedValue;
+                thrshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlThrBreakDurHrs.SelectedValue + ddlThrBreakDurMins.SelectedValue);
+
+                thrshiftdetail.EndTimeSt = ddlThrShiftEndHrs.SelectedValue + ":" + ddlThrShiftEndMins.SelectedValue;
+                thrshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlThrShiftEndHrs.SelectedValue + ddlThrShiftEndMins.SelectedValue);
+
+                thrshiftdetail.FlixeInSt = ddlThrFlexiInHrs.SelectedValue + ":" + ddlThrFlexiInMins.SelectedValue;
+                thrshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlThrFlexiInHrs.SelectedValue + ddlThrFlexiInMins.SelectedValue);
+
+                thrshiftdetail.FlixeOutSt = ddlThrFlexiOutHrs.SelectedValue + ":" + ddlThrFlexiOutMins.SelectedValue;
+                thrshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlThrFlexiOutHrs.SelectedValue + ddlThrFlexiOutMins.SelectedValue);
+
+                if (rbtnThrWorking.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrWorking.Value);
+                }
+
+                if (rbtnThrAlternate.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrAlternate.Value);
+                }
+
+                if (rbtnThrHoliday.Checked)
+                {
+                    thrshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnThrHoliday.Value);
+                }
+
+                thrshiftdetail.Day = DayOfWeek.Thursday.ToString();
+                thrshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Thursday);
+
+                thrshiftdetail.CreatedBy = UserKey;
+                thrshiftdetail.CreatedDate = dt;
+                thrshiftdetail.IsActive = true;
+                thrshiftdetail.UserIP = UserIP;
+                thrshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                thrshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(thrshiftdetail);
+
+                #endregion
+
+                #region FRIDAY
+
+                startTime = (Convert.ToInt32(ddlFriStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlFriBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlFriShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlFriFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlFriFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlFriFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                frishiftdetail.StartTimeSt = ddlFriStartTimeHrs.SelectedValue + ":" + ddlFriStartTimeMins.SelectedValue;
+                frishiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlFriStartTimeHrs.SelectedValue + ddlFriStartTimeMins.SelectedValue);
+
+                frishiftdetail.BreakTimeSt = ddlFriBreakDurHrs.SelectedValue + ":" + ddlFriBreakDurMins.SelectedValue;
+                frishiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlFriBreakDurHrs.SelectedValue + ddlFriBreakDurMins.SelectedValue);
+
+                frishiftdetail.EndTimeSt = ddlFriShiftEndHrs.SelectedValue + ":" + ddlFriShiftEndMins.SelectedValue;
+                frishiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlFriShiftEndHrs.SelectedValue + ddlFriShiftEndMins.SelectedValue);
+
+                frishiftdetail.FlixeInSt = ddlFriFlexiInHrs.SelectedValue + ":" + ddlFriFlexiInMins.SelectedValue;
+                frishiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlFriFlexiInHrs.SelectedValue + ddlFriFlexiInMins.SelectedValue);
+
+                frishiftdetail.FlixeOutSt = ddlFriFlexiOutHrs.SelectedValue + ":" + ddlFriFlexiOutMins.SelectedValue;
+                frishiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlFriFlexiOutHrs.SelectedValue + ddlFriFlexiOutMins.SelectedValue);
+
+                if (rbtnFriWorking.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriWorking.Value);
+                }
+
+                if (rbtnFriAlternate.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriAlternate.Value);
+                }
+
+                if (rbtnFriHoliday.Checked)
+                {
+                    frishiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnFriHoliday.Value);
+                }
+
+                frishiftdetail.Day = DayOfWeek.Friday.ToString();
+                frishiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Friday);
+
+                frishiftdetail.CreatedBy = UserKey;
+                frishiftdetail.CreatedDate = dt;
+                frishiftdetail.IsActive = true;
+                frishiftdetail.UserIP = UserIP;
+                frishiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                frishiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(frishiftdetail);
+
+                #endregion
+
+                #region SATURDAY
+
+                startTime = (Convert.ToInt32(ddlSatStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlSatBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlSatShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlSatFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlSatFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSatFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                satshiftdetail.StartTimeSt = ddlSatStartTimeHrs.SelectedValue + ":" + ddlSatStartTimeMins.SelectedValue;
+                satshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlSatStartTimeHrs.SelectedValue + ddlSatStartTimeMins.SelectedValue);
+
+                satshiftdetail.BreakTimeSt = ddlSatBreakDurHrs.SelectedValue + ":" + ddlSatBreakDurMins.SelectedValue;
+                satshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlSatBreakDurHrs.SelectedValue + ddlSatBreakDurMins.SelectedValue);
+
+                satshiftdetail.EndTimeSt = ddlSatShiftEndHrs.SelectedValue + ":" + ddlSatShiftEndMins.SelectedValue;
+                satshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlSatShiftEndHrs.SelectedValue + ddlSatShiftEndMins.SelectedValue);
+
+                satshiftdetail.FlixeInSt = ddlSatFlexiInHrs.SelectedValue + ":" + ddlSatFlexiInMins.SelectedValue;
+                satshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlSatFlexiInHrs.SelectedValue + ddlSatFlexiInMins.SelectedValue);
+
+                satshiftdetail.FlixeOutSt = ddlSatFlexiOutHrs.SelectedValue + ":" + ddlSatFlexiOutMins.SelectedValue;
+                satshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlSatFlexiOutHrs.SelectedValue + ddlSatFlexiOutMins.SelectedValue);
+
+                if (rbtnSatWorking.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatWorking.Value);
+                }
+
+                if (rbtnSatAlternate.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatAlternate.Value);
+                }
+
+                if (rbtnSatHoliday.Checked)
+                {
+                    satshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSatHoliday.Value);
+                }
+
+                satshiftdetail.Day = DayOfWeek.Saturday.ToString();
+                satshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Saturday);
+
+                satshiftdetail.CreatedBy = UserKey;
+                satshiftdetail.CreatedDate = dt;
+                satshiftdetail.IsActive = true;
+                satshiftdetail.UserIP = UserIP;
+                satshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                satshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(satshiftdetail);
+                #endregion
+
+                #region SUNDAY
+
+                startTime = (Convert.ToInt32(ddlSunStartTimeHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunStartTimeMins.SelectedValue.ToString()) * 60);
+                breakTime = (Convert.ToInt32(ddlSunBreakDurHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunBreakDurMins.SelectedValue.ToString()) * 60);
+                endTime = (Convert.ToInt32(ddlSunShiftEndHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunShiftEndMins.SelectedValue.ToString()) * 60);
+                flexiIn = (Convert.ToInt32(ddlSunFlexiInHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunFlexiInMins.SelectedValue.ToString()) * 60);
+                flexiOut = (Convert.ToInt32(ddlSunFlexiOutHrs.SelectedValue.ToString()) * 3600) + (Convert.ToInt32(ddlSunFlexiOutMins.SelectedValue.ToString()) * 60);
+
+                sunshiftdetail.StartTimeSt = ddlSunStartTimeHrs.SelectedValue + ":" + ddlSunStartTimeMins.SelectedValue;
+                sunshiftdetail.StartTimeInt = startTime;// Convert.ToInt32(ddlSunStartTimeHrs.SelectedValue + ddlSunStartTimeMins.SelectedValue);
+
+                sunshiftdetail.BreakTimeSt = ddlSunBreakDurHrs.SelectedValue + ":" + ddlSunBreakDurMins.SelectedValue;
+                sunshiftdetail.BreakTimeInt = breakTime;// Convert.ToInt32(ddlSunBreakDurHrs.SelectedValue + ddlSunBreakDurMins.SelectedValue);
+
+                sunshiftdetail.EndTimeSt = ddlSunShiftEndHrs.SelectedValue + ":" + ddlSunShiftEndMins.SelectedValue;
+                sunshiftdetail.EndTimeInt = endTime;// Convert.ToInt32(ddlSunShiftEndHrs.SelectedValue + ddlSunShiftEndMins.SelectedValue);
+
+                sunshiftdetail.FlixeInSt = ddlSunFlexiInHrs.SelectedValue + ":" + ddlSunFlexiInMins.SelectedValue;
+                sunshiftdetail.FlixeInInt = flexiIn;// Convert.ToInt32(ddlSunFlexiInHrs.SelectedValue + ddlSunFlexiInMins.SelectedValue);
+
+                sunshiftdetail.FlixeOutSt = ddlSunFlexiOutHrs.SelectedValue + ":" + ddlSunFlexiOutMins.SelectedValue;
+                sunshiftdetail.FlixeOutInt = flexiOut;// Convert.ToInt32(ddlSunFlexiOutHrs.SelectedValue + ddlSunFlexiOutMins.SelectedValue);
+
+                if (rbtnSunWorking.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunWorking.Value);
+                }
+
+                if (rbtnSunAlternate.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunAlternate.Value);
+                }
+
+                if (rbtnSunHoliday.Checked)
+                {
+                    sunshiftdetail.ShiftDayTypeId = Convert.ToInt32(rbtnSunHoliday.Value);
+                }
+
+                sunshiftdetail.Day = DayOfWeek.Sunday.ToString();
+                sunshiftdetail.DayInt = Convert.ToInt32(DayOfWeek.Sunday);
+
+                sunshiftdetail.CreatedBy = UserKey;
+                sunshiftdetail.CreatedDate = dt;
+                sunshiftdetail.IsActive = true;
+                sunshiftdetail.UserIP = UserIP;
+                sunshiftdetail.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+                sunshiftdetail.ShiftId = shift.ShiftId;
+
+                context.TMS_Setup_ShiftDetail.Add(sunshiftdetail);
+                #endregion
+
+                context.SaveChanges();
+
+                scope.Complete();
+            }
+            lblSummary.Text = "Record Inserted Successfully";
+            divSummary.Attributes.Add("class", "okMessage");
+            divSummary.Visible = true;
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+
+        //BindRepeater();
+        //BindDropdown();
+        //ResetControls();
+
+
+    }
+
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int? companyId = Convert.ToInt32(ddlCompany.SelectedValue);
+
+        var listDepartment = context.Setup_Department.Where(d => d.IsActive == true && d.CompanyId == companyId)
+            .OrderBy(d => d.DepartmentName)
+            .Select(d => new
+            {
+                DepartmentId = d.DepartmentId,
+                DepartmentName = d.DepartmentName
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+
+        ListBoxDepartment.DataSource = listDepartment;
+        ListBoxDepartment.DataTextField = "DepartmentName";
+        ListBoxDepartment.DataValueField = "DepartmentId";
+        ListBoxDepartment.DataBind();
+
+        //var listDepartment = context.Departments.Where(c => c.IsActive == true && c.CompanyId == companyId).OrderBy(c => c.DepartmentName).ToList();
+        //CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+    }
+}

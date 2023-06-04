@@ -1,0 +1,55 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucOther.ascx.cs" Inherits="Controls_EmployeeDetails_ucOther" %>
+<style>
+    td Label
+    {
+        font-style: normal !important;
+        font-weight: 400 !important;
+        margin-left: 5px;
+    }
+</style>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Other Details
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">Have you been associated with Lakson Group Company in the past?</label>
+            <asp:RadioButtonList ID="rbisAssociated" runat="server">
+                <asp:ListItem Text="Yes" Value="1" />
+                <asp:ListItem Text="No" Value="0" />
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">Have you any family members, relatives or close friends working in this company or any other Group company? If so, please provide details: </label>
+            <asp:TextBox ID="txtFamilyAssociated" TextMode="MultiLine" Style="height: 137px; max-height: 137px; max-width: 1104px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">Have you ever been prosecuted?</label>
+            <asp:RadioButtonList ID="rbIsProsecuted" runat="server">
+                <asp:ListItem Text="Yes" Value="1" />
+                <asp:ListItem Text="No" Value="0" />
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">Have you ever been dismissed from a job? If so, please give details of circumstances: </label>
+            <asp:RadioButtonList ID="rbIsDismissed" runat="server">
+                <asp:ListItem Text="Yes" Value="1" />
+                <asp:ListItem Text="No" Value="0" />
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">Give details of any major illnesses / operation if any:  </label>
+            <asp:TextBox ID="txtMojorIllnessdetail" TextMode="MultiLine" Style="height: 137px; max-height: 137px;max-width: 1104px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-12">
+            <label for="exampleInputEmail2">
+                Do you have any restrictions on geographical mobility and timing restrictions? If so, give details: 
+            </label>
+            <asp:TextBox ID="txtTimingRestrictions" TextMode="MultiLine" Style="height: 137px; max-height: 137px;max-width: 1104px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,191 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="CEO_ApprovalListing.aspx.cs" Inherits="Pages_NewHiring_CEO_ApprovalListing" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>CEO Approval Request</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">CEO Approval Request</a>
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <asp:Label class="panel-heading" id="lblError" runat="server"></asp:Label>
+            </div>
+            
+
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">Requisition Date</label>
+                                <asp:TextBox ID="txtRequisitionDateSearch" runat="server" CssClass="form-control"></asp:TextBox>
+
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                                Approval Request
+                            </div>
+                            <div class="panel-body">
+                                <%--  <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                      
+                                    </div>
+                                </div>--%>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+
+                                                <th>Designation </th>
+                                                <th>Department</th>
+                                                <th>Salary Range</th>
+                                                <th>Education</th>
+
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("DesignationName") %>
+                                                              <input type="hidden" runat="server" id="hfCandidateId" class="hfCandidateId" value='<%# Eval("CandidateId") %>' />
+                                                                      
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("DepartmentName") %>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("SalaryRange") %>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("Education") %>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-actions">
+
+                                                            <asp:LinkButton ID="btnViewApplication"
+                                                                runat="server"
+                                                                CssClass="btn btn-primary"
+                                                                OnClick="btnViewApplication_Click"><span aria-hidden="true" class="fa fa-search"></span>View
+                                                            </asp:LinkButton>
+
+
+
+                                                        </td>
+                                                    </tr>
+
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <%-- offer Letter PopUp End --%>
+
+
+    <script type="text/javascript">
+        function pageLoad() {
+            //$(".btnAdd").click(function () {
+            //    debugger;
+            //    reset();
+            //    $('.openmodal').click();
+            //});
+
+            $('.timePicker').datetimepicker({
+                datepicker: false,
+                format: 'H:i'
+            });
+
+
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                startDate: '+0d',
+                autoclose: true
+            });
+            $(".numeric").numeric();
+
+            function reset() {
+                $(".txtAdd").val('');
+                $(".hfModalId").val('');
+            }
+        }
+
+        function OpenDialog(a, b, c) {
+            sweetAlert(a, b, c);
+        }
+
+        //function ClosePopup() {
+        //    $('.modal').hide();
+        //    $('body').removeClass('modal-open');
+        //    $('.modal-backdrop').remove();
+        //}
+
+        function ApplyJob() {
+           
+            $('.ApplyJob').click();
+        }
+
+
+    </script>
+
+
+</asp:Content>
+

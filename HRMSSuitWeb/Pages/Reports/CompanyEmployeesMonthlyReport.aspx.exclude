@@ -1,0 +1,325 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="CompanyEmployeesMonthlyReport.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_Reports_CompanyEmployeesMonthlyReport" %>
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Company Employees Monthly Report</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Report</a>
+                </li>
+                <li class="active">
+                    <strong>Company Employees Monthly Report</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="panel panel-primary" id="divSuccess" runat="server" visible="false">
+                <div class="panel-heading" id="lblSuccess" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;" runat="server" id="divCompany">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Company Employees Monthly Report</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-2" runat="server" id="divGroup">
+                                <label for="exampleInputEmail2" class="">Group</label>
+                                <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span1" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <%--<asp:TextBox runat="server" ID="txtSharePointID" CssClass="form-control" />--%>
+                                <label for="exampleInputEmail2" class="">Company</label>
+                                <asp:DropDownList ID="ddlCompany" runat="server" CssClass="form-control col-lg-12" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="rfvComp" runat="server" Enabled="true" ControlToValidate="ddlCompany"
+                                    Display="Dynamic" ErrorMessage="Company" InitialValue="0" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                            </div>
+                            <%--  <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    From Date</label>
+                                <asp:TextBox ID="txtStartDate" runat="server" CssClass="form-control datetime"></asp:TextBox>
+                            </div>--%>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    From Date</label>
+                                <%--<asp:TextBox ID="txtEndDate" runat="server" CssClass="form-control datetime"></asp:TextBox>--%>
+                                <asp:DropDownList ID="ddl_From_Date" runat="server" Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    Month</label>
+                                <%-- <asp:TextBox ID="TextBox1" runat="server" CssClass="form-control datetime"></asp:TextBox>--%>
+                                <asp:DropDownList ID="ddl_From_month" runat="server" Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    Year</label>
+                                <asp:DropDownList ID="ddl_From_Year" runat="server" Width="80px " Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    To Date</label>
+                                <asp:DropDownList ID="ddl_To_Date" runat="server" Width="45px" Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    Month</label>
+                                <%-- <asp:TextBox ID="TextBox1" runat="server" CssClass="form-control datetime"></asp:TextBox>--%>
+                                <asp:DropDownList ID="ddl_To_Month" runat="server" Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0;">
+                                    Year</label>
+                                <asp:DropDownList ID="ddl_To_Year" runat="server" Width="80px" Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+
+                            <div class="col-lg-12 ">
+                                <div class="pull-right">
+                                <asp:Button Text="List" class="btn btn-primary" ID="Commit_Save" ValidationGroup="ValGroup" OnClick="Commit_Save_Click" runat="server" />
+                                <asp:LinkButton ID="LB_Export_To_Excel" runat="server" CssClass="addLinkButton" OnClick="LB_Export_To_Excel_Click"
+                                Visible="false">Export To Excel</asp:LinkButton>
+                                    <div id="Commit_Button_Table" runat="server">
+
+                                   
+                                      <asp:Button ID="Button_Commit" runat="server" Text="Commit" CssClass="button1 btn btn-danger" OnClick="Button_Commit_Click"
+                                            OnClientClick="return confirm('Are you sure you want to commit?')" />
+                                    </div>
+                                     </div>
+                            </div>
+                             </div>
+                             </div>
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <h3>Records</h3>
+                            </div>
+                     <div class="panel-body">
+                            <asp:Repeater ID="Rep_MounthReport" runat="server">
+                                <HeaderTemplate>
+                                    <table style="width: 100%;" class="table table-hover" style="overflow-x: scroll;"
+                                        border="1" id="MonthEndRpet">
+                                        <thead>
+                                            <tr>
+                                                <th>Sr. No.
+                                                </th>
+                                                <th>Employee Code
+                                                </th>
+                                                <th>Employee Name
+                                                </th>
+                                                <th>Department
+                                                </th>
+                                                <th>Annual Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Total Annual Availed
+                        </th>--%>
+                                                <th>Annual Flexi Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Annual Remain
+                        </th>--%>
+                                                <th>Casual Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Total Casual Availed
+                        </th>--%>
+                                                <th>Casual Flexi Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Casual Remain
+                        </th>--%>
+                                                <th>Sick Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Total Sick Availed
+                        </th>--%>
+                                                <th>Sick FLexi Availed
+                                                </th>
+                                                <%--<th class="hidden">
+                            Sick Remain
+                        </th>--%>
+                                                <th>Maternity Availed
+                                                </th>
+                                                <th>Without Pay Availed
+                                                </th>
+                                                <%-- <th class="hidden">
+                            UNPAID_DAYS
+                        </th>
+                        <th class="hidden">
+                            RejLeave
+                        </th>--%>
+                                                <th>WithoutPay Flexi
+                                                </th>
+                                                <th>Total Without Pay
+                                                </th>
+                                                <th>Official Availed
+                                                </th>
+                                                <th>Total Flexi
+                                                </th>
+                                                <th>Absent_Days
+                                                </th>
+                                                <th>WorkingDays
+                                                </th>
+                                                <th>Total Days
+                                                </th>
+                                                <%--<th class="hidden">
+                            Activity_Count
+                        </th>
+                        <th class="hidden">
+                            Off_Days
+                        </th>
+                        <th class="hidden">
+                            Calander_Count
+                        </th>--%>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <tr>
+                                        <td>
+                                            <%#(((RepeaterItem)Container).ItemIndex+1).ToString()%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("EmployeeCode")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("NAME")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("DepartmentName")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("Annual_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("TOTAL_Annual_AVAIL")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("Annual_FLEXI_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("AnualRemain")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("Casual_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("TOTAL_Casual_AVAIL")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("Casual_Flexi_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("CasualRemain")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("Sick_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("TOTAL_Sick_AVAIL")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("Sick_FLexi_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("SickRemain")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("MATERNITY_AVAIL")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("WITHOUTPAY_AVAIL")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("UNPAID_DAYS")%>
+                </td>--%>
+                                        <%--<td class="hidden">
+                    <%# Eval("RejLeave")%>
+                </td>--%>
+                                        <td>
+                                            <%# Eval("WithoutPay_Flexi")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("TOTAL_WITHOUT_PAY")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("OFFICIAL")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("FLEXI")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("Absent_Days")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("WorkingDays")%>
+                                        </td>
+                                        <td>
+                                            <%# Eval("TotalDays")%>
+                                        </td>
+                                        <%--<td class="hidden">
+                    <%# Eval("Activity_Count")%>
+                </td>
+                <td class="hidden">
+                    <%# Eval("Off_Days")%>
+                </td>
+                <td class="hidden">
+                    <%# Eval("Calander_Count")%>
+                </td>--%>
+                                    </tr>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                    </tbody> </table>
+                                </FooterTemplate>
+                            </asp:Repeater>
+                         </div>
+
+                          </div>
+               
+                </div>
+            </div>
+        </ContentTemplate>
+          <Triggers>
+            <asp:PostBackTrigger ControlID="LB_Export_To_Excel" />
+        </Triggers>
+    </asp:UpdatePanel>
+       <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:inprogress id="InProgress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+    <script>
+        function pageLoad() {
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                format: 'mm/dd/yyyy'
+            });
+        }
+    </script>
+</asp:Content>

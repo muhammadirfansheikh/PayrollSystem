@@ -1,0 +1,86 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+
+public partial class Pages_MedicalReimbursement_EmpReimbursementApproval : System.Web.UI.Page
+{
+
+    #region Properties
+    public string Id
+    {
+        get
+        {
+            return Request.QueryString["id"];
+        }
+    }
+    public string WorkflowStepDetailId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowStepDetailId"];
+        }
+    }
+    public string WorkflowMasterId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowMasterId"];
+        }
+    }
+    #endregion
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            if (Id != "" && Id != "0")
+            {
+                int WorkflowItemId = Convert.ToInt32(Id);
+                int WorkflowStepDetailId_INT = Convert.ToInt32(WorkflowStepDetailId);
+                bool IsApprovalTask = false;
+
+
+                MedicalReimbursement.IsControlInitialize = true;
+                MedicalReimbursement.EmployeeId = WorkflowItemId;
+
+                if ((int)Constant.WorkflowStepReimbursement.HRApprovalMedicalReimbursement == WorkflowStepDetailId_INT
+                    || (int)Constant.WorkflowStepReimbursement.PersonAcknowledgement == WorkflowStepDetailId_INT
+                  )
+                {
+                    IsApprovalTask = false;
+
+                    if ((int)Constant.WorkflowStepReimbursement.HRApprovalMedicalReimbursement == WorkflowStepDetailId_INT)
+                    {
+                        MedicalReimbursement.IsControlInitialize = true;
+                        MedicalReimbursement.Visible = true;
+                        MedicalReimbursement.EmployeeId = WorkflowItemId;
+                    }
+                }
+                else if ((int)Constant.WorkflowStepReimbursement.HRReceiveDocuments == WorkflowStepDetailId_INT)
+                {
+                    IsApprovalTask = true;
+                }
+
+
+
+
+                MedicalReimbursement.IsControlInitialize = true;
+                MedicalReimbursement.WorkflowItemId = WorkflowItemId;
+                MedicalReimbursement.IsApprovalTask = IsApprovalTask;
+                MedicalReimbursement.WorkflowStepDetailId = WorkflowStepDetailId_INT;
+                MedicalReimbursement.WorkflowMasterId = Convert.ToInt32(WorkflowMasterId);
+
+                //  EmpMedicalDetail.Id = Convert.ToString(WorkflowItemId);
+                //EmpMedicalDetail.WorkflowStepDetailId =  Convert.ToString(WorkflowStepDetailId_INT);
+                //EmpMedicalDetail.WorkflowMasterId = Convert.ToString(WorkflowMasterId);
+            }
+        }
+    }
+}

@@ -1,0 +1,391 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+
+public partial class Pages_MedicalReimbursement_EmpReimbursementRequest : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            CreateDataTable();
+            //  BindRepeater();
+        }
+    }
+
+    private void CreateDataTable()
+    {
+        DataTable dt_Reimbursement = new DataTable();
+        dt_Reimbursement.Columns.Add("RowID");
+        dt_Reimbursement.Columns.Add("BillRecieptNo");
+        dt_Reimbursement.Columns.Add("checkupDate");
+        dt_Reimbursement.Columns.Add("LaboratoryName");
+
+        dt_Reimbursement.Columns.Add("ClaimForId");
+        dt_Reimbursement.Columns.Add("ClaimForText");
+        dt_Reimbursement.Columns.Add("ClaimAmount");
+
+        ViewState["Reimbursement"] = dt_Reimbursement;
+
+
+
+        ViewState["strength"] = dt_Reimbursement;
+    }
+
+    public void BindDropdown()
+    {
+
+        int ClaimTypeId = (int)Constant.SetupMaster.ClaimType;
+        int ClaimForId = (int)Constant.SetupMaster.ClaimFor;
+
+        var ListClaimType = context.HRMS_SetupDetail.Where(a => a.IsActive == true
+             && a.SetupMasterId == ClaimTypeId)
+             .Select(c => new
+             {
+                 Id = c.SetupDetailId,
+                 Value = c.SetupDetailName
+             }).ToList();
+
+        CommonHelper.BindDropDown(ddlClaimType, ListClaimType, "Value", "Id", true, false);
+
+
+        var ListClaimFor = context.HRMS_SetupDetail.Where(a => a.IsActive == true
+            && a.SetupMasterId == ClaimForId)
+            .Select(c => new
+            {
+                Id = c.SetupDetailId,
+                Value = c.SetupDetailName
+            }).ToList();
+
+        CommonHelper.BindDropDown(ddlClaimFor, ListClaimFor, "Value", "Id", true, false);
+
+
+        lblEmpName.Text = FullName;
+        txtRequisitionDateSearch.Text = Convert.ToString(Convert.ToDateTime(DateTime.Now).ToString(Constant.DateFormat2));
+
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            DataTable dt_Reimbursement = (DataTable)ViewState["Reimbursement"];
+
+            dt_Reimbursement.Rows.Add(dt_Reimbursement.Rows.Count + 1, txtBillRecieptNo.Text.Trim(), txtcheckupDate.Text.Trim(), txtLaboratoryName.Text.Trim(), Convert.ToInt32(ddlClaimFor.SelectedValue).ToString(), ddlClaimFor.SelectedItem.Text.ToString(), txtClaimAmount.Text.Trim());
+
+            ResetControll();
+            rpt.DataSource = dt_Reimbursement;
+            rpt.DataBind();
+
+            if (dt_Reimbursement.Rows.Count > 0)
+            {
+                btnSave.Visible = true;
+            }
+        }
+        catch (Exception ex)
+        {
+
+
+        }
+    }
+
+    public void ResetControll()
+    {
+        // ddlClaimType.SelectedValue = "0";
+        ddlClaimFor.SelectedValue = "0";
+        txtBillRecieptNo.Text = "";
+        txtcheckupDate.Text = "";
+        txtClaimAmount.Text = "";
+        txtLaboratoryName.Text = "";
+    }
+
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            int? WorkflowTaskMasterId = null;
+            HRMS_MedicalReimbursment objHRMS_MedicalReimbursment = new HRMS_MedicalReimbursment();
+            objHRMS_MedicalReimbursment.EmployeeId = UserKey;
+            objHRMS_MedicalReimbursment.ClaimTypeId = Convert.ToInt32(ddlClaimType.SelectedValue);
+            objHRMS_MedicalReimbursment.ClaimDate = DateTime.Now;
+            objHRMS_MedicalReimbursment.CreatedDate = DateTime.Now;
+            objHRMS_MedicalReimbursment.CreatedBy = UserKey;
+            objHRMS_MedicalReimbursment.WorkflowTaskMasterId = WorkflowTaskMasterId;
+
+            objHRMS_MedicalReimbursment.IsActive = true;
+            objHRMS_MedicalReimbursment.UserIP = UserIP;
+
+            context.HRMS_MedicalReimbursment.Add(objHRMS_MedicalReimbursment);
+            context.SaveChanges();
+
+            int MedicalReimbursmentId=objHRMS_MedicalReimbursment.MedicalReimbursmentId;
+            WorkflowTaskMasterId = Task(MedicalReimbursmentId);
+            objHRMS_MedicalReimbursment = context.HRMS_MedicalReimbursment.FirstOrDefault(a => a.IsActive == true && a.MedicalReimbursmentId == MedicalReimbursmentId);
+
+            objHRMS_MedicalReimbursment.WorkflowTaskMasterId = WorkflowTaskMasterId;
+            context.SaveChanges();
+
+            DataTable dt_Reimbursement = (DataTable)ViewState["Reimbursement"];
+
+
+
+            for (int i = 0; i < dt_Reimbursement.Rows.Count; i++)
+            {
+                HRMS_MedicalReimbursmentDetail objHRMS_MedicalReimbursmentDetail = new HRMS_MedicalReimbursmentDetail();
+
+
+                objHRMS_MedicalReimbursmentDetail.MedicalReimbursmentId = objHRMS_MedicalReimbursment.MedicalReimbursmentId;
+                objHRMS_MedicalReimbursmentDetail.BillNo = dt_Reimbursement.Rows[0]["BillRecieptNo"].ToString();
+                objHRMS_MedicalReimbursmentDetail.Date = Convert.ToDateTime(dt_Reimbursement.Rows[0]["checkupDate"].ToString());
+                objHRMS_MedicalReimbursmentDetail.PractionerName = dt_Reimbursement.Rows[0]["LaboratoryName"].ToString();
+                objHRMS_MedicalReimbursmentDetail.ClaimForId = Convert.ToInt32(dt_Reimbursement.Rows[0]["ClaimForId"].ToString());
+                objHRMS_MedicalReimbursmentDetail.ClaimAmount = Convert.ToDouble(dt_Reimbursement.Rows[0]["ClaimAmount"].ToString());
+
+                objHRMS_MedicalReimbursmentDetail.IsActive = true;
+                objHRMS_MedicalReimbursmentDetail.CreatedBy = UserKey;
+                objHRMS_MedicalReimbursmentDetail.CreatedDate = DateTime.Now;
+                context.HRMS_MedicalReimbursmentDetail.Add(objHRMS_MedicalReimbursmentDetail);
+                context.SaveChanges();
+
+            }
+
+
+            CreateDataTable();
+
+            dt_Reimbursement = (DataTable)ViewState["Reimbursement"];
+            rpt.DataSource = dt_Reimbursement;
+            rpt.DataBind();
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Data submitted Successfully','success')", "OpenDialog('success','Data submitted Successfully','success');", true);
+        }
+        catch (Exception ex) { }
+    }
+
+    protected void btnEdit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int hfRowID = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfRowID")).Value);
+
+            DataTable dt_Reimbursement = (DataTable)ViewState["Reimbursement"];
+
+
+            DataTable _dt = dt_Reimbursement.Select("RowID = " + hfRowID).CopyToDataTable();
+
+
+            txtBillRecieptNo.Text = _dt.Rows[0]["BillRecieptNo"].ToString();
+            txtcheckupDate.Text = _dt.Rows[0]["checkupDate"].ToString();
+            txtLaboratoryName.Text = _dt.Rows[0]["LaboratoryName"].ToString();
+            ddlClaimFor.SelectedValue = Convert.ToString(_dt.Rows[0]["ClaimForId"]);
+            txtClaimAmount.Text = _dt.Rows[0]["ClaimAmount"].ToString();
+
+
+            dt_Reimbursement.Rows.RemoveAt(Convert.ToInt32(_dt.Rows[0]["RowID"]) - 1);
+
+            for (int j = 0; j < dt_Reimbursement.Rows.Count; j++)
+            {
+                dt_Reimbursement.Rows[j]["RowID"] = j + 1;
+            }
+
+            rpt.DataSource = dt_Reimbursement;
+            rpt.DataBind();
+
+
+
+            if (dt_Reimbursement.Rows.Count > 0)
+            {
+                btnSave.Visible = true;
+
+            }
+            else { btnSave.Visible = false; }
+
+        }
+        catch (Exception ex)
+        {
+
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+    }
+
+    protected void btnDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int hfRowID = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfRowID")).Value);
+
+            DataTable dt_Reimbursement = (DataTable)ViewState["Reimbursement"];
+
+            DataTable _dt = dt_Reimbursement.Select("RowID = " + hfRowID).CopyToDataTable();
+
+            dt_Reimbursement.Rows.RemoveAt(Convert.ToInt32(_dt.Rows[0]["RowID"]) - 1);
+
+            for (int j = 0; j < dt_Reimbursement.Rows.Count; j++)
+            {
+                dt_Reimbursement.Rows[j]["RowID"] = j + 1;
+            }
+
+            rpt.DataSource = dt_Reimbursement;
+            rpt.DataBind();
+
+
+
+            if (dt_Reimbursement.Rows.Count > 0)
+            {
+                btnSave.Visible = true;
+
+            }
+            else { btnSave.Visible = false; }
+
+        }
+        catch (Exception ex)
+        {
+
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+    }
+
+
+    private int Task(int MedicalReimbursmentId)
+    {
+        int WorkflowStepDetailId = (int)Constant.WorkflowStepReimbursement.InitiateMedicalReimbursement;
+        int WorkflowMasterId = (int)Constant.Workflow.MedReimbursment;
+
+        int EmployeeId = Convert.ToInt32(UserKey);
+        int WorkflowItemId = Convert.ToInt32(MedicalReimbursmentId);
+        bool IsEmailRequired = false, IsApprovalTask = false;
+        int NxtWorkflowStepDetailId = 0;
+        int WorkflowTaskMasterId = 0;
+
+        if (WorkflowStepDetailId == (int)Constant.WorkflowStepReimbursement.InitiateMedicalReimbursement)
+        {
+            var lstWorkflowNxtStep = context.HRMS_WorkflowStepActionDetail.Where(a => a.IsActive == true && a.WorkflowStepDetailId == WorkflowStepDetailId).ToList();
+
+            if (lstWorkflowNxtStep != null && lstWorkflowNxtStep.Count > 0)
+            {
+               // EmployeeId = UserKey;
+
+                HRMS_WorkFlowTaskMaster task = new HRMS_WorkFlowTaskMaster();
+
+                task.WorkflowItemId = MedicalReimbursmentId;
+                task.WorkflowStatusId = (int)Constant.WorkflowStatus.InProgress;
+                task.Remarks = "";
+                task.IsActive = true;
+                task.CreatedDate = DateTime.Now;
+                task.CreatedBy = UserKey;
+                task.UserIP = UserIP;
+                task.WorkflowMasterId = WorkflowMasterId;
+
+                context.HRMS_WorkFlowTaskMaster.Add(task);
+                context.SaveChanges();
+
+                WorkflowTaskMasterId = task.WorkflowTaskMasterId;
+
+                int? DepartmentId = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId).DepartmentId;
+
+                for (int k = 0; k < lstWorkflowNxtStep.Count; k++)
+                {
+                    NxtWorkflowStepDetailId = lstWorkflowNxtStep[k].NextWorkflowStepDetailId;
+                    var lst = context.HRMS_WorkflowMemberDetail.Where(a => a.IsActive == true && (NxtWorkflowStepDetailId == (int)Constant.WorkflowStepReimbursement.HRReceiveDocuments))
+                   .Where(a => a.WorkflowStepDetailId == NxtWorkflowStepDetailId)
+                   .Where(a => a.MemberCategoryId == (int)Constant.WorkflowMemberCategory.Management).ToList();
+
+                    if (lst != null && lst.Count > 0)
+                    {
+                        for (int i = 0; i < lst.Count; i++)
+                        {
+                            int MemberCategoryId = lst[i].MemberCategoryId;
+                            int DeptId = lst[i].DepartmentId;
+
+                            var lstAssignee = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true && a.MemberCategoryId == MemberCategoryId &&
+                                a.DepartmentID == DeptId)
+                                .Select(a => new
+                                {
+                                    AssigneeId = a.EmployeeID
+                                })
+                                .ToList();
+
+
+                            for (int j = 0; j < lstAssignee.Count; j++)
+                            {
+                                int AssigneeId = lstAssignee[j].AssigneeId;
+
+                                HRMS_WorkflowTaskDetail taskDetail = new HRMS_WorkflowTaskDetail();
+
+                                taskDetail.WorkflowTaskMasterId = WorkflowTaskMasterId;
+                                taskDetail.AssigneeID = AssigneeId;
+                                taskDetail.IsDelegated = false;
+                                // taskDetail.WorkflowStepDetailId = NxtWorkflowStepDetailId;
+                                taskDetail.WorkflowStepDetailId = NxtWorkflowStepDetailId;
+                                taskDetail.StartDate = DateTime.Now;
+                                taskDetail.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Pending;
+                                taskDetail.Remarks = "";
+                                taskDetail.IsActive = true;
+                                taskDetail.CreatedBy = UserKey;
+                                taskDetail.CreatedDate = DateTime.Now;
+                                taskDetail.UserIP = UserIP;
+
+                                context.HRMS_WorkflowTaskDetail.Add(taskDetail);
+                                context.SaveChanges();
+
+                                if (IsEmailRequired) // send email
+                                {
+                                    string ToEmail = context.Setup_Employee.Where(a => a.EmployeeId == AssigneeId).FirstOrDefault().OfficeEmailAddress;
+
+                                    string Msg = "Your approval is required for Document Receive. \n" +
+                                        "<html>  <a href='" + CommonHelper.URL + "Pages/MedicalReimbursement/EmpReimbursementApproval.aspx?id=" + WorkflowItemId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + WorkflowMasterId.ToString() + "'>Click Here</a>  </html>";
+                                   // Response.Redirect("MedicalReimbursement/EmpReimbursementApproval.aspx?id=" + WorkflowItemId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + WorkflowMasterId);
+     
+                                    //  NewHiring/Approval.aspx?id=" + CandidateId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + Convert.ToString( (int)Constant.Workflow.NewHiringWorkflow)
+
+                                    CommonHelper.GenerateWorkflowEmail(ToEmail, "", WorkflowStepDetailId, Msg);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        bool IsAssign = CommonHelper.AssignTaskToHR(WorkflowTaskMasterId, NxtWorkflowStepDetailId, DateTime.Now);
+
+                        if (IsAssign)
+                        {
+                            ScriptManager.RegisterStartupScript(this, GetType(), "Alert", "alert('No Mapping Exist Against this Workflow Step, The Task is assigned to HRMS Admin');", true);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+        string _Message = "Saved Successfully";
+
+        string PageRedirectUrl = "#";
+
+        ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenRedirectionDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+
+        return WorkflowTaskMasterId;
+    }
+}

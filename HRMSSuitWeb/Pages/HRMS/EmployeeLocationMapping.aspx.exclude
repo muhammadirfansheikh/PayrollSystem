@@ -1,0 +1,273 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="EmployeeLocationMapping.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_HRMS_EmployeeLocationMapping" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Employee Location Mapping</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Setup</a>
+                </li>
+                <li class="active">
+                    <strong>Employee Location Mapping</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Group</label>
+                                <asp:DropDownList ID="ddlGroup" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <%--   <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Group" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlGroup" InitialValue="0"></asp:RequiredFieldValidator>
+                                --%>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Company</label>
+                                <asp:DropDownList ID="ddlCompany" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                              
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Department</label>
+                                <asp:DropDownList ID="ddlDepartment" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2">Users Name</label>
+                                <asp:DropDownList ID="ddlUser" runat="server" CssClass="form-control">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Location</label>
+                                <asp:DropDownList ID="ddlLocation" runat="server" CssClass="form-control">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated">
+
+                        <div class="panel panel-info">
+                            <%--<div class="ibox-title">
+                        <h5></h5>
+                        <div class="ibox-tools">
+
+                            <a href="" class="btn btn-primary btn-xs btnAdd" data-toggle="modal" data-target="#CreateProjectModal">Create new project</a>
+                        </div>
+                    </div>--%>
+                            <div class="panel-body">
+                                <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                        <div class="panel-heading">
+                                            <a href="#" class="btn btn-primary btnAdd pull-right">Add</a>
+                                            <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Employee Name</th>
+                                                <th>Department Name</th>
+                                                <th>Location</th>
+                                                <th style="text-align: center; width: 20%;">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td class="project-title">
+                                                            <a href="#"><%# Eval("EmployeeName") %></a>
+                                                            <br />
+                                                            <%--<small>Created 14.08.2014</small>--%>
+                                                            <input type="hidden" runat="server" id="hfId" class="hfId" value='<%# Eval("ID") %>' />
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <a href="#"><%# Eval("DepartmentName") %></a>
+                                                            <br />
+                                                            <%--<small>Created 14.08.2014</small>--%>
+                                                        </td>
+                                                        <td class="project-title">
+                                                               <a href="#"><%# Eval("Locations") %></a>
+                                                            <br />
+                                                          
+                                                        </td>
+                                                        <td class="project-actions" style="text-align: center;">
+                                                            <%--<a href="#" class="btn btn-white btn-sm"><i class="fa fa-pencil"></i>Edit </a>--%>
+                                                            <asp:LinkButton ID="lbEdit"
+                                                                runat="server"
+                                                                CssClass="btn btn-primary"
+                                                                OnClick="lbEdit_Click"><span aria-hidden="true" class="fa fa-edit"></span>Edit
+                                                            </asp:LinkButton>
+                                                            <%--<asp:Button Text="Edit" ID="btnEdit" CssClass="fa fa-pencil" OnClick="btnEdit_Click" runat="server" />--%>
+                                                            <%--<a href="#" class="btn btn-white btn-sm"><i class="fa fa-folder"></i>Delete </a>--%>
+                                                            <asp:LinkButton Visible="false" ID="lbDelete"
+                                                                runat="server"
+                                                                CssClass="btn btn-danger"
+                                                                OnClick="lbDelete_Click"><span aria-hidden="true" class="fa fa-trash"></span>Delete
+                                                            </asp:LinkButton>
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <%-- Create Project Modal End--%>
+    <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Add New Employee Location Mapping</h4>
+                    <%--<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>--%>
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px; height: 411px;">
+                            <input type="hidden" id="hfModalId" runat="server" class="hfModalId" />
+                            <div id="div2" runat="server" visible="false" class="alert alert-warning">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail2">Group</label>
+                                <asp:DropDownList ID="ddlGroupAdd" runat="server" CssClass="form-control ddlAdd" OnSelectedIndexChanged="ddlGroupAdd_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Add" Text="*" ErrorMessage="Group" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlGroupAdd" InitialValue="0"></asp:RequiredFieldValidator>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword2">Company</label>
+                                <asp:DropDownList ID="ddlCompanyAdd" runat="server" CssClass="form-control ddlAdd" OnSelectedIndexChanged="ddlCompanyAdd_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ValidationGroup="Add" Text="*" ErrorMessage="Company" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlCompanyAdd" InitialValue="0"></asp:RequiredFieldValidator>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword2">Department</label>
+                                <asp:DropDownList ID="ddlDeptAdd" runat="server" CssClass="form-control ddlAdd" OnSelectedIndexChanged="ddlDeptAdd_SelectedIndexChanged" AutoPostBack="true"></asp:DropDownList></td>
+                                  <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Add" Text="*" ErrorMessage="Department" ForeColor="Red"
+                                      Display="Dynamic" ControlToValidate="ddlDeptAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputEmail2">Users Name</label>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="Add" Text="*" ErrorMessage="Department" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlDeptAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                <asp:DropDownList ID="ddlUserAdd" runat="server" CssClass="form-control ddlAdd" OnSelectedIndexChanged="ddlUserAdd_SelectedIndexChanged" AutoPostBack="true"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <label for="exampleInputPassword2">Location</label>
+                                <asp:CheckBoxList CssClass="cblCheckAll" ID="cbLocationsAdd" RepeatDirection="Horizontal" runat="server">
+                                </asp:CheckBoxList>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button Text="Save" class="btn btn-primary pull-right" ID="Button1" ValidationGroup="Add" OnClick="btnAdd_Click" runat="server" />
+                            </div>
+                        </div>
+                        <%--<label id="lbl" runat="server" class="label label-danger" visible="false"></label>--%>
+                        <%--</div>--%>
+                        <%--<div class="modal-footer">
+                            <asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" ValidationGroup="Add" OnClick="btnAdd_Click" runat="server" />
+                        </div>--%>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="InProgress1" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>
+            </div>
+        </div>
+    </div>
+    <%-- Modal End Here --%>
+    <script type="text/javascript">
+        function pageLoad() {
+            $(".btnAdd").click(function () {
+                
+                reset();
+                $('.openmodal').click();
+            });
+
+
+
+
+            function reset() {
+                $(".txtAdd").val('');
+                $(".hfModalId").val('');
+                $(".ddlAdd").val('0');
+            }
+            $('.cblCheckAll input').change(function () {
+                var currChk = $(this);
+
+                if ($(this).val() == "0") {
+                    $(this).closest('table').find('input:checkbox').prop('checked', $(currChk).is(':checked'));
+                }
+                else {
+                    var allCheckboxCount = $(this).closest('table').find('input:checkbox').size();
+                    var allCheckedCount = $(this).closest('table').find('input:checkbox:checked').not('input:checkbox[value=0]').size();
+                    var isChecked = false;
+                    if (allCheckedCount >= allCheckboxCount - 1) {
+                        isChecked = true;
+                    }
+                    $(this).closest('table').find('input:checkbox[value=0]').prop('checked', isChecked);
+                }
+            });
+        }
+        function AlertBox(title, Message, type) {
+            swal(title, Message, type);
+        }
+        function ClosePopup() {
+            $('.modal').hide();
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+        function OpenPopup() {
+            $('.openmodal').click();
+        }
+    </script>
+</asp:Content>

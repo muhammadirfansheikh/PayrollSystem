@@ -1,0 +1,418 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+
+public partial class Pages_HCM_Setup_EmployeeSalary : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        //var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+        //    .Select(a => new
+        //    {
+        //        CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+        //        CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+        //    })
+        //    .ToList().Distinct();
+
+        var LstCompany = context.Setup_EmployeeCompanyMapping.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+          .Select(a => new
+          {
+              CompanyName = a.Setup_Company.CompanyName,
+              CompanyId = a.Setup_Company.CompanyId
+          }).ToList();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        if (ddlCompany.Items.Count > 1)
+        {
+            ddlCompany.SelectedIndex = 1;
+        }
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyId && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(a => a.IsActive == true && a.InchargeId == UserKey))).OrderBy(c => c.BusinessUnitName).ToList();
+        CommonHelper.BindDropDown(ddlBusinessUnit, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", listBusinessUnit.Count > 1 ? true : false, false);
+        ddlBusinessUnit_SelectedIndexChanged(null, null);
+
+        if (ddlLocation.Items.Count > 1)
+        {
+            ddlLocation.SelectedIndex = 1;
+        }
+
+
+        var ListDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.Setup_Category.CompanyId == CompanyId).OrderBy(c => c.DesignationName).ToList();
+        //var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+
+
+
+
+        CommonHelper.BindDropDown(ddlDesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        //CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        var LstBusinessUnitCostCenterMapping = context.Setup_CostCenter.Where(a => a.IsActive == true && a.CompanyId == CompanyId).ToList();
+
+
+
+        CommonHelper.BindDropDown(ddlCostCenter, LstBusinessUnitCostCenterMapping, "CostCenterName", "CostCenterId", true, false);
+
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void ddlBusinessUnit_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BUID = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BUID && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(x => x.IsActive == true && x.InchargeId == UserKey)))
+            .Select(b => new
+            {
+                DepartmentId = b.DepartmentId,
+                DepartmentName = b.DepartmentName
+            })
+            .OrderBy(c => c.DepartmentName).ToList();
+        //&& c.TS_Setup_BusinessUnitDeptMapping.Any(s => s.BusinessUnitId == BUID)).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", ListDepartment.Count > 1 ? true : false, false);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+
+    private void BindRepeaterEmployee()
+    {
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+        DateTime? DateTimeNull = null;
+        int DesignationId = 0;
+        int DepartmentId = 0;
+        string FirstName = txtFirstName.Text.Trim();
+        string LastName = txtLastName.Text.Trim();
+
+        string EmployeeCode = txtEmployeeCode.Text;
+
+
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        int LocationId = Convert.ToInt32(ddlLocation.SelectedValue);
+        int BU = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+        int CostCenter = Convert.ToInt32(ddlCostCenter.SelectedValue);
+
+
+        if (ddlDesignation.SelectedIndex != -1)
+            DesignationId = Convert.ToInt32(ddlDesignation.SelectedItem.Value);
+
+        if (ddlDepartment.SelectedIndex != -1)
+            DepartmentId = Convert.ToInt32(ddlDepartment.SelectedItem.Value);
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+        ////////DataTable dt = context.TS_EmployeeHirerarchy(UserKey).ToList().ToDataTable();
+        ////////List<int> _EmpHirarchy = dt.AsEnumerable().Select(s => s.Field<int>("Employeeid")).ToList();
+
+
+        int?[] ArrLocationId = null;
+        string LocationIdStr = "";
+
+        var Lst = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey).ToList();
+
+        for (int i = 0; i < Lst.Count; i++)
+        {
+            LocationIdStr += Lst[i].LocationId.ToString() + ",";
+        }
+
+        if (LocationIdStr.Length > 1)
+        {
+            LocationIdStr = LocationIdStr.Substring(0, LocationIdStr.Length - 1);
+
+            ArrLocationId = LocationIdStr.Split(',')
+                .Select(x =>
+                {
+                    int value;
+                    return int.TryParse(x, out value) ? value : (int?)null;
+                })
+                .ToArray();
+        }
+
+        var Employees = context.Setup_Employee.Where(c => c.IsActive == true
+                                && (c.DesignationId == DesignationId || DesignationId == 0)
+                                 && (c.DepartmentId == DepartmentId || DepartmentId == 0)
+            //&& (c.OfficeEmailAddress.Contains(OffEmail) || OffEmail == string.Empty)
+                                      && (c.FirstName.Contains(FirstName) || FirstName == string.Empty)
+                                      && (c.LastName.Contains(LastName) || LastName == string.Empty)
+            //&& (c.CNIC == CNIC || CNIC == string.Empty)
+                                      && (c.EmployeeCode == EmployeeCode || EmployeeCode == string.Empty)
+            //&& (c.DateOfDirth == DateOfBirth || DateOfBirth == null)
+            //&& (c.JoiningDate == DateOfJoin || DateOfJoin == null)
+            //&& (c.EmployeeId == UserKey || c.InchargeId == UserKey || IsSuperAdmin == true
+            //|| IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))
+                                      && (c.InchargeId == UserKey || c.EmployeeId == UserKey
+            //|| _EmpHirarchy.Contains(c.EmployeeId)
+                                      || IsSuperAdmin == true || IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))
+            // && (c.Setup_Location.Setup_Company.GroupId == GroupId || GroupId == 0)
+            //&& (c.Setup_Location.CompanyId == CompanyId || CompanyId == 0)
+                                      && (c.LocationId == LocationId || LocationId == 0)
+                                      && (c.BusinessUnitID == BU || BU == 0)
+                                      && (c.CostCenterId == CostCenter || CostCenter == 0)
+
+
+            ).Select(c => new
+            {
+                EmployeeId = c.EmployeeId,
+                EmployeeCode = c.EmployeeCode,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                CNIC = c.CNIC,
+                Designation = c.Setup_Designation.DesignationName,
+                Department = c.Setup_Department.DepartmentName,
+                DateOfBirth = c.DateOfDirth,
+                JoiningDate = c.JoiningDate,
+                PersonalEmail = c.PersonalEmailAddress,
+                OfficalEmail = c.OfficeEmailAddress,
+                Gender = c.HRMS_Setup_Gender.GenderTitle,
+                EmployeeType = c.Setup_EmployeeType.TypeName,
+                IsActive = c.IsActive,
+                Company = c.Setup_Location.Setup_Company.CompanyName,
+                Location = c.Setup_Location.LocationName,
+                LocationId = c.LocationId,
+                EmployeeImage = c.PictureName,
+                Extension = c.Extension
+            }).ToList();
+        if (ArrLocationId != null)
+        {
+            var filterList = (from e in Employees where ArrLocationId.Contains(e.LocationId) select e);
+
+            RptEmployee.DataSource = filterList;
+            RptEmployee.DataBind();
+
+            var List = filterList
+                .OrderBy(a => a.Company).ThenBy(b => b.Location).ThenBy(c => c.FirstName)
+                .Skip(skip).Take(pageSize).ToList();
+            RptEmployee.DataSource = List;
+            RptEmployee.DataBind();
+            PagingAndSorting.setPagingOptions(filterList.Count());
+        }
+        else
+        {
+            RptEmployee.DataSource = Employees;
+            RptEmployee.DataBind();
+        }
+
+        if (RptEmployee.Items.Count > 0)
+        {
+            dvSave.Visible = true;
+        }
+        else
+        {
+            dvSave.Visible = false;
+        }
+    }
+    private void BindDropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                        .Select(a => new
+                        {
+                            GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                            GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                        })
+                        .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+
+        if (ddlGroup.Items.Count > 1)
+        {
+            ddlGroup.SelectedIndex = 1;
+        }
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        //BindSalary();
+    }
+
+    //private void BindSalary()
+    //{
+    //    var lst = context.HCM_Setup_Detail.Where(a => a.IsActive == true && a.ParentId == (int)Constant.FormulaElement.Salary)
+    //         .Select(a => new
+    //         {
+    //             Id = a.SetupDetailID,
+    //             Value = a.ColumnValue
+    //         })
+    //        .ToList();
+    //    CommonHelper.BindDropDown(ddlSalaryType, lst, "Value", "Id", false, false);
+    //}
+
+    public bool CheckAlreadyExists(int EmployeeId)
+    {
+
+        HCM_EmployeeSalary obj = context.HCM_EmployeeSalary.FirstOrDefault(j => j.EmployeeID == EmployeeId && j.IsActive == true);
+        if (obj != null)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            DateTime dt = DateTime.Now;
+            for (int i = 0; i < RptEmployee.Items.Count; i++)
+            {
+                int EmployeeId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)RptEmployee.Items[i].FindControl("hfEmployeeId")).Value);
+                //double Salary = double.Parse(((TextBox)RptEmployee.Items[i].FindControl("hfEmployeeId")).Text);
+                TextBox txtSalary = (TextBox)RptEmployee.Items[i].FindControl("txtSalary");
+
+                double Salary = Convert.ToDouble(txtSalary.Text == string.Empty ? "0" : txtSalary.Text);
+                bool IsExist = CheckAlreadyExists(EmployeeId);
+
+                if (!IsExist)
+                {
+                    Add(EmployeeId, Salary);
+                    Success("Salary has been saved successfully.");
+                }
+                else
+                {
+                    
+                    var obj = context.HCM_EmployeeSalary.Where(j => j.EmployeeID == EmployeeId && j.IsActive == true).ToList();
+
+                    //if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.BasicSalary)
+                    //{
+                    //    obj.ForEach(a => a.BasicSalary = Salary);
+                    //}
+                    //else if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.GrossSalary)
+                    //{
+                    //    obj.ForEach(a => a.GrossSalary = Salary);
+                    //}
+
+                    obj.ForEach(a => a.IsActive = false );
+                    obj.ForEach(a => a.ModifiedBy = UserKey);
+                    obj.ForEach(a => a.ModifiedDate = dt); 
+                    obj.ForEach(a => a.UserIP = UserIP);
+
+                    context.SaveChanges();
+
+                    Add(EmployeeId, Salary);
+
+                    Success("Salary has been updated successfully.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Error(ex.ToString());
+
+            
+        }
+    }
+
+    private void Add(int EmployeeId, double Salary)
+    {
+        DateTime dt = DateTime.Now;
+        HCM_EmployeeSalary obj = new HCM_EmployeeSalary();
+
+        obj.EmployeeID = EmployeeId;
+
+        //if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.BasicSalary)
+        //{
+        //    obj.BasicSalary = Salary;
+        //}
+        //else if (Convert.ToInt32(ddlSalaryType.SelectedValue) == (int)Constant.HCMSetupDetail.GrossSalary)
+        {
+            obj.GrossSalary = Salary;
+        }
+
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = UserIP;
+        context.HCM_EmployeeSalary.Add(obj);
+        context.SaveChanges();
+
+    }
+    protected void btnCancelSave_Click(object sender, EventArgs e)
+    {
+
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    protected void RptEmployee_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            //int EmployeeId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)RptEmployee.FindControl("hfEmployeeId")).Value);
+
+            System.Web.UI.HtmlControls.HtmlInputHidden hfEmployeeId = (System.Web.UI.HtmlControls.HtmlInputHidden)e.Item.FindControl("hfEmployeeId");
+            TextBox txtSalary = (TextBox)e.Item.FindControl("txtSalary");
+
+            int EmployeeId = Convert.ToInt32(hfEmployeeId.Value);
+            var obj = context.HCM_EmployeeSalary.Where(j => j.EmployeeID == EmployeeId && j.IsActive == true).ToList();
+
+            if (obj != null && obj.Count > 0)
+            {
+                txtSalary.Text = obj[0].GrossSalary.ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            Error(ex.InnerException.ToString());
+        }
+    }
+}

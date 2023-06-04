@@ -1,0 +1,235 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucExperience.ascx.cs" Inherits="Controls_EmployeeDetails_ucExperience" %>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Experience
+    </div>
+    <asp:HiddenField ID="hfEmpID" runat="server" />
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your work experience details..</strong>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Add Experience Details
+    </div>
+    <asp:HiddenField ID="HfEmployeeExperienceId" runat="server" />
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Name of Employer / Company :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtCompanyName" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtCompanyName" placeholder="Name of Employer / Company" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Address / Phone no :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtPhoneAddress" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtPhoneAddress" placeholder="Address / Phone no" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Post / Designation :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtDesignation" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtDesignation" placeholder="Post / Designation" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Prime job Responsibilities :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtJobResposibity" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtJobResposibity" placeholder="Prime job Responsibilities" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Accomplishments :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAccomplishments" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtAccomplishments" placeholder="Accomplishments" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2" style="width: 16%;">
+            <label for="exampleInputEmail2">
+                Initial Salary :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtInitialSalary" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtInitialSalary" placeholder="Initial Salary" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-1" style="padding-left: 0;padding-right: 0px;">
+            <label for="exampleInputEmail2">
+                Currency :
+            </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator45" runat="server" ValidationGroup="AddExpDetails" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlCurrency" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlCurrency" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2" style="width: 16%;">
+            <label for="exampleInputEmail2">
+                Last Salary :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtLastSalary" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtLastSalary" placeholder="Address / Phone no" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-1" style="padding-left: 0;padding-right: 0px;">
+            <label for="exampleInputEmail2">
+                Currency :
+            </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator8" runat="server" ValidationGroup="AddExpDetails" ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlLastSalaryCurrency" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlLastSalaryCurrency" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Reason For Leaving :
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator9" runat="server" ValidationGroup="AddExpDetails"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtLeaveReason" CssClass="rfv"></asp:RequiredFieldValidator>
+            </label>
+            <asp:TextBox ID="txtLeaveReason" placeholder="Reason For Leaving" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="panel-heading">
+            Tenure of Employment
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">From : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator10" runat="server" ValidationGroup="AddExpDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtExpDatefrom" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtExpDatefrom" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">To : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator11" runat="server" ValidationGroup="AddExpDetails" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtExpDateto" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtExpDateto" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-1" style="padding-left: 0; margin-top: 19px;">
+            <asp:CheckBox Text="Still Emp" OnCheckedChanged="chkStillEmp_CheckedChanged" AutoPostBack="true" ID="chkStillEmp" runat="server" />
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" CssClass="btn btn-warning pull-right" Style="width: 65px; margin-right: 5px;" ID="btnCancel" OnClick="btnCancel_Click" runat="server" />
+            <asp:Button Text="Add" ID="btnAdd" OnClick="btnAdd_Click" ValidationGroup="AddExpDetails" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Experience
+    </div>
+
+    <div class="panel-body">
+        <asp:Repeater ID="rptEmployeeExperience" runat="server" OnItemCommand="rptEmployeeExperience_ItemCommand1">
+            <HeaderTemplate>
+
+                <table border="0" style="text-align: left;" cellpadding="0" cellspacing="0" align="center"
+                    width="97%" class="table">
+                    <thead>
+                        <tr>
+                            <th>Work Experience at</th>
+                            <th>Tenure Of Employment</th>
+                            <th>Address</th>
+                            <%--<th>Designation</th>--%>
+                            <th>Initial Salary</th>
+                            <th>Last Salary</th>
+                            <th>Job Responsibilities</th>
+                            <th>Accomplishments</th>
+                            <th>Reason For Leaving</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+            </HeaderTemplate>
+            <ItemTemplate>
+
+                <tr>
+                    <td>
+                        <asp:Label ID="Label11" runat="server" Text='<%# Eval("CompanyName") %>'></asp:Label>
+
+                        <label>As</label>
+                        <asp:Label ID="Label12" runat="server" Text='<%#  Eval("designation") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:HiddenField ID="hdnTenureTo" runat="server" Value='<%# Eval("isStillEmployeed") %>'></asp:HiddenField>
+                        <asp:Label ID="lblUniversity" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "tenureFrom", "{0:MMMM dd yyyy }")+" to "+DataBinder.Eval(Container.DataItem, "tenureTo", "{0:MMMM dd yyyy }") %>'></asp:Label>
+                        <asp:Label ID="lblStillEmployeed" runat="server" Visible="False" Text='<%# Eval("isStillEmployeed") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label1" runat="server" Text='<%# Eval("address") %>'></asp:Label>
+                    </td>
+                    <%--                    <td>
+                        <asp:Label ID="Label3" runat="server" Text='<%#  Eval("designation") %>'></asp:Label>
+                    </td>--%>
+                    <td>
+                        <asp:Label ID="Label4" runat="server" Text='<%#  Eval("InitialSalary", "{0:n0}")+" "+Eval("InitialSalaryCurrency") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label2" runat="server" Text='<%# Eval("LastSalary", "{0:n0}")+" "+Eval("LastSalaryCurrency") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label5" runat="server" Text='<%#  Eval("jobResponsibility") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label6" runat="server" Text='<%#  Eval("Accomplishments") %>'></asp:Label>
+                    </td>
+                    <td>
+                        <asp:Label ID="Label8" runat="server" Text='<%#  Eval("reasonForLeaving") %>'></asp:Label>
+                    </td>
+                    <td colspan="3" style="text-align: right">
+                        <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+
+                            <asp:ImageButton CommandName="Edit" OnClientClick="return true;" ID="imgEditTraining"
+                                CommandArgument='<%#Eval("EmployeeExperienceId") %>' ImageUrl="/images/edit.png"
+                                runat="server" />
+                        </asp:HyperLink>
+
+                        <asp:ImageButton ID="imgTrainoingDelete" CommandArgument='<%#Eval("EmployeeExperienceId") %>'
+                            OnClientClick="return DeleteConfirmation();" CommandName="Delete"
+                            src="/images/close.png" runat="server" />
+                    </td>
+                </tr>
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                </table>
+                <tr>
+                    <td colspan="4">
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </table>
+                                                                      
+            </FooterTemplate>
+        </asp:Repeater>
+    </div>
+</div>

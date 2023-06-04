@@ -1,0 +1,348 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Controls_EmployeeDetails_ucPersonalityInformation : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    #region PageMethods
+    protected void Page_Load(object sender, EventArgs e)
+    {
+    }
+    protected void rptFamilyInformation_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            //ResetControlContactPerson();
+            double? DoubleNull = null;
+            int FamilyInformationId = Convert.ToInt32(e.CommandArgument);
+
+            var FamilyInfo = context.HRMS_EmployeeFamilyInformation.Where(c => c.FamilyInformationId == FamilyInformationId).ToList();
+            if (FamilyInfo != null)
+            {
+                hfFamilyId.Value = FamilyInfo[0].FamilyInformationId.ToString();
+                txtFamMemberName.Text = FamilyInfo[0].NameOfFamilyMember;
+                ddlFamRelationship.SelectedValue = Convert.ToString(FamilyInfo[0].RelationshipId);
+                ddlFamQualification.SelectedValue = Convert.ToString(FamilyInfo[0].EducationTypeId);
+                txtFamDOB.Text = Convert.ToDateTime(FamilyInfo[0].DateOfBirth).ToString(Constant.DateFormat2);
+
+
+                btnAddFam.Text = "Update";
+            }
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int FamilyInformationId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeFamilyInformation obj = context.HRMS_EmployeeFamilyInformation.FirstOrDefault(j => j.FamilyInformationId == FamilyInformationId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindFamilyInfo(Convert.ToInt32(EmployeeID));
+        }
+    }
+    protected void rptFamilyInformation_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+        {
+            DropDownList ddlRelationship = (DropDownList)e.Item.FindControl("rptddlRelationship");
+            DropDownList ddlQualification = (DropDownList)e.Item.FindControl("rptddlQualification");
+
+            var RelationshipList = RelationshipDDLList();
+            CommonHelper.BindDropDown(ddlRelationship, RelationshipList, "RelationshipTitle", "RelationshipId", true, false);
+            string hfRelationshipID = ((HiddenField)e.Item.FindControl("hfRelationshipID")).Value;
+            ddlRelationship.SelectedValue = hfRelationshipID;
+            ddlRelationship.Enabled = false;
+
+            var QualificationList = QualificationDDLList();
+            CommonHelper.BindDropDown(ddlQualification, QualificationList, "educationType", "educationTypeId", true, false);
+            string hfQualificationID = ((HiddenField)e.Item.FindControl("hfQualificationID")).Value;
+            ddlQualification.SelectedValue = hfQualificationID;
+            ddlQualification.Enabled = false;
+
+        }
+    }
+    protected void btnEdit_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton rptbtnEdit = (ImageButton)sender;
+        RepeaterItem rpt = (RepeaterItem)rptbtnEdit.NamingContainer;
+        ImageButton rptbtnSuccess = (ImageButton)rpt.FindControl("btnSuccess");
+
+
+        DropDownList rptddlRelationship = (DropDownList)rpt.FindControl("rptddlRelationship");
+        rptddlRelationship.Enabled = true;
+        DropDownList rptddlQualification = (DropDownList)rpt.FindControl("rptddlQualification");
+        rptddlQualification.Enabled = true;
+
+        rptbtnSuccess.Visible = true;
+        rptbtnEdit.Visible = false;
+    }
+    protected void btnDelete_Click(object sender, ImageClickEventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+        ImageButton btnDelete = (ImageButton)sender;
+        RepeaterItem rpt = (RepeaterItem)btnDelete.NamingContainer;
+        int hfFamInfoId = Convert.ToInt32(((HiddenField)rpt.FindControl("hfFamInfoId")).Value);
+        var FamilyInfo = context.HRMS_EmployeeFamilyInformation.Where(c => c.FamilyInformationId == hfFamInfoId).FirstOrDefault();
+        FamilyInfo.IsActive = false;
+        FamilyInfo.ModifiedBy = objBase.UserId;
+        FamilyInfo.ModifiedDate = dt;
+        context.SaveChanges();
+        BindFamilyInfo(Convert.ToInt32(EmployeeID));
+    }
+    protected void btnSuccess_Click(object sender, ImageClickEventArgs e)
+    {
+        ImageButton rptbtnSuccess = (ImageButton)sender;
+        RepeaterItem rpt = (RepeaterItem)rptbtnSuccess.NamingContainer;
+        ImageButton rptbtnEdit = (ImageButton)rpt.FindControl("btnEdit");
+
+
+        DropDownList rptddlRelationship = (DropDownList)rpt.FindControl("rptddlRelationship");
+        rptddlRelationship.Enabled = false;
+        DropDownList rptddlQualification = (DropDownList)rpt.FindControl("rptddlQualification");
+        rptddlQualification.Enabled = false;
+
+        rptbtnSuccess.Visible = false;
+        rptbtnEdit.Visible = true;
+    }
+    protected void btnAddFam_Click(object sender, EventArgs e)
+    {
+        if (hfFamilyId.Value == string.Empty)
+        {
+            AddFamily(Convert.ToInt32(EmployeeID));
+        }
+        else
+        {
+            UpdateFamilyInfo();
+        }
+
+    }
+
+    #endregion
+
+    #region EMPLOYEE PERSONAL INFORMATION
+    private void UpdateFamilyInfo()
+    {
+        int? IntNull = null;
+        DateTime? DateTimeNull = null;
+        double? DoubleNull = null;
+        DateTime dt = DateTime.Now;
+        int FamilyInformationId = Convert.ToInt32(hfFamilyId.Value);
+        HRMS_EmployeeFamilyInformation obj = context.HRMS_EmployeeFamilyInformation.FirstOrDefault(j => j.FamilyInformationId == FamilyInformationId);
+        obj.NameOfFamilyMember = txtFamMemberName.Text.Trim();
+        obj.DateOfBirth = txtFamDOB.Text.Trim() == "" ? DateTimeNull : Convert.ToDateTime(txtFamDOB.Text.Trim());
+        obj.EducationTypeId = Convert.ToInt32(ddlFamQualification.SelectedValue == "0" ? IntNull : Convert.ToInt32(ddlFamQualification.SelectedValue));
+        obj.RelationshipId = Convert.ToInt32(ddlFamRelationship.SelectedValue);
+        obj.ModifiedBy = objBase.UserKey;
+        obj.ModifiedDate = dt;
+
+        //obj.UserIP = UserIP;
+
+
+        context.SaveChanges();
+
+        BindFamilyInfo(Convert.ToInt32(EmployeeID));
+        resetFamilyForm();
+        btnAddFam.Text = "Add";
+        hfFamilyId.Value = "";
+        context.INSERT_INTO_AuditLog(obj.FamilyInformationId.ToString(), "HRMS_EmployeeFamilyInformation", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+
+    }
+    private int GetDesignationIdByEmployeeId(int EmployeeId)
+    {
+        int DesignationId = 0;
+
+        var Emp = context.Setup_Employee.Where(a => a.IsActive == true && a.EmployeeId == EmployeeId).FirstOrDefault();
+
+        if (Emp != null)
+        {
+            DesignationId = Convert.ToInt32(Emp.DesignationId);
+        }
+
+        return DesignationId;
+    }
+
+    private int GetJobCategoryIdByEmployeeId(int EmployeeId)
+    {
+        int JobCategoryId = 0;
+
+        var Emp = context.Setup_Employee.Where(a => a.IsActive == true && a.EmployeeId == EmployeeId).FirstOrDefault();
+
+        if (Emp != null)
+        {
+            JobCategoryId = Convert.ToInt32(Emp.CategoryId);
+        }
+
+        return JobCategoryId;
+    }
+
+    public void SetEmployeePersonalInfo(int EmployeeId, Setup_Employee Employeelist)
+    {
+        //var Employeelist = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeId).FirstOrDefault();
+        if (Employeelist != null)
+        {
+            txtFirstName.Text = Employeelist.FirstName;
+            txtLastName.Text = Employeelist.LastName;
+            txtMiddleName.Text = Employeelist.MiddleName;
+            ddlRelegion.SelectedValue = Employeelist.ReligionId.ToString();
+            ddlNationality.SelectedValue = Employeelist.NationalityID == null ? ddlNationality.SelectedValue : Employeelist.NationalityID.ToString();
+            ddlCountryOfBirth.SelectedValue = Employeelist.CountryOfBirthId.ToString();
+            ddlMaritalStatus.SelectedValue = Employeelist.MatrialStatusId.ToString();
+            txtBirthPlace.Text = Employeelist.EmpBirthPlace;
+            if (Employeelist.LocationId == (int)Constant.Location.Uae)
+            {
+                divCnic.Visible = false;
+                divEmiratesID.Visible = true;
+                txtemiratesID.Text = Employeelist.CNIC;
+                RequiredFieldValidator4.Enabled = false;
+            }
+            else
+            {
+                divCnic.Visible = true;
+                divEmiratesID.Visible = false;
+                RequiredFieldValidator5.Enabled = false;
+                txtcnic.Text = Employeelist.CNIC;
+            }
+            txtcnicissuedate.Text = Employeelist.CNICIssueDate != null ? Employeelist.CNICIssueDate.Value.ToString(Constant.DateFormat2) : "";
+            txtcnicexpiry.Text = Employeelist.CNICExpiryDate != null ? Employeelist.CNICExpiryDate.Value.ToString(Constant.DateFormat2) : "";
+            txtNTN.Text = Employeelist.NTN;
+            txtSSN.Text = Employeelist.SSN;
+            txtDOB.Text = Employeelist.DateOfDirth != null ? Employeelist.DateOfDirth.Value.ToString(Constant.DateFormat2) : "";
+            int? BUIDLabel = Convert.ToInt32(Employeelist.BusinessUnitID);
+            var listBusinessUnit = context.TS_Setup_BusinessUnit.FirstOrDefault(c => c.IsActive == true && c.BusinessUnitId == BUIDLabel);
+
+
+            BindFamilyInfo(EmployeeId);
+        }
+    }
+    #endregion
+    #region Custom Methods
+    private void AddFamily(int EmployeeId)
+    {
+
+        int? intNull = null;
+        DateTime? dtnull = null;
+        HRMS_EmployeeFamilyInformation family = new HRMS_EmployeeFamilyInformation();
+        family.EmployeeID = EmployeeId;
+        family.NameOfFamilyMember = txtFamMemberName.Text.Trim();
+        family.RelationshipId = ddlFamRelationship.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlFamRelationship.SelectedValue);
+        family.DateOfBirth = txtFamDOB.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtFamDOB.Text);
+        family.EducationTypeId = ddlFamQualification.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlFamQualification.SelectedValue);
+        family.IsActive = true;
+        family.CreatedBy = objBase.UserId;
+        context.HRMS_EmployeeFamilyInformation.Add(family);
+        context.SaveChanges();
+        BindFamilyInfo(EmployeeId);
+        resetFamilyForm();
+        context.INSERT_INTO_AuditLog(family.FamilyInformationId.ToString(), "HRMS_EmployeeFamilyInformation", (int)Constant.OperationType.INSERT, objBase.UserKey);
+
+    }
+    private void resetFamilyForm()
+    {
+        txtFamDOB.Text = "";
+        txtFamMemberName.Text = "";
+        ddlFamRelationship.SelectedValue = "0";
+        ddlFamQualification.SelectedValue = "0";
+    }
+    protected void BindFamilyInfo(int EmployeeId)
+    {
+        var FamilyInfo = context.HRMS_EmployeeFamilyInformation.Where(c => c.IsActive == true)
+                                 .Where(c => c.EmployeeID == EmployeeId)
+            .ToList()
+            .Select(c => new
+            {
+                FamInfoId = c.FamilyInformationId,
+                FamilyMember = c.NameOfFamilyMember,
+                Relationship = c.HRMS_Setup_Relationship.RelationshipTitle,
+                DateOfBirth = c.DateOfBirth.HasValue ? c.DateOfBirth.Value.ToString(Constant.DateFormat2) : "",
+                EducationType = c.HRMS_Setup_EducationType != null ? c.HRMS_Setup_EducationType.educationType : "",
+                FamilyInformationId = c.FamilyInformationId,
+                EducationTypeID = c.EducationTypeId,
+                RelationshipID = c.RelationshipId,
+                isNew = false
+
+            });
+        rptFamilyInformation.DataSource = FamilyInfo;
+        rptFamilyInformation.DataBind();
+
+    }
+    public void BindDropdown()
+    {
+        var ListQualification = context.HRMS_Setup_EducationType.Where(c => c.IsActive == true).OrderBy(c => c.educationType).ToList();
+        var ListRelationship = context.HRMS_Setup_Relationship.Where(c => c.IsActive == true).OrderBy(c => c.RelationshipTitle).ToList();
+        var ListReligion = context.HRMS_Setup_Religion.Where(c => c.IsActive == true).OrderBy(c => c.ReligionTitle).ToList();
+        var ListNationality = context.HRMS_Setup_Nationality.Where(c => c.IsActive == true).OrderBy(c => c.Nationality).ToList();
+        var ListMartialStatus = context.HRMS_Setup_MartialStatus.Where(c => c.IsActive == true).OrderBy(c => c.MartialStatusTitle).ToList();
+
+        var ListCountry = context.Setup_Country.Where(c => c.IsActive == true).OrderBy(c => c.CountryName).ToList();
+
+        CommonHelper.BindDropDown(ddlRelegion, ListReligion, "ReligionTitle", "ReligionId", true, false);
+        CommonHelper.BindDropDown(ddlMaritalStatus, ListMartialStatus, "MartialStatusTitle", "MartialStatusId", true, false);
+        CommonHelper.BindDropDown(ddlNationality, ListNationality, "Nationality", "NationalityId", true, false);
+        CommonHelper.BindDropDown(ddlCountryOfBirth, ListCountry, "CountryName", "CountryId", true, false);
+        CommonHelper.BindDropDown(ddlFamQualification, ListQualification, "educationType", "educationTypeId", true, false);
+        CommonHelper.BindDropDown(ddlFamRelationship, ListRelationship, "RelationshipTitle", "RelationshipId", true, false);
+
+    }
+    public void HideControlsForEmployee()
+    {
+        txtFirstName.Enabled = false;
+        txtMiddleName.Enabled = false;
+        txtLastName.Enabled = false;
+        txtcnic.Enabled = false;
+        txtcnicexpiry.Enabled = false;
+        txtcnicissuedate.Enabled = false;
+        txtNTN.Enabled = false;
+        txtSSN.Enabled = false;
+    }
+    private Object RelationshipDDLList()
+    {
+        return context.HRMS_Setup_Relationship.Where(c => c.IsActive == true).OrderBy(c => c.RelationshipTitle).ToList();
+    }
+    private Object QualificationDDLList()
+    {
+        return context.HRMS_Setup_EducationType.Where(c => c.IsActive == true).OrderBy(c => c.educationType).ToList();
+    }
+    #endregion
+
+    #region Property
+    public string EmployeeID
+    {
+        get { return hfEmpID.Value; }
+        set { hfEmpID.Value = value; }
+    }
+    public void UpdatePersonalInfo(int EmployeeId)
+    {
+        int? intNull = null;
+        DateTime? dtnull = null;
+        var Employee = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeId).FirstOrDefault();
+        Employee.FirstName = txtFirstName.Text.Trim();
+        Employee.LastName = txtLastName.Text.Trim();
+        Employee.MiddleName = txtMiddleName.Text.Trim();
+        Employee.ReligionId = ddlRelegion.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlRelegion.SelectedValue);
+        Employee.NationalityID = ddlNationality.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlNationality.SelectedValue);
+        Employee.CountryOfBirthId = ddlCountryOfBirth.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlCountryOfBirth.SelectedValue);
+        Employee.MatrialStatusId = ddlMaritalStatus.SelectedValue == "0" ? intNull : Convert.ToInt32(ddlMaritalStatus.SelectedValue);
+        Employee.EmpBirthPlace = txtBirthPlace.Text.Trim();
+        Employee.DateOfDirth = txtDOB.Text.Trim() != string.Empty ? Convert.ToDateTime(txtDOB.Text.Trim()) : dtnull;
+        Employee.CNIC = Employee.LocationId == (int)Constant.Location.Uae ? txtemiratesID.Text.Trim() : txtcnic.Text.Trim();
+        Employee.CNICIssueDate = txtcnicissuedate.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtcnicissuedate.Text.Trim());
+        Employee.CNICExpiryDate = txtcnicexpiry.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtcnicexpiry.Text.Trim());
+        Employee.NTN = txtNTN.Text.Trim();
+        Employee.SSN = txtSSN.Text.Trim();
+        context.SaveChanges();
+    }
+    #endregion
+}

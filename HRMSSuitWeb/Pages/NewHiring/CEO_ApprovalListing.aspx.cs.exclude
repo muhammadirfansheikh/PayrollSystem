@@ -1,0 +1,93 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+
+public partial class Pages_NewHiring_CEO_ApprovalListing : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindCandidate();
+        }
+    }
+
+
+    public void BindCandidate()
+    {
+        try
+        {
+
+            var List_HRMS_CandidateInfo = context.HRMS_CandidateInfo.Where(a => a.IsActive == true
+
+              ).ToList()
+
+            .Select(c => new
+                    {
+                        CandidateId = c.CandidateId,
+                        ApplicantApplicationId = c.ApplicantApplicationId,
+
+                        FileTypeId = c.FileTypeId,
+
+                        //ApprovedSalary = c.ApprovedSalary,
+
+                        Applicant = c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.LoginId,
+                        DesignationName = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Designation.DesignationName,
+                        DepartmentName = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Department.DepartmentName,
+                        SalaryRange = c.HRMS_ApplicantApplication.HRMS_Requisition.HRMS_SetupDetail3.SetupDetailName,
+                        Requisition = c.HRMS_ApplicantApplication.HRMS_Requisition.RequisitionNo,
+                        CreatedDate = c.CreatedDate,
+                        Education = " <ul class='ul'> <li>  " + String.Join("</li><li>", c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.HRMS_ApplicantEducation.Where(b => b.IsActive == true).Select(t => " <strong> " + t.Institution + " </strong>  </li> ")) + "</ul>",
+
+                    }).OrderByDescending(d => d.CreatedDate);
+
+            rpt.DataSource = List_HRMS_CandidateInfo;
+            rpt.DataBind();
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnViewApplication_Click(object sender, EventArgs e)
+    {
+        try 
+        {
+            LinkButton btnInterview = (LinkButton)sender;
+
+            RepeaterItem rptItem = (RepeaterItem)btnInterview.NamingContainer;
+
+
+            int CandidateId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfCandidateId")).Value);
+
+
+            Response.Redirect("/Pages/NewHiring/CEO_Approval.aspx?CandidateId=" + CandidateId);
+
+
+        }
+        catch (Exception ex)
+        {
+
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+    }
+}

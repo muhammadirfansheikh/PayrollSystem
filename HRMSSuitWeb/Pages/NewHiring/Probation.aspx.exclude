@@ -1,0 +1,544 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="Probation.aspx.cs" Inherits="Pages_NewHiring_Probation" %>
+
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <asp:UpdatePanel ID="UpdatePanel2" UpdateMode="Conditional" runat="server">
+        <ContentTemplate>
+            <input type="hidden" class="hfValue" id="hfValue" runat="server" value="" />
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-lg-10">
+                    <h2>Probation Form</h2>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="/Pages/Default.aspx">Dashboard</a>
+                        </li>
+                        <li>
+
+                            <a href="#">Probation</a>
+                        </li>
+
+                    </ol>
+                </div>
+            </div>
+
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <asp:Label class="panel-heading" ID="lblError" runat="server"></asp:Label>
+            </div>
+
+
+
+            </div>
+            <div>
+                <asp:ValidationSummary ID="validationSummary" ForeColor="Red" runat="server" EnableClientScript="true"
+                    Enabled="true" ValidationGroup="Save" DisplayMode="BulletList" ShowSummary="true"
+                    HeaderText="Required Fields" CssClass='validationSummary' />
+                <%--   <asp:ValidationSummary  runat="server" ID="validationControll" DisplayMode="BulletList" ShowSummary="true" ShowMessageBox="false"/>--%>
+            </div>
+
+            <div class="col-lg-12" style="margin-top: 11px;">
+
+                <%-- Applicant Form Start--%>
+
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Employee Information</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Name</label>
+                                <asp:Label runat="server" ID="lblEmployeeName" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Supervisor Name</label>
+                                <asp:Label runat="server" ID="lblManagerSupervisorName" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Start Date</label>
+                                <asp:Label runat="server" ID="lblJoiningDate" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Department</label>
+                                <asp:Label runat="server" ID="lblDepartment" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+
+
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Designation</label>
+                                <asp:Label runat="server" ID="lblDesignation" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Requested By</label>
+                                <asp:Label runat="server" ID="lblRequestedBy" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+
+
+                <%-- Applicant Form End --%>
+
+
+                <div class="panel panel-info ">
+                    <div class="tabbable">
+                        <ul class="parent nav nav-pills" id="tabs" style="background-color: rgba(26, 179, 148, 0.08);">
+
+                            <li id="tab1" class="active"><a href="#one" data-toggle="tab">Job Behavior</a></li>
+                            <li id="tab2"><a href="#two" data-toggle="tab">Performance Evaluation</a></li>
+                            <li id="tab3"><a href="#three" data-toggle="tab">Employee Strength And Weaknesses</a></li>
+                            <li id="tab4"><a href="#four" data-toggle="tab">HOD Remarks</a></li>
+                            <li runat="server" id="hrTabe"><a href="#five" data-toggle="tab">HR Remarks</a></li>
+                        </ul>
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">Probation</h3>
+
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="tab-content">
+
+
+                                    <div id="one" class="tab-pane active">
+                                        <div class="project-list">
+
+
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Probation Criteria</th>
+                                                        <th>Decision</th>
+                                                        <th>Comment</th>
+
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                                                        <ItemTemplate>
+                                                            <tr style="line-height: 10px !important;">
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+
+                                                                    <asp:Label runat="server" ID="lblEvaluationData" CssClass="exampleInputEmail2 " Text='<%# Eval("Value") %>'></asp:Label>
+
+                                                                    <input type="hidden" runat="server" id="hfHRStarterCriteriaId" class="hfHRStarterCriteriaId" value='<%# Eval("HRStarterCriteriaId") %>' />
+                                                                </td>
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                    <%--  <asp:DropDownList runat="server" ID="dllEvaluationStatus" Width="100px" class="ddlStatus form-control" />
+                                                                    --%>   <%--  <asp:DropDownList ID="ddlIsRequired" runat="server" CssClass="form-control  ">
+                                                            <asp:ListItem Text="-Select-" Value="0" />
+                                                            <asp:ListItem Text="Yes" Value="1" />
+                                                            <asp:ListItem Text="No" Value="2" />
+
+                                                        </asp:DropDownList>--%>
+                                                                    <asp:RadioButtonList runat="server" ID="rbtnEvaluationStatus" Width="100px" class="ddlStatus " RepeatDirection="Horizontal" />
+
+                                                                    <%-- <asp:RequiredFieldValidator ID="rfvdllEvaluationStatus" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                            Display="Dynamic" ControlToValidate="dllEvaluationStatus" InitialValue="0"></asp:RequiredFieldValidator>--%>
+
+                                                                </td>
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <asp:TextBox ID="txtComment" TextMode="MultiLine" Style="height: 70px; max-height: 70px;" runat="server" CssClass="form-control">
+                                                                    </asp:TextBox>
+
+                                                                    <asp:RequiredFieldValidator ID="rfvtxtComment" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                                        Display="Dynamic" ControlToValidate="txtComment"></asp:RequiredFieldValidator>
+
+                                                                </td>
+                                                            </tr>
+
+                                                        </ItemTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+
+
+
+                                    </div>
+
+                                    <div id="two" class="tab-pane">
+                                        <div class="form-group col-lg-4">
+                                            <label for="exampleInputEmail2">Job Responsibility</label>
+                                            <asp:TextBox ID="txtResponsibilityComment" TextMode="MultiLine" Style="height: 45px;" runat="server" CssClass="form-control">
+                                            </asp:TextBox>
+                                            <asp:RequiredFieldValidator ID="rfvtxtResponsibilityComment" runat="server" ValidationGroup="Responsibility" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtResponsibilityComment"></asp:RequiredFieldValidator>
+
+
+
+                                        </div>
+                                        <div class="form-group col-lg-8 ">
+                                            <label for="exampleInputEmail2">Evaluation Status</label>
+
+                                            <asp:RadioButtonList runat="server" ID="rbtnEvaluationStatus" Width="100px" class="rbtnEvaluationStatus table table-responsive" RepeatDirection="Horizontal" />
+
+                                        </div>
+                                        <div class="row" style="margin-right: 32px;">
+
+                                            <asp:Button ID="btnAddResponsibility" runat="server" Text="Add" CssClass="btn btn-primary pull-right" ValidationGroup="Responsibility" OnClick="btnAddResponsibility_Click" />
+                                        </div>
+
+                                        <%-- Start Responsibility List --%>
+                                        <div class="project-list">
+
+
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Job Responsibility</th>
+
+                                                        <th>Evaluation Status</th>
+                                                        <th>Action</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rptResponsibility" runat="server">
+                                                        <ItemTemplate>
+                                                            <tr style="line-height: 10px !important;">
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <input type="hidden" runat="server" id="RowID" class="hfRowID" value='<%# Eval("RowID") %>' />
+                                                                    <input type="hidden" runat="server" id="hfEvaluationStatusId" class="hfEvaluationStatusId" value='<%# Eval("EvaluationStatusId") %>' />
+
+                                                                    <%# Eval("JobResponsibility") %>
+                                                                </td>
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <%# Eval("EvaluationStatus") %>
+                                                                </td>
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                    <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                                                                        <ContentTemplate>
+
+                                                                            <asp:LinkButton ID="btnRemoveResponsibility" CausesValidation="false" CssClass="fa fa-remove text-navy" ForeColor="Red" runat="server" OnClick="btnRemoveResponsibility_Click">
+                                                        
+                                                                            </asp:LinkButton>
+                                                                        </ContentTemplate>
+
+                                                                        <Triggers>
+
+                                                                            <asp:AsyncPostBackTrigger ControlID="btnRemoveResponsibility" EventName="Click" />
+
+                                                                        </Triggers>
+                                                                    </asp:UpdatePanel>
+                                                                </td>
+                                                            </tr>
+
+                                                        </ItemTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                        <%-- End Responsibility List --%>
+                                    </div>
+
+                                    <div id="three" class="tab-pane">
+                                        <div class="form-group col-lg-8 ">
+                                            <label for="exampleInputEmail2">Strength\Weakness\Recommendation</label>
+                                            <asp:DropDownList runat="server" ID="ddlStrength" Width="200px" class="dllApplicantSkillStatus form-control  " />
+
+                                            <asp:RequiredFieldValidator ID="rfvddlStrength" runat="server" ValidationGroup="Strength" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlStrength" InitialValue="0"></asp:RequiredFieldValidator>
+
+                                        </div>
+                                        <div class="form-group col-lg-4">
+                                            <label for="exampleInputEmail2">Strength\Weakness\Recommendation</label>
+                                            <asp:TextBox ID="txtStrength" TextMode="MultiLine" Style="height: 45px;" runat="server" CssClass="form-control">
+                                            </asp:TextBox>
+                                            <asp:RequiredFieldValidator ID="rfvtxtStrength" runat="server" ValidationGroup="Strength" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtStrength"></asp:RequiredFieldValidator>
+                                        </div>
+                                        <div class="row" style="margin-right: 32px;">
+
+                                            <asp:Button ID="btnStrength" runat="server" Text="Add" CssClass="btn btn-primary pull-right" ValidationGroup="Strength" OnClick="btnStrength_Click" />
+                                        </div>
+
+                                        <%-- Start Strength List --%>
+                                        <div class="project-list">
+
+
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Strength\Weakness</th>
+
+                                                        <th>Strength\Weakness\Recommendation Remarks</th>
+                                                        <th>Action</th>
+
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rptStrength" runat="server">
+                                                        <ItemTemplate>
+                                                            <tr style="line-height: 10px !important;">
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <input type="hidden" runat="server" id="RowID" class="hfRowID" value='<%# Eval("RowID") %>' />
+                                                                    <input type="hidden" runat="server" id="hfEmployeeWeaknessStrengthId" class="hfEmployeeWeaknessStrengthId" value='<%# Eval("EmployeeWeaknessStrengthId") %>' />
+                                                                    <%# Eval("EmployeeWeaknessStrength") %>
+                                                               
+                                                                </td>
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <%# Eval("Strength") %>
+                                                                </td>
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                    <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                                                                        <ContentTemplate>
+
+                                                                            <asp:LinkButton ID="btnRemoveStrength" CausesValidation="false" CssClass="fa fa-remove text-navy" ForeColor="Red" runat="server" OnClick="btnRemoveStrength_Click">
+                                                        
+                                                                            </asp:LinkButton>
+
+                                                                        </ContentTemplate>
+
+                                                                        <Triggers>
+
+                                                                            <asp:AsyncPostBackTrigger ControlID="btnRemoveStrength" EventName="Click" />
+
+                                                                        </Triggers>
+                                                                    </asp:UpdatePanel>
+
+                                                                </td>
+                                                            </tr>
+
+                                                        </ItemTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+
+                                        <%-- End Strength List --%>
+                                    </div>
+
+                                    <div id="four" class="tab-pane">
+
+                                        <div class="form-group">
+
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Name</label>
+                                                <asp:Label runat="server" ID="lblHODName" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Designation</label>
+                                                <asp:Label runat="server" ID="lblHODDesignation" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Date</label>
+                                                <asp:Label runat="server" ID="lblCurrentDate" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+
+                                            <div class="form-group col-lg-4">
+
+
+                                                <label for="exampleInputEmail2">Recommendation For Confirmation</label>
+                                                <asp:RadioButtonList ID="rbtlIsRecommendation" runat="server" RepeatDirection="Vertical" AutoPostBack="true" OnSelectedIndexChanged="rbtlIsRecommendation_SelectedIndexChanged">
+                                                    <%--<asp:ListItem Text="-Select-" Value="0" /> Selected="True"--%>
+
+                                                    <asp:ListItem Text="No" Value="false" />
+                                                    <asp:ListItem Text="Yes" Value="true" />
+
+
+                                                </asp:RadioButtonList>
+                                            </div>
+                                            <div class="form-group col-lg-4" runat="server" id="dateDiv">
+
+
+                                                <label for="exampleInputEmail2">End Date</label>
+                                                <asp:TextBox ID="txtprobpationEndDate" runat="server" CssClass="form-control DatePicker"></asp:TextBox>
+                                                <asp:RequiredFieldValidator ID="rfvtxtprobpationEndDate" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                    Display="Dynamic" ControlToValidate="txtprobpationEndDate"></asp:RequiredFieldValidator>
+
+                                            </div>
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Comments</label>
+                                                <asp:TextBox ID="txtHODComments" TextMode="MultiLine" Style="height: 45px;" runat="server" CssClass="form-control">
+                                                </asp:TextBox>
+                                                <asp:RequiredFieldValidator ID="rfvtxtHODComments" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                    Display="Dynamic" ControlToValidate="txtHODComments"></asp:RequiredFieldValidator>
+                                            </div>
+
+                                            <div class="form-group col-lg-12">
+
+                                                <%--  <div class="row" style="margin-right: 32px;">--%>
+
+                                                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right" ValidationGroup="HrStarter" OnClick="btnSave_Click" />
+                                                <%--  </div>--%>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="five" class="tab-pane">
+
+                                        <div class="form-group">
+
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Name</label>
+                                                <asp:Label runat="server" ID="lblHRPerName" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Designation</label>
+                                                <asp:Label runat="server" ID="lblHRPerDesignation" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Date</label>
+                                                <asp:Label runat="server" ID="lblHRPerDate" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+
+                                            <div class="form-group col-lg-4">
+                                                <label for="exampleInputEmail2">Comments</label>
+                                                <asp:TextBox ID="txtHrComments" TextMode="MultiLine" Style="height: 45px;" runat="server" CssClass="form-control">
+                                                </asp:TextBox>
+                                                <asp:RequiredFieldValidator ID="rfvtxtHrComments" runat="server" ValidationGroup="HrRemarks" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                    Display="Dynamic" ControlToValidate="txtHrComments"></asp:RequiredFieldValidator>
+                                            </div>
+
+                                            <div class="form-group col-lg-12">
+
+                                                <%--  <div class="row" style="margin-right: 32px;">--%>
+
+                                                <asp:Button ID="btnHRRemarks" runat="server" Text="Save" CssClass="btn btn-primary pull-right" ValidationGroup="HrRemarks" OnClick="btnHRRemarks_Click" />
+                                                <%--  </div>--%>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+    <script type="text/javascript">
+        function pageLoad() {
+            //  alert($(".hfValue").val());
+            // if ($(".hfValue").val() == '1') {
+            
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                //startDate: '+0d',
+                autoclose: true
+            });
+            //if ($('.parenttab').val() != '') {
+
+            //    debugger;
+
+
+            //    $('.tabbable .parent li').has('a[href="' + $('.parenttab').val() + '"]').addClass('active');
+            //    $($('.parenttab').val()).addClass('active');
+
+            //}
+            //$(document).on('click', ".tabbable .parent li a", function () {
+            //    //debugger;
+            //    var id = $(this).attr('href');
+            //    $('.parenttab').val(id);
+            //});
+
+
+            if ($(".hfValue").val() == '1') {
+                $('.active').removeClass("active");
+                $('#one').addClass("active");
+                $('#tab1').addClass("active");
+
+            }
+
+            if ($(".hfValue").val() == '2') {
+               
+                $('.active').removeClass("active");
+                $('#two').addClass("active");
+                $('#tab2').addClass("active");
+            }
+            if ($(".hfValue").val() == '3') {
+                $('.active').removeClass("active");
+                $('#three').addClass("active");
+                $('#tab3').addClass("active");
+            }
+            if ($(".hfValue").val() == '4') {
+                $('.active').removeClass("active");
+                $('#four').addClass("active");
+                $('#tab4').addClass("active");
+            }
+            if ($(".hfValue").val() == '5') {
+                $('.active').removeClass("active");
+                $('#five').addClass("active");
+            }
+
+        }
+
+        function OpenDialog(a, b, c) {
+            sweetAlert(a, b, c);
+        }
+
+        function OpenRedirectionDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+
+    </script>
+
+</asp:Content>
+

@@ -1,0 +1,136 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ShiftScheduler.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Incharge_ShiftScheduler" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>TMS</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li class="active">
+                    <strong>Shift Scheduler</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="col-lg-12 white-bg" style="margin-top: 11px;">
+        <asp:UpdatePanel ID="UP1" runat="server">
+            <ContentTemplate>
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h3>Apply For Leave</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group col-lg-10">
+                            <div class="form-group col-lg-6">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+                                    <asp:Label ID="Label2" runat="server" Text="Department"></asp:Label></label>
+                                <asp:DropDownList ID="ddlDepartment" runat="server" AutoPostBack="True" CssClass="form-control" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="ddlDepartment"
+                                    Display="Dynamic" ErrorMessage="Leave Type" InitialValue="0" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-6">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+                                    <asp:Label ID="Label1" runat="server" Text="Employee"></asp:Label></label>
+                                <asp:ListBox ID="ListBoxEmp" runat="server" SelectionMode="Multiple" CssClass="form-control" Height="125px"
+                                    AutoPostBack="True" OnSelectedIndexChanged="ListBoxEmp_SelectedIndexChanged"></asp:ListBox>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="ListBoxEmp"
+                                    Display="Dynamic" ErrorMessage="Leave Type" InitialValue="0" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                            </div>
+
+
+                            <div id="RightContentError" runat="server" visible="false">
+                                <asp:Label ID="LB_Error" runat="server" />
+                            </div>
+                            <asp:ValidationSummary ID="validationSummary" runat="server" EnableClientScript="true"
+                                Enabled="true" ValidationGroup="validGroup1" DisplayMode="BulletList" ShowSummary="true"
+                                HeaderText="Required Fields" CssClass='validationSummary' />
+                            <asp:PlaceHolder ID="PlaceHolder1" runat="server">
+                                <asp:Table ID="PHTable" runat="server">
+                                </asp:Table>
+                            </asp:PlaceHolder>
+                            <asp:Repeater ID="RepeaterShiftSch" runat="server" OnItemDataBound="RepeaterShiftSch_ItemDataBound">
+                                <HeaderTemplate>
+                                    <table class="table">
+                                        <tr>
+                                            <th style="text-align: center;">
+                                                <b>Employee</b>
+                                            </th>
+                                            <th style="text-align: center;">
+                                                <b>Shift</b>
+                                            </th>
+                                            <th style="text-align: center;">
+                                                <b>From</b>
+                                            </th>
+                                            <th style="text-align: center;">
+                                                <b>Active / Inactive</b>
+                                            </th>
+                                        </tr>
+                                </HeaderTemplate>
+                                <ItemTemplate>
+                                    <tr>
+                                        <td>
+                                            <%# DataBinder.Eval(Container.DataItem, "object2")%>
+                                        </td>
+                                        <td>
+                                            <asp:DropDownList ID="DropDownForShift" runat="server">
+                                            </asp:DropDownList>
+                                            <br />
+                                            <asp:RequiredFieldValidator ControlToValidate="DropDownForShift" ID="RequiredFieldValidator_Shift"
+                                                ForeColor="Red" Display="Dynamic" ErrorMessage="Please Select Shift" runat="server"
+                                                ValidationGroup="validGroup1" InitialValue="0" Text="*">
+                                            </asp:RequiredFieldValidator>
+                                        </td>
+                                        <td>
+                                            <asp:TextBox ID="TextBoxFromDate" CssClass="DatePicker" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "object3")%>'></asp:TextBox>
+                                            <br />
+                                            <asp:RequiredFieldValidator ControlToValidate="TextBoxFromDate" ID="ValidationForDate"
+                                                ForeColor="Red" Display="Dynamic" ErrorMessage="Please Enter Date" runat="server"
+                                                ValidationGroup="validGroup1" Text="*">
+                                            </asp:RequiredFieldValidator>
+                                        </td>
+                                        <td>
+                                            <asp:CheckBox runat="server" ID="CheckBoxIsActive" />
+                                        </td>
+                                        <asp:HiddenField ID="HFShiftID" runat="server" Value=' <%# DataBinder.Eval(Container.DataItem, "object4")%>' />
+                                        <asp:HiddenField ID="HFStatus" Value='<%# DataBinder.Eval(Container.DataItem, "object5")%>'
+                                            runat="server" />
+                                        <asp:HiddenField ID="HF_Rec_ID" Value='<%# DataBinder.Eval(Container.DataItem, "object1")%>'
+                                            runat="server" />
+                                    </tr>
+                                </ItemTemplate>
+                                <FooterTemplate>
+                                    </table>
+                                </FooterTemplate>
+                            </asp:Repeater>
+                            <asp:Label ID="ShowCurrentShift" runat="server" Text=""></asp:Label>
+                            <asp:Label ID="Response" Text="" Visible="false" runat="server"></asp:Label>
+                            <asp:PlaceHolder ID="phContactDetails" runat="server"></asp:PlaceHolder>
+                            <asp:Button CssClass="button1" ID="AddNewShift" Text="Add New" runat="server" OnClick="AddNewShift_Click1"
+                                Visible="false" Enabled="false" />
+                            <asp:Button CssClass="button1" ID="ButtonSaveRec" runat="server" Text="Update" OnClick="ButtonSaveRec_Click"
+                                Visible="false" Enabled="false" ValidationGroup="validGroup1" />
+                            <asp:Button CssClass="button1" ID="Remove_Shift" runat="server" Text="Remove" OnClick="Remove_Shift_Click"
+                                Visible="false" Enabled="false" />
+                        </div>
+                    </div>
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+
+        <asp:UpdateProgress ID="UPProgress" runat="server" AssociatedUpdatePanelID="UP1">
+            <ProgressTemplate>
+                <div style="height: 50px; text-align: center; margin: auto; position: relative;">
+                    <%--class="overlay" --%>
+                Please wait while we load data...<br />
+                    <img src="/images/loading_animation.gif" alt="Loading" />
+                </div>
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </div>
+</asp:Content>

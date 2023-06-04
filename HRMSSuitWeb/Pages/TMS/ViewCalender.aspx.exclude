@@ -1,0 +1,11 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ViewCalender.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_ViewCalender" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+     <label class="label label-danger" id="lblwarning" runat="server" style="font-size:20px">
+
+    </label>
+    <uc:ucCalenderView ID="ucCalender" runat="server" />
+</asp:Content>

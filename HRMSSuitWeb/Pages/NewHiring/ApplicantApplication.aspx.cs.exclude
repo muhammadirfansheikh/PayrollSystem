@@ -1,0 +1,580 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+
+
+public partial class Pages_NewHiring_ApplicantApplication : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            BindRepeater();
+        }
+        PagingHandler();
+    }
+
+    #region PAGING
+    private void PagingHandler()
+    {
+        PagingAndSorting.ImgNext.Click += ImgNext_Click;
+        PagingAndSorting.ImgPrevious.Click += ImgPrevious_Click;
+        PagingAndSorting.DdlPage.SelectedIndexChanged += DdlPage_SelectedIndexChanged;
+        PagingAndSorting.DdlPageSize.SelectedIndexChanged += DdlPageSize_SelectedIndexChanged;
+    }
+
+    void DdlPageSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void DdlPage_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgNext_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgPrevious_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    #endregion
+
+    private void BindRepeater()
+    {
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+
+
+        DateTime? nulllDateTime = null;
+        string RequisitionNO = Convert.ToString(txtRequisitionNoSearch.Text.Trim());
+
+        string _RequisitionDate = Convert.ToString(txtRequisitionDateSearch.Text.Trim());
+        DateTime? RequisitionDate = _RequisitionDate == string.Empty ? nulllDateTime : Convert.ToDateTime(_RequisitionDate);
+
+        int locationID = Convert.ToInt32(ddllocation.SelectedValue);
+        int DepartmentID = Convert.ToInt32(ddlDepartmentSearch.SelectedValue);
+        int DesignationID = Convert.ToInt32(ddlDesignationSearch.SelectedValue);
+
+
+        var List_Requisition = context.HRMS_Requisition.Where(a => a.IsActive == true
+            && (a.RequisitionNo.Contains(RequisitionNO) || RequisitionNO == string.Empty)
+               && (a.LocationId == locationID || locationID == 0)
+               && (a.DepartmentId == DepartmentID || DepartmentID == 0)
+               && (a.DesignationId == DesignationID || DesignationID == 0)
+               && (a.CreatedDate == RequisitionDate || RequisitionDate == null))
+          .Select(c => new
+          {
+              RequisitionId = c.RequisitionId,
+              RequisitionNo = c.RequisitionNo,
+              DesignationId = c.DesignationId,
+              DesignationName = c.Setup_Designation.DesignationName,
+              DepartmentName = c.Setup_Department.DepartmentName,
+
+              RequestedVacancy = c.ApprovedVacancy,
+              Location = c.Setup_Location.LocationName,
+              EmployeeType = c.Setup_EmployeeType.TypeName,
+              ExpectedJoiningDate = c.ExpectedJoiningDate,
+              IsReplacementRequest = c.IsReplacementRequest == true ? "Replacment" : "Requirement",
+              LastApplyDate = c.LastApplyDate,
+              MinDegreeRequired = c.HRMS_Setup_EducationType.educationType,
+              MinExperience = c.HRMS_SetupDetail1.SetupDetailName,
+              HiringReason = c.HRMS_SetupDetail2.SetupDetailName,
+              IsBudgeted = c.IsBudgeted == true ? "Under Budget  " : "Out Of Budget",
+              SalaryRange = c.HRMS_SetupDetail3.SetupDetailName,
+
+              ApplicationCount = c.HRMS_ApplicantApplication.Where(d => d.IsActive == true).Count(),
+              CreatedDate = c.CreatedDate,
+
+          }).OrderByDescending(a => a.CreatedDate).ToList();
+
+        //rpt.DataSource = List_Requisition;
+        //rpt.DataBind();
+
+        var _List = List_Requisition.Skip(skip).Take(pageSize).ToList();
+        rpt.DataSource = _List;
+        rpt.DataBind();
+        PagingAndSorting.setPagingOptions(List_Requisition.Count());
+    }
+
+    public void BindDropdown()
+    {
+        var ListDepartment = context.Setup_Department.Where(a => a.IsActive == true && a.CompanyId == CompanyId)
+             .Select(c => new
+             {
+                 Id = c.DepartmentId,
+                 Value = c.DepartmentName
+             }).ToList();
+
+        CommonHelper.BindDropDown(ddlDepartmentSearch, ListDepartment, "Value", "Id", true, false);
+
+        var ListLocation = context.Setup_Location.Where(c => c.IsActive == true && c.CompanyId == CompanyId)
+          .Select(a => new
+          {
+              Id = a.LocationId,
+              Value = a.LocationName,
+
+          }).OrderBy(c => c.Id).ToList();
+
+        CommonHelper.BindDropDown(ddllocation, ListLocation, "Value", "Id", true, false);
+
+        var ListJobcategory = context.Setup_Category.Where(c => c.IsActive == true)
+         .Select(a => new
+         {
+             Id = a.CategoryId,
+             Value = a.CategoryName,
+         }).OrderBy(c => c.Id).ToList();
+
+        CommonHelper.BindDropDown(ddlJobCategory, ListJobcategory, "Value", "Id", true, false);
+        ddlJobCategory_SelectedIndexChanged(null, null);
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetSearchControll();
+        BindRepeater();
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            //DateTime _InterviewDate = Convert.ToDateTime(txtInterviewDate.Text.Trim());
+            //TimeSpan StartTime = Convert.ToDateTime(txtStartTime.Text).TimeOfDay;
+            //TimeSpan EndTime = Convert.ToDateTime(txtEndTime.Text).TimeOfDay;
+
+            //TimeSpan TotalTime = EndTime.Subtract(StartTime);
+
+            //int Slot = Convert.ToInt32(txtInterViewSlots.Text.Trim());
+
+            //TimeSpan _SlotDurationMinute = new TimeSpan(TotalTime.Ticks / Slot);
+
+            //for (int i = 0; i < Slot; i++)
+            //{
+            //    HRMS_InterviewSlot objHRMS_InterviewSlot = new HRMS_InterviewSlot();
+            //    objHRMS_InterviewSlot.InterviewDate = _InterviewDate;
+            //    objHRMS_InterviewSlot.StartTime = StartTime;
+            //    objHRMS_InterviewSlot.EndTime = EndTime;
+            //    objHRMS_InterviewSlot.SlotDurationMinute = Convert.ToInt32(_SlotDurationMinute.Minutes);
+
+            //    // context.HRMS_InterviewSlot.Add(objHRMS_InterviewSlot);
+
+            //    //  context.SaveChanges();
+
+            //}
+
+            ResetControll();
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+
+    }
+
+    public void ResetControll()
+    {
+        try
+        {
+            txtRequisitionDateSearch.Text = "";
+            txtFirstName.Text = "";
+            txtMiddleName.Text = "";
+            txtLastName.Text = "";
+            txtCNIC.Text = "";
+            txtEmail.Text = "";
+            txtComment.Text = "";
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    public void ResetSearchControll()
+    {
+        try
+        {
+            txtRequisitionDateSearch.Text = "";
+            txtRequisitionNoSearch.Text = "";
+            ddllocation.SelectedValue = "0";
+            ddlDepartmentSearch.SelectedValue = "0";
+
+            ddlJobCategory.SelectedValue = "0";
+            ddlJobCategory_SelectedIndexChanged(null, null);
+            ddlDesignationSearch.SelectedValue = "0";
+            txtFirstName.Text = "";
+            txtMiddleName.Text = "";
+            txtLastName.Text = "";
+            txtCNIC.Text = "";
+            txtEmail.Text = "";
+            txtComment.Text = "";
+
+
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void chkbxIsSelected_CheckedChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            CheckBox chkEdit = (CheckBox)sender;
+
+            RepeaterItem rptItem = (RepeaterItem)chkEdit.NamingContainer;
+
+
+            int UserId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfUserIdRpt")).Value);
+            CheckBox chk = (CheckBox)rptItem.FindControl("chkbxIsSelected");
+            bool checkboxvalue = Convert.ToBoolean(chk.Checked);
+
+
+            if (checkboxvalue != true)
+            {
+
+
+            }
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnViewApplication_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int RequisitionId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfRequisitionId")).Value);
+
+
+
+            Response.Redirect("/Pages/NewHiring/JobApplications.aspx?RequisitionId=" + RequisitionId);
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnUploadApplicantCv_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int RequisitionId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfRequisitionId")).Value);
+
+            hfRequsitionId.Value = RequisitionId.ToString();
+
+            ResetControll();
+            ScriptManager.RegisterStartupScript(this, GetType(), "ApplyJob()", "ApplyJob();", true);
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnApply_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            string _Email = Convert.ToString(txtEmail.Text.Trim());
+            int ApplicantId = 0;
+            int RequsitionId = Convert.ToInt32(hfRequsitionId.Value);
+            //int companyId = (int)Constant.CompanyId.sybrid;
+            int companyId = CompanyId;
+            Random rnd = new Random();
+            string Password = rnd.Next(999999).ToString();
+
+            if (!CheckEmailExist(_Email, txtCNIC.Text.Trim()))
+            {
+                HRMS_Setup_Applicant obj_HRMS_Setup_Applicant = new HRMS_Setup_Applicant();
+
+                obj_HRMS_Setup_Applicant.CompanyID = companyId;
+
+                if (_Email == null || _Email == "")
+                {
+                    obj_HRMS_Setup_Applicant.LoginId = Convert.ToString(Convert.ToInt64(txtCNIC.Text.Trim()));
+
+                }
+                else
+                {
+                    obj_HRMS_Setup_Applicant.LoginId = _Email;
+
+                }
+
+                obj_HRMS_Setup_Applicant.LoginPassword = CommonHelper.GetHash(Password);//Constant.Password;
+                obj_HRMS_Setup_Applicant.IsActive = true;
+                obj_HRMS_Setup_Applicant.CreatedDate = DateTime.Now;
+                obj_HRMS_Setup_Applicant.UserIP = Context.Request.UserHostAddress;
+                context.HRMS_Setup_Applicant.Add(obj_HRMS_Setup_Applicant);
+                context.SaveChanges();
+
+                HRMS_ApplicantGeneralInfo objHRMS_ApplicantGeneralInfo = new HRMS_ApplicantGeneralInfo();
+                objHRMS_ApplicantGeneralInfo.FirstName = Convert.ToString(txtFirstName.Text);
+                objHRMS_ApplicantGeneralInfo.MiddleName = Convert.ToString(txtMiddleName.Text);
+                objHRMS_ApplicantGeneralInfo.LastName = Convert.ToString(txtLastName.Text);
+                objHRMS_ApplicantGeneralInfo.PlainCode = Password;
+                objHRMS_ApplicantGeneralInfo.ApplicantId = obj_HRMS_Setup_Applicant.ApplicantID;
+                objHRMS_ApplicantGeneralInfo.CNIC = Convert.ToInt64(txtCNIC.Text.Trim());
+                objHRMS_ApplicantGeneralInfo.IsActive = true;
+                objHRMS_ApplicantGeneralInfo.CreatedBy = obj_HRMS_Setup_Applicant.ApplicantID;
+                objHRMS_ApplicantGeneralInfo.CreatedDate = DateTime.Now;
+                objHRMS_ApplicantGeneralInfo.NationalityId = (int)Constant.Nationality.Pakistani;
+                objHRMS_ApplicantGeneralInfo.UserIP = Context.Request.UserHostAddress;
+                context.HRMS_ApplicantGeneralInfo.Add(objHRMS_ApplicantGeneralInfo);
+                context.SaveChanges();
+
+                ApplicantId = Convert.ToInt32(obj_HRMS_Setup_Applicant.ApplicantID);
+
+
+                // ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal()", "CloseModal();", true);
+            }
+
+            long _CNIC = Convert.ToInt64(txtCNIC.Text.Trim());
+
+            var _ApplicantId = context.HRMS_ApplicantGeneralInfo.FirstOrDefault(a => a.IsActive == true && a.CNIC == _CNIC || a.HRMS_Setup_Applicant.LoginId == _Email);
+
+            ApplicantId = ApplicantId == 0 ? _ApplicantId.ApplicantId : ApplicantId;
+
+            var ApplicantData = context.HRMS_ApplicantApplication.FirstOrDefault(a => a.IsActive == true && a.ApplicantId == ApplicantId && a.RequisitionId == RequsitionId);
+
+            if (ApplicantData == null)
+            {
+                //ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Application send successfully','success')", "OpenDialog('success','Application send successfully','success');", true);
+                //  ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('Warning','Email/CNIC Already Exist','error')", "OpenDialog('Warning','Email/CNIC Already Exist','error');", true);
+
+                Upload(ApplicantId);
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Application send successfully','success')", "OpenDialog('success','Application send successfully','success');", true);
+
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('Warning','You already applied','error')", "OpenDialog('Warning','You already applied','error');", true);
+
+            }
+            BindRepeater();
+        }
+        catch (Exception ex)
+        {
+
+
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    public bool CheckEmailExist(string _Email, string CNIC)
+    {
+        bool flag = false;
+        long _CNIC = Convert.ToInt64(CNIC);
+
+        int listEmailCNIC = context.HRMS_Setup_Applicant.Where(a => a.IsActive == true && (a.LoginId == _Email || a.LoginId == CNIC)).Count();
+        int ListCNIC = context.HRMS_ApplicantGeneralInfo.Where(a => a.IsActive == true && a.CNIC == _CNIC).Count();
+        // && a.HRMS_ApplicantGeneralInfo.Any(c => c.IsActive == true && c.CNIC == _CNIC)).Count();
+
+        if (listEmailCNIC > 0 || ListCNIC > 0)
+        {
+            flag = true;
+        }
+        else
+        {
+            flag = false;
+        }
+        return flag;
+    }
+
+    public void Upload(int ApplicantId)
+    {
+        Base objBase = new Base();
+        Random rnd = new Random();
+        DateTime dt = DateTime.Now;
+
+        try
+        {
+            if (FileUpload.HasFile)
+            {
+                foreach (HttpPostedFile postedFile in FileUpload.PostedFiles)
+                {
+                    HRMS_ApplicantApplication objHRMS_ApplicantApplication = new HRMS_ApplicantApplication();
+
+
+                    objHRMS_ApplicantApplication.Filecomments = txtComment.Text.Trim();
+                    string fileName = Path.GetFileName(postedFile.FileName);
+                    objHRMS_ApplicantApplication.FileOriginalName = fileName;
+                    string ImageName = dt.ToString("ddMMyyy") + "-" + rnd.Next(999999).ToString() + "-" + ApplicantId + fileName;
+
+
+                    objHRMS_ApplicantApplication.ApplicantId = ApplicantId;
+                    objHRMS_ApplicantApplication.RequisitionId = Convert.ToInt32(hfRequsitionId.Value);
+                    objHRMS_ApplicantApplication.FileStatusId = (int)Constant.SetupDetail.Received;
+                    objHRMS_ApplicantApplication.Filename = ImageName;
+                    objHRMS_ApplicantApplication.IsActive = true;
+                    objHRMS_ApplicantApplication.CreatedBy = UserKey;
+                    objHRMS_ApplicantApplication.CreatedDate = dt;
+                    objHRMS_ApplicantApplication.IsWebSitePath = false ;
+
+                    postedFile.SaveAs(Server.MapPath("~/Uploads/") + ImageName);
+
+                    context.HRMS_ApplicantApplication.Add(objHRMS_ApplicantApplication);
+                    context.SaveChanges();
+                }
+            }
+
+
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void ddlJobCategory_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int JobCategoryID = Convert.ToInt32(ddlJobCategory.SelectedValue);
+
+            var list = context.Setup_Designation.Where(a => a.IsActive == true && a.CategoryId == JobCategoryID)
+                .Select(c => new
+                {
+                    Id = c.DesignationId,
+                    Value = c.DesignationName,
+                }).OrderBy(c => c.Id).ToList();
+
+            CommonHelper.BindDropDown(ddlDesignationSearch, list, "Value", "Id", true, false);
+
+
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+}

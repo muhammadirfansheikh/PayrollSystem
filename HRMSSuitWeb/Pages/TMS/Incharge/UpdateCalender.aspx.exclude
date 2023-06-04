@@ -1,0 +1,170 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="UpdateCalender.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Incharge_UpdateCalender" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div>
+        <div class="row wrapper border-bottom white-bg page-heading">
+            <div class="col-lg-10">
+                <h2>Update Calender</h2>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="/Pages/Default.aspx">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="/Pages/Default.aspx">TMS</a>
+                    </li>
+                    <li class="active">
+                        <strong>Update Calender</strong>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <div class="panel panel-info" style="margin-top: 11px;">
+            <div class="panel-heading">
+                View Calender
+            </div>
+            <asp:UpdatePanel runat="server">
+                <ContentTemplate>
+                    <div class="panel-body">
+                        <div id="RightContentError" runat="server" visible="false">
+                            <asp:Label ID="LB_Error" runat="server" />
+                        </div>
+                        <div class="form-group col-lg-2" runat="server" id="divGroup">
+                            <label for="exampleInputEmail2" class="">Group</label>
+                            <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                            </asp:DropDownList>
+                            <span id="Span5" style="color: Red; display: none;">*</span>
+                        </div>
+
+                        <div class="form-group col-lg-2">
+                            <label for="exampleInputEmail2" class="">Company</label>
+                            <asp:DropDownList ID="ddlCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                            </asp:DropDownList>
+                            <span id="Span3" style="color: Red; display: none;">*</span>
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <label for="exampleInputEmail2" class="">Department</label>
+                            <asp:DropDownList ID="ddlDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                            </asp:DropDownList>
+                            <span id="Span2" style="color: Red; display: none;">*</span>
+                        </div>
+                        <%--<div class="form-group col-lg-2" id="trEmployee" runat="server">
+                <label for="exampleInputEmail2" class="">Employee</label>
+                <asp:DropDownList ID="ddlEmployee" CssClass="form-control col-lg-12" runat="server">
+                </asp:DropDownList>
+                <span id="MainContent_RequiredFieldValidator8" style="color: Red; display: none;">*</span>
+            </div>--%>
+                        <div class="form-group col-lg-2">
+                            <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+                                Month</label>
+                            <asp:DropDownList ID="ddlMonth" runat="server" CssClass="form-control">
+                            </asp:DropDownList>
+
+                            <span id="Span1" style="color: Red; display: none;">*</span>
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+                                Year</label>
+                            <asp:DropDownList ID="ddlYear" runat="server" CssClass="form-control">
+                            </asp:DropDownList>
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <uc:ucMultipleListBox ID="ucMultipleListBox" runat="server" SourceHeadingText="Employee(s) :" DestinationHeadingText="Selected Employee(s) :" DataValueField="EmployeeId" DataTextField="Name" />
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <label for="exampleInputEmail2" class="">Employee</label>
+                            <asp:CheckBoxList RepeatDirection="Horizontal" ID="chkEmployees" Style="display: none;" CellPadding="5" CellSpacing="5" runat="server">
+                            </asp:CheckBoxList>
+                            <span id="Span4" style="color: Red; display: none;">*</span>
+                        </div>
+                        <div class="form-group col-lg-12">
+                            <asp:Button ID="GetEmpShift" runat="server" OnClick="GetEmpShift_Click" Text="Get Record" CssClass="btn btn-info" />
+                            <div>
+                                <asp:DataList ID="DataList_Shift" Style="margin-top: 11px;"
+                                    runat="server" CssClass="table table-hover" OnItemDataBound="DataList_Shift_ItemDataBound"
+                                    RepeatColumns="7" RepeatDirection="Horizontal" HorizontalAlign="Center" CellPadding="5"
+                                    CellSpacing="1" GridLines="Both">
+                                    <HeaderStyle HorizontalAlign="Center" VerticalAlign="Middle" />
+                                    <HeaderTemplate>
+                                        <table style="width: 100%;">
+                                            <thead>
+                                                <tr style="background: rgb(26, 179, 148); color: white;">
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label00" runat="server" Text="Sun" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label01" runat="server" Text="Mon" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label02" runat="server" Text="Tue" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label03" runat="server" Text="Wed" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label04" runat="server" Text="Thu" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label05" runat="server" Text="Fri" />
+                                                    </th>
+                                                    <th style="text-align: center;">
+                                                        <asp:Label ID="Label06" runat="server" Text="Sat" />
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                    </HeaderTemplate>
+                                    <ItemStyle Font-Bold="False" Font-Italic="False" Font-Overline="False"
+                                        Font-Size="Medium" Font-Strikeout="False" Font-Underline="False" HorizontalAlign="Center"
+                                        VerticalAlign="Middle" ForeColor="Black" />
+                                    <ItemTemplate>
+                                        <asp:HiddenField ID="HFShiftDetail_ID" Value='<%#  DataBinder.Eval(Container.DataItem, "object1") %>'
+                                            runat="server" />
+                                        <asp:HiddenField ID="HFDAY" Value='<%#  DataBinder.Eval(Container.DataItem, "Object2") %>'
+                                            runat="server" />
+                                        <%# DataBinder.Eval(Container.DataItem, "Object2") %>
+                                        <br />
+                                        <asp:DropDownList ID="ddlDayType" runat="server" Width="100px">
+                                        </asp:DropDownList>
+                                        <asp:HiddenField ID="HfDayType" Value='<%#  DataBinder.Eval(Container.DataItem, "object3") %>'
+                                            runat="server" />
+                                        <br />
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        </tbody> </table>
+                                    </FooterTemplate>
+                                    <SeparatorStyle BackColor="#FF8000" Font-Bold="False" Font-Italic="False" Font-Overline="False"
+                                        Font-Strikeout="False" Font-Underline="False" ForeColor="#FF8000" />
+                                </asp:DataList>
+                            </div>
+                            <div>
+                                <asp:Button ID="SaveButton" runat="server" Text="Save" OnClick="SaveButton_Click"
+                                    Visible="false" CssClass="btn btn-primary pull-right" />
+                            </div>
+                        </div>
+                    </div>
+                </ContentTemplate>
+                <Triggers>
+                    <%--<asp:PostBackTrigger ControlID="SaveButton" />--%>
+                </Triggers>
+            </asp:UpdatePanel>
+            <asp:UpdateProgress runat="server">
+                <ProgressTemplate>
+                    <uc2:InProgress ID="InProgress1" runat="server" />
+                </ProgressTemplate>
+            </asp:UpdateProgress>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function pageLoad()
+        {
+            
+        }
+        function AlertBox(title, Message, type) {
+            swal(title, Message, type);
+        }
+    </script>
+</asp:Content>

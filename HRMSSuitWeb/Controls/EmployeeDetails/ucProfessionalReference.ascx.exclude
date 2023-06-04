@@ -1,0 +1,167 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucProfessionalReference.ascx.cs" Inherits="Controls_EmployeeDetails_ucProfessionalReference" %>
+
+
+<div class="panel panel-info alert alert-success">
+    <label class="alert alert-warning" id="lblError" runat="server" visible="false">
+        
+    </label>
+    <div class="panel-heading">
+        Professional Reference
+        <asp:HiddenField ID="hfEmpID" runat="server" />
+        <asp:HiddenField ID="hfProfRefID" runat="server" />
+
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Name : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator10" runat="server" ValidationGroup="AddProfRef" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtName" CssClass="rfv" ValidationExpression="^[a-zA-Z'.\s]{1,40}$"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtName" runat="server" placeholder="Name" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Institution/Office : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddProfRef" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtOffice" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtOffice" runat="server" placeholder="Institution / Office" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Address : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="AddProfRef" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtAddress" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtAddress" runat="server" placeholder="Address " CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Phone : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" placeholder="Phone" runat="server" ValidationGroup="AddProfRef" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtPhone" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtPhone" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Official Email	 : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" placeholder="Official Email" ValidationGroup="AddProfRef" Text="*"
+                ErrorMessage="*" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtOfficialEmail" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtOfficialEmail" runat="server" TextMode="Email" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" CssClass="btn btn-warning pull-right" Style="width: 65px; margin-right: 5px;" ID="btnCancel" OnClick="btnCancel_Click" runat="server" />
+            <asp:Button Text="Add" ID="btnAdd" OnClick="btnAdd_Click" ValidationGroup="AddProfRef" Style="width: 65px; margin-right: 5px;" CssClass="btn btn-primary pull-right" runat="server" />
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Professional Reference Details
+    </div>
+
+    <div class="panel-body">
+        <asp:Repeater ID="rptPrfessionalReference" runat="server" OnItemCommand="rptPrfessionalReference_ItemCommand">
+            <HeaderTemplate>
+                <table class="table" cellspacing="0" cellpadding="0">
+
+
+                    <thead>
+                        <tr>
+
+                            <th>Name
+                            </th>
+                            <th>Institution
+                            </th>
+                            <th>Address
+                            </th>
+                            <th>Phone
+                            </th>
+                            <th>Email
+                            </th>
+
+
+                            <th style="width: 35px; text-align: center;" class='editFunction'>Action
+                                          
+                            </th>
+                        </tr>
+                    </thead>
+
+
+
+                    <tbody>
+            </HeaderTemplate>
+            <ItemTemplate>
+
+
+                <tr>
+
+
+
+
+                    <td style="width: 15%">
+
+                        <asp:Label ID="Label7" runat="server" Text='<%# Eval("Name") %>'></asp:Label>
+                    </td>
+
+                    <td style="width: 15%">
+
+                        <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("Institution") %>'></asp:Label>
+                    </td>
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="Label14" runat="server" Text='<%# Eval("Address") %>'></asp:Label>
+
+                    </td>
+
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="Label17" runat="server" Text='<%# Eval("Phone") %>'></asp:Label>
+
+                    </td>
+
+
+
+                    <td style="width: 20%">
+
+                        <asp:Label ID="Label15" runat="server" Text='<%# Eval("Email") %>'></asp:Label>
+
+                    </td>
+
+                    <td style="text-align: right">
+                        <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+                            <asp:ImageButton ID="btnPassportDetailEdit" OnClientClick="return true" CommandName="Edit" CommandArgument='<%#Eval("ProfessionalReferenceID") %>' ImageUrl="/images/edit.png" runat="server" />
+                        </asp:HyperLink>
+                        <asp:HyperLink runat="server" ID="hplDelete">
+                            <asp:ImageButton ImageUrl="/images/close.png" OnClientClick="return DeleteConfirmation();"
+                                ID="imgRemoveEducationSchoolPanel" CommandName="Delete" CommandArgument='<%#Eval("ProfessionalReferenceID") %>'
+                                runat="server" />
+                        </asp:HyperLink>
+
+                    </td>
+                </tr>
+
+
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                <tr align="center">
+                    <td>
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </tbody>  
+                                                </table>
+            </FooterTemplate>
+        </asp:Repeater>
+    </div>
+</div>

@@ -1,0 +1,86 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+public partial class Controls_Separation_EmpMedicalDetail : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objBase = new Base();
+
+    #region Properties
+    public string Id
+    {
+        get
+        {
+            return Request.QueryString["id"];
+        }
+    }
+    public string WorkflowStepDetailId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowStepDetailId"];
+        }
+    }
+    public string WorkflowMasterId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowMasterId"];
+        }
+    }
+    #endregion
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+
+            BindRepeater();
+        }
+    }
+
+    private void BindRepeater()
+    {
+
+       
+        int MedicalReimbursmentId = Convert.ToInt32(Id);
+        int? _employeeId = context.HRMS_MedicalReimbursment.FirstOrDefault(a => a.IsActive == true && a.MedicalReimbursmentId == MedicalReimbursmentId).EmployeeId;
+        int WorkflowTaskMasterId = Convert.ToInt32(CommonHelper.GetWorkflowTaskMasterId(Convert.ToInt32(_employeeId), Convert.ToInt32(WorkflowMasterId)));
+
+        var objHRMS_MedicalReimbursment = context.HRMS_MedicalReimbursment.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == _employeeId && a.WorkflowTaskMasterId == WorkflowTaskMasterId);
+
+        lblEmpName.Text = objHRMS_MedicalReimbursment.Setup_Employee.FirstName + " " + objHRMS_MedicalReimbursment.Setup_Employee.LastName;
+        lblClaimType.Text = objHRMS_MedicalReimbursment.HRMS_SetupDetail.SetupDetailName;
+        lblClaimDate.Text = Convert.ToString(Convert.ToDateTime(objHRMS_MedicalReimbursment.ClaimDate).ToString(Constant.DateFormat));
+        lblEmployeeCode.Text = objHRMS_MedicalReimbursment.Setup_Employee.EmployeeCode;
+        lblAmountApprove.Text = objHRMS_MedicalReimbursment.ApproveAmount.ToString();
+        MedicalReimbursmentId = objHRMS_MedicalReimbursment.MedicalReimbursmentId;
+
+        var objHRMS_MedicalReimbursmentDetail = context.HRMS_MedicalReimbursmentDetail.Where(a => a.IsActive == true
+            && a.MedicalReimbursmentId == MedicalReimbursmentId)
+            .Select(c => new
+            {
+                BillRecieptNo = c.BillNo,
+                checkupDate = c.Date,
+                LaboratoryName = c.PractionerName,
+                ClaimForText = c.HRMS_SetupDetail.SetupDetailName,
+                ClaimAmount = c.ClaimAmount
+
+            }).ToList();
+
+
+
+        rpt.DataSource = objHRMS_MedicalReimbursmentDetail;
+        rpt.DataBind();
+    }
+
+
+
+}

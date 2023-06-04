@@ -1,0 +1,48 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_Separation_SeparationDetail : System.Web.UI.UserControl
+{
+    public int? EmployeeId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfEmployeeId.Value == string.Empty ? nullint : Convert.ToInt32(hfEmployeeId.Value);
+        }
+        set { hfEmployeeId.Value = value.ToString(); }
+    }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        BindData();
+    }
+
+    private void BindData()
+    {
+        //var Lst = context.HRMS_ResignationDetail.Where(a => a.IsActive == true 
+        //    //&& a.ResignationDetailId == SeparationId
+        //    && a.EmployeeId == EmployeeId && a.IsResignTakeBack == false 
+        //    ).FirstOrDefault();
+
+        var Lst = context.HRMS_ResignationDetail.Where(a => a.EmployeeId == EmployeeId && a.IsResignTakeBack == false)
+               .OrderByDescending(a => a.ResignationDetailId).FirstOrDefault();
+
+        if (Lst != null)
+        {
+            lblDepartment.Text = Lst.Setup_Employee.Setup_Department.DepartmentName;
+            lblDesignation.Text = Lst.Setup_Employee.Setup_Designation.DesignationName;
+            lblDetail.Text = Lst.ResignationDetail;
+            lblName.Text = Lst.Setup_Employee.FirstName + " " + Lst.Setup_Employee.LastName;
+            lblResignationDate.Text = Convert.ToString(Lst.CreatedDate.toDate());
+            lblLastWorkingDate.Text = Convert.ToString(Lst.LastWorkingDate.toDate());
+        }
+    }
+}

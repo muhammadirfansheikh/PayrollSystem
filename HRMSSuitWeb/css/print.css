@@ -1,0 +1,7 @@
+﻿
+@media print {
+    thead {
+        position: fixed;
+        display: table-header-group ;
+    }
+}

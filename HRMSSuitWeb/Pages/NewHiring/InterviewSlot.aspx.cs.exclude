@@ -1,0 +1,696 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using DAL;
+
+public partial class Pages_NewHiring_InterviewSlot : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            BindRepeater();
+        }
+        PagingHandler();
+    }
+
+    #region PAGING
+    private void PagingHandler()
+    {
+        PagingAndSorting.ImgNext.Click += ImgNext_Click;
+        PagingAndSorting.ImgPrevious.Click += ImgPrevious_Click;
+        PagingAndSorting.DdlPage.SelectedIndexChanged += DdlPage_SelectedIndexChanged;
+        PagingAndSorting.DdlPageSize.SelectedIndexChanged += DdlPageSize_SelectedIndexChanged;
+    }
+
+    void DdlPageSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void DdlPage_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgNext_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgPrevious_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    #endregion
+
+    private void BindRepeater()
+    {
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+        DateTime? _InterviewDate = null;
+
+        if (txtInterviewDateSearch.Text.Trim() != "")
+        {
+            _InterviewDate = Convert.ToDateTime(txtInterviewDateSearch.Text);
+        }
+
+        int Interviewer = Convert.ToInt32(ddlInterViewerSearch.SelectedValue);
+
+
+        int _RequisitionId = Convert.ToInt32(ddlRequisitionSearch.SelectedValue);
+        int _DepartmentID = Convert.ToInt32(ddlDepartmentSearch.SelectedValue);
+
+
+
+
+        var List = context.HRMS_InterviewSlot.Where(a => a.IsActive == true
+                   && (a.RequisitionId == _RequisitionId || _RequisitionId == 0)
+                   && (a.HRMS_Requisition.DepartmentId == _DepartmentID || _DepartmentID == 0)
+                   && (a.InterviewDate == _InterviewDate || _InterviewDate == null)
+              && (a.HRMS_InterviewerInfo.Any(d => d.IsActive == true && d.InterviewerId == Interviewer || Interviewer == 0)
+              )).ToList()
+          .Select(a => new
+          {
+              InterviewSlotId = a.InterviewSlotId,
+              InterviewDate = a.InterviewDate,
+              StartTime = a.StartTime,
+              EndTime = a.EndTime,
+              IsOccupide = a.IsOccupied,
+              RequisitionNo = a.HRMS_Requisition.RequisitionNo,
+              Interviewer = " <ul class='ul'> <li>  " + String.Join("</li><li>", a.HRMS_InterviewerInfo.Where(b => b.IsActive == true).Select(t => " <strong> " + t.Setup_Employee.FirstName + " " + t.Setup_Employee.MiddleName + " " + t.Setup_Employee.LastName + " </strong>  </li> ")) + "</ul>",
+              Designation = a.HRMS_Requisition.Setup_Designation.DesignationName,
+              Department = a.HRMS_Requisition.Setup_Department.DepartmentName
+
+          }).OrderByDescending(d => d.InterviewDate);
+
+
+        var _List = List.Skip(skip).Take(pageSize).ToList();
+        rpt.DataSource = _List;
+        rpt.DataBind();
+        PagingAndSorting.setPagingOptions(List.Count());
+
+        //rpt.DataSource = List;
+        //rpt.DataBind();
+    }
+
+    public void BindDropdown()
+    {
+        int InterviewTypeID = (int)Constant.SetupMaster.InterviewType;
+
+        var List_Status = context.HRMS_SetupDetail.Where(a => a.IsActive == true
+                                     && (a.HRMS_SetupMaster.SetupMasterId == InterviewTypeID)
+                           ).Select(c => new
+                           {
+                               Value = c.SetupDetailName,
+                               Id = c.SetupDetailId,
+                           }).ToList();
+
+        CommonHelper.BindDropDown(ddlInterViewType, List_Status, "Value", "Id", true, false);
+
+
+        var listDept = context.Setup_Department.Where(a => a.IsActive == true).Select(c => new
+                           {
+                               Value = c.DepartmentName,
+                               Id = c.DepartmentId,
+                           }).ToList();
+        CommonHelper.BindDropDown(ddlDepartmentSearch, listDept, "Value", "Id", true, false);
+
+        CommonHelper.BindDropDown(ddlDepartment, listDept, "Value", "Id", true, false);
+
+
+
+        int _DepartmentId = 0;
+
+
+        _DepartmentId = DepatmentId;
+
+        if (IsAdmin)
+        {
+            ddlDepartmentSearch.Enabled = true;
+            ddlDepartment.Enabled = true;
+        }
+        else
+        {
+            ddlDepartmentSearch.Enabled = false;
+            ddlDepartment.Enabled = false;
+
+        }
+
+        ddlDepartmentSearch.CssClass = "form-control";
+        ddlDepartment.CssClass = "form-control";
+        ddlDepartmentSearch.SelectedValue = Convert.ToString(_DepartmentId);
+        ddlDepartment.SelectedValue = Convert.ToString(_DepartmentId);
+
+        ddlDepartmentSearch_SelectedIndexChanged(null, null);
+        ddlDepartment_SelectedIndexChanged(null, null);
+        //int RequisitionId = Convert.ToInt32(Request.QueryString["RequisitionId"]);
+        //var ListEmpDepartment = context.HRMS_Requisition.FirstOrDefault(a => a.IsActive == true && a.RequisitionId == RequisitionId);
+
+
+
+
+
+
+
+
+
+
+
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControll();
+        BindRepeater();
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+
+    }
+
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+
+            LinkButton btnEdit = (LinkButton)sender;
+            //ImageButton btnEdit = (ImageButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+
+            int InterviewSlotId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("rptInterviewSlotId")).Value);
+
+            //hfSlotId.Value = InterviewSlotId.ToString();
+
+            var list = context.HRMS_InterviewSlot.FirstOrDefault(a => a.IsActive == true && a.InterviewSlotId == InterviewSlotId);
+
+
+            list.IsActive = false;
+            list.ModifiedBy = UserKey;
+            list.ModifiedDate = DateTime.Now;
+            list.UserIP = UserIP;
+
+            // list.ForEach(a => a.IsActive = false);
+
+            var listInterviewer = context.HRMS_InterviewerInfo.Where(a => a.IsActive == true && a.InterviewSlotId == InterviewSlotId).ToList();
+
+            listInterviewer.ForEach(a => a.IsActive = false);
+            listInterviewer.ForEach(a => a.ModifiedBy = UserKey);
+            listInterviewer.ForEach(a => a.ModifiedDate = DateTime.Now);
+            listInterviewer.ForEach(a => a.UserIP = UserIP);
+            context.SaveChanges();
+
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Slot Deleted Successfully','success')", "OpenDialog('success','Slot Deleted Successfully','success');", true);
+
+
+            BindRepeater();
+            //ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+
+        }
+        catch (Exception ex) {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+    }
+
+    public bool SlotExist(int? InterviewSlotId, int RequisitionId, DateTime InterViewDate, TimeSpan StartTime, TimeSpan EndTime, int?[] ArrInterviewerId)
+    {
+        bool IsExist = false;
+
+
+        for (int i = 0; i < ArrInterviewerId.Length; i++)
+        {
+            int _InterviewerID = Convert.ToInt32(ArrInterviewerId[i]);
+
+            var lstProd = context.HRMS_InterviewSlot.Where(a => a.IsActive == true && a.HRMS_InterviewerInfo.Any(c => c.IsActive == true && c.InterviewerId == _InterviewerID))
+
+                           .Where(b => (b.StartTime >= StartTime && b.EndTime <= EndTime && b.InterviewDate == InterViewDate && b.RequisitionId == RequisitionId) ||
+                               (b.StartTime <= StartTime && b.EndTime >= StartTime && b.InterviewDate == InterViewDate && b.RequisitionId == RequisitionId) ||
+                               (b.StartTime <= EndTime && b.EndTime >= EndTime && b.InterviewDate == InterViewDate && b.RequisitionId == RequisitionId)).ToList();
+
+
+
+            if (lstProd != null && lstProd.Count > 0)
+            {
+                for (int j = 0; j < lstProd.Count; j++)
+                {
+                    IsExist = TimePeriodOverlap(StartTime, EndTime, lstProd[j].StartTime, lstProd[j].EndTime);
+
+                    if (IsExist)
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                IsExist = false;
+            }
+
+
+        }
+
+
+        return IsExist;
+    }
+
+    public bool TimePeriodOverlap(TimeSpan BS, TimeSpan BE, TimeSpan? TS, TimeSpan? TE)
+    {
+        // More simple?
+        // return !((TS < BS && TE < BS) || (TS > BE && TE > BE));
+
+        // The version below, without comments 
+        /*
+        return (
+            (TS >= BS && TS < BE) || (TE <= BE && TE > BS) || (TS <= BS && TE >= BE)
+        );
+        */
+
+        return (
+            // 1. Case:
+            //
+            //       TS-------TE
+            //    BS------BE 
+            //
+            // TS is after BS but before BE
+            (TS >= BS && TS < BE)
+            || // or
+
+            // 2. Case
+            //
+            //    TS-------TE
+            //        BS---------BE
+            //
+            // TE is before BE but after BS
+            (TE <= BE && TE > BS)
+            || // or
+
+            // 3. Case
+            //
+            //  TS----------TE
+            //     BS----BE
+            //
+            // TS is before BS and TE is after BE
+            (TS <= BS && TE >= BE)
+        );
+    }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            if (ddlRequisition.SelectedValue != "0")
+            {
+
+                //if (hfSlotId.Value == "")
+                //{
+                CreateNewSlots();
+                //}
+                //else
+                //{
+                //    UpdateSlots();
+                //}
+                BindRepeater();
+                ResetControll();
+
+
+            }
+        }
+        catch (Exception ex) {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+
+    }
+
+    public void CreateNewSlots()
+    {
+        try
+        {
+            int RequisitionId = Convert.ToInt32(ddlRequisition.SelectedValue);// Convert.ToInt32(Request.QueryString["RequisitionId"]);
+            DateTime _InterviewDate = Convert.ToDateTime(txtInterviewDate.Text.Trim());
+            TimeSpan StartTime = Convert.ToDateTime(txtStartTime.Text).TimeOfDay;
+            TimeSpan EndTime = Convert.ToDateTime(txtEndTime.Text).TimeOfDay;
+
+            //TimeSpan TotalTime = EndTime.Subtract(StartTime);
+
+
+            //Check Box List DAta Recover
+
+            int?[] ArrInterviewerId = null;
+            string InterviewerIdStr = "";
+
+            foreach (ListItem chkbx in chkbxlstInterviewer.Items)
+            {
+                if (chkbx.Text != "All")
+                {
+                    if (chkbx.Selected == true)
+                    {
+                        InterviewerIdStr += chkbx.Value + ",";
+                    }
+                }
+            }
+
+            if (InterviewerIdStr.Length > 1)
+            {
+                InterviewerIdStr = InterviewerIdStr.Substring(0, InterviewerIdStr.Length - 1);
+
+                ArrInterviewerId = InterviewerIdStr.Split(',')
+                    .Select(x =>
+                    {
+                        int value;
+                        return int.TryParse(x, out value) ? value : (int?)null;
+                    })
+                    .ToArray();
+
+            }
+
+
+
+            //Check Box List Data Recover End
+
+            if (!SlotExist(null, RequisitionId, _InterviewDate, StartTime, EndTime, ArrInterviewerId))
+            {
+                DataTable dt = (DataTable)ViewState["CurrentTable"];
+
+                for (int j = 0; j < dt.Rows.Count; j++)
+                {
+                    TimeSpan SlotStart = Convert.ToDateTime(Convert.ToString(dt.Rows[j]["SlotsStartTime"])).TimeOfDay;
+                    TimeSpan SlotEnd = Convert.ToDateTime(Convert.ToString(dt.Rows[j]["SlotsEndTime"])).TimeOfDay;
+
+                    TimeSpan TotalTime = SlotEnd.Subtract(SlotStart);
+
+                    HRMS_InterviewSlot objHRMS_InterviewSlot = new HRMS_InterviewSlot();
+                    objHRMS_InterviewSlot.RequisitionId = RequisitionId;
+                    objHRMS_InterviewSlot.InterviewTypeId = Convert.ToInt32(ddlInterViewType.SelectedValue);
+                    objHRMS_InterviewSlot.InterviewDate = _InterviewDate;
+                    objHRMS_InterviewSlot.StartTime = TimeSpan.Parse(Convert.ToString(dt.Rows[j]["SlotsStartTime"]));
+                    objHRMS_InterviewSlot.EndTime = TimeSpan.Parse(Convert.ToString(dt.Rows[j]["SlotsEndTime"]));
+                    objHRMS_InterviewSlot.SlotDurationMinute = Convert.ToInt32(TotalTime.TotalMinutes);
+                    objHRMS_InterviewSlot.IsOccupied = false;
+                    objHRMS_InterviewSlot.IsCompleted = false;
+                    objHRMS_InterviewSlot.CreatedDate = DateTime.Now;
+                    objHRMS_InterviewSlot.CreatedBy = UserKey;
+                    objHRMS_InterviewSlot.IsActive = true;
+                    objHRMS_InterviewSlot.UserIP = UserIP;
+                    context.HRMS_InterviewSlot.Add(objHRMS_InterviewSlot);
+
+                    context.SaveChanges();
+
+                    // ChkBox List
+
+                    if (ArrInterviewerId.Length > 0)
+                    {
+                        for (int i = 0; i < ArrInterviewerId.Length; i++)
+                        {
+                            HRMS_InterviewerInfo objHRMS_InterviewerInfo = new HRMS_InterviewerInfo();
+
+                            objHRMS_InterviewerInfo.InterviewSlotId = objHRMS_InterviewSlot.InterviewSlotId;
+                            objHRMS_InterviewerInfo.InterviewerId = Convert.ToInt32(ArrInterviewerId[i]);
+                            objHRMS_InterviewerInfo.IsAvailable = false;
+                            objHRMS_InterviewerInfo.IsActive = true;
+                            objHRMS_InterviewerInfo.CreatedDate = DateTime.Now;
+                            objHRMS_InterviewerInfo.CreatedBy = UserKey;
+                            objHRMS_InterviewerInfo.UserIP = UserIP;
+                            context.HRMS_InterviewerInfo.Add(objHRMS_InterviewerInfo);
+                            context.SaveChanges();
+                        }
+                    }
+                }
+
+
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal()", "CloseModal();", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Slot Inserted Successfully','success')", "OpenDialog('success','Slot Inserted Successfully','success');", true);
+
+            }
+            else
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal()", "CloseModal();", true);
+                ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('Warning','Slot Already Exist','error')", "OpenDialog('Warning','Slot Already Exist','error');", true);
+            }
+
+        }
+        catch (Exception ex) 
+        {
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+
+    }
+
+    //public void UpdateSlots()
+    //{
+    //    try
+    //    {
+    //        int RequisitionId = Convert.ToInt32(Request.QueryString["RequisitionId"]);
+    //        DateTime _InterviewDate = Convert.ToDateTime(txtInterviewDate.Text.Trim());
+    //        TimeSpan StartTime = Convert.ToDateTime(txtStartTime.Text).TimeOfDay;
+    //        TimeSpan EndTime = Convert.ToDateTime(txtEndTime.Text).TimeOfDay;
+
+    //        TimeSpan TotalTime = EndTime.Subtract(StartTime);
+    //        int InterviewSlot = Convert.ToInt32(hfSlotId.Value);
+
+
+    //        if (!SlotExist(InterviewSlot, RequisitionId, _InterviewDate, StartTime, EndTime))
+    //        {
+    //            HRMS_InterviewSlot objHRMS_InterviewSlot = context.HRMS_InterviewSlot.FirstOrDefault(a => a.IsActive == true && a.InterviewSlotId == InterviewSlot);
+
+    //            objHRMS_InterviewSlot.RequisitionId = RequisitionId;
+    //            objHRMS_InterviewSlot.InterviewTypeId = Convert.ToInt32(ddlInterViewType.SelectedValue);
+    //            objHRMS_InterviewSlot.InterviewDate = _InterviewDate;
+    //            objHRMS_InterviewSlot.StartTime = StartTime;
+    //            objHRMS_InterviewSlot.EndTime = EndTime;
+    //            objHRMS_InterviewSlot.SlotDurationMinute = Convert.ToInt32(TotalTime.TotalMinutes);
+    //            objHRMS_InterviewSlot.IsOccupied = false;
+    //            objHRMS_InterviewSlot.IsCompleted = false;
+    //            objHRMS_InterviewSlot.ModifiedDate = DateTime.Now;
+    //            objHRMS_InterviewSlot.ModifiedBy = UserKey;
+    //            objHRMS_InterviewSlot.IsActive = true;
+    //            objHRMS_InterviewSlot.UserIP = UserIP;
+    //            //   context.HRMS_InterviewSlot.Add(objHRMS_InterviewSlot);
+    //            //  context.SaveChanges();
+
+    //            ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal()", "CloseModal();", true);
+    //            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Slot Update Successfully','success')", "OpenDialog('success','Slot Update Successfully','success');", true);
+
+    //        }
+    //        else
+    //        {
+    //            ScriptManager.RegisterStartupScript(this, GetType(), "CloseModal()", "CloseModal();", true);
+    //            ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('Warning','Slot Already Exist','error')", "OpenDialog('Warning','Slot Already Exist','error');", true);
+    //        }
+
+    //    }
+    //    catch (Exception ex) { }
+
+    //}
+
+    public void ResetControll()
+    {
+        try
+        {
+            //txtInterViewSlots.Text = "";
+            txtStartTime.Text = "";
+            txtEndTime.Text = "";
+            ddlSlotDuration.SelectedValue = "0";
+            ddlSlotDuration_SelectedIndexChanged(null, null);
+            txtInterviewDate.Text = "";
+            txtInterviewDateSearch.Text = "";
+            ddlDepartmentSearch_SelectedIndexChanged(null, null);
+            ddlDepartment.SelectedValue = "0";
+            ddlDepartment_SelectedIndexChanged(null, null);
+
+            //   ddlInterViewer.SelectedValue = "0";
+            ddlInterViewType.SelectedValue = "0";
+            ddlInterViewerSearch.SelectedValue = "0";
+
+
+
+        }
+        catch (Exception ex) {
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+
+    }
+
+    protected void ddlDepartmentSearch_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int _DepartmentId = Convert.ToInt32(ddlDepartmentSearch.SelectedValue);
+        var List_Interviewer = context.Setup_Employee.Where(a => a.IsActive == true
+                                 && (a.DepartmentId == _DepartmentId)
+
+                       ).Select(c => new
+                       {
+                           Value = c.FirstName + " " + c.LastName,//c.EmployeeCode + "_" +
+                           Id = c.EmployeeId,
+                       }).ToList();
+
+
+        CommonHelper.BindDropDown(ddlInterViewerSearch, List_Interviewer, "Value", "Id", true, false);
+
+        var List_Requisition = context.HRMS_Requisition.Where(a => a.IsActive == true
+                                         && (a.DepartmentId == _DepartmentId)
+
+                               ).Select(c => new
+                               {
+                                   Value = c.RequisitionNo + " - " + c.Setup_Designation.DesignationName,
+                                   Id = c.RequisitionId,
+                               }).ToList();
+
+
+        CommonHelper.BindDropDown(ddlRequisitionSearch, List_Requisition, "Value", "Id", true, false);
+
+
+    }
+
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int DeptId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+        var List_Interviewer = context.Setup_Employee.Where(a => a.IsActive == true
+                               && (a.DepartmentId == DeptId)
+
+                     ).Select(c => new
+                     {
+                         Value = c.FirstName + " " + c.LastName,//c.EmployeeCode + "_" +
+                         Id = c.EmployeeId,
+                     }).ToList();
+
+
+        CommonHelper.BindCheckBoxList(chkbxlstInterviewer, List_Interviewer, "Value", "Id");
+
+        if (chkbxlstInterviewer.Items.Count > 0)
+        {
+            foreach (ListItem item in chkbxlstInterviewer.Items)
+            {
+                item.Selected = false;
+            }
+        }
+
+        DateTime dtNow = DateTime.Now;
+
+        var List_Requisition = context.HRMS_Requisition.Where(a => a.IsActive == true
+                                        && (a.DepartmentId == DeptId) //&& a.LastApplyDate >= dtNow
+
+                              ).Select(c => new
+                              {
+                                  Value = c.RequisitionNo + " - " + c.Setup_Designation.DesignationName,
+                                  Id = c.RequisitionId,
+                              }).ToList();
+
+
+        CommonHelper.BindDropDown(ddlRequisition, List_Requisition, "Value", "Id", true, false);
+
+    }
+
+    public void CreateSlotsDt()
+    {
+        DataTable dtTab = new DataTable();
+
+        dtTab.Columns.Add("Id");
+        dtTab.Columns.Add("SlotsStartTime");
+        dtTab.Columns.Add("SlotsEndTime");
+
+        ViewState["CurrentTable"] = dtTab;
+        //datalistSolts.DataSource = dtTab;
+        //datalistSolts.DataBind();
+
+    }
+
+    protected void ddlSlotDuration_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            if (Convert.ToString(ddlSlotDuration.SelectedValue) != "0")
+            {
+                CreateSlotsDt();
+                TimeSpan TimeSp = TimeSpan.Parse("00:" + Convert.ToString(Convert.ToDouble(ddlSlotDuration.SelectedValue)) + ":00");
+
+
+                TimeSpan StartTime = Convert.ToDateTime(txtStartTime.Text).TimeOfDay;
+                TimeSpan EndTime = Convert.ToDateTime(txtEndTime.Text).TimeOfDay;
+
+                TimeSpan TimeSlot = StartTime;
+
+                TimeSpan TotalTime = EndTime.Subtract(StartTime);
+                TimeSpan TotalSoltsTime = TimeSpan.Parse("00:00:00");
+
+
+                DataTable dt = (DataTable)ViewState["CurrentTable"];
+
+
+
+                for (int i = 0; TotalSoltsTime < TotalTime; i++)
+                {
+                    TimeSlot = TimeSlot.Add(TimeSp);
+
+                    dt.Rows.Add(dt.Rows.Count + 1, i == 0 ? StartTime : TimeSlot.Subtract(TimeSp), TimeSlot);
+
+                    TotalSoltsTime = TotalSoltsTime.Add(TimeSp);
+                }
+
+                datalistSolts.DataSource = dt;
+                datalistSolts.DataBind();
+            }
+
+        }
+        catch (Exception ex) {
+
+
+            //string _Message = ex.InnerException.ToString();
+
+            //string PageRedirectUrl = "#";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialogError('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        
+        
+        }
+    }
+}

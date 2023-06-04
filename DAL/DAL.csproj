@@ -1,0 +1,878 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E8282CC7-0BE2-4843-8933-3A232FE11660}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DAL</RootNamespace>
+    <AssemblyName>DAL</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Entity">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdvanceTax.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Allowance.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="AuditLog.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Bonus10C.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DAL.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DAL.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DAL.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DAL.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DAL.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="DEL_HCM_TaxableMedical.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DEL_HRMS_Setup_GroupLifeInsurance.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DEL_HRMS_Setup_GroupPersonalAccidentInsurance.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DynamicQuerySelect_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Finance_Type.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Get_Company_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_AbsentFlexiLog.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Additional_Allowances.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_ArrearDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_ArrearHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Arrear_Amounts.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Atribute_Mapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Bonus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_BonusTransactionDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_BonusTransactionMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_CompanyFormula.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Company_Settings.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Constant.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAccountDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20201230.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20210708.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20210809.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20210812.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20210812_1.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeAllowanceMapping_20211104.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeOvertimeDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeOvertimeDetail_20220106.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20201222.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20201226.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20210407.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20210708.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20210812_1.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20211104.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20211215.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20220112.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_20220720.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalaryDetail_IncrementLetter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary_20200401.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary_20210618.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary_20211215.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSalary_IncrementLetter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSESSI_Details.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeSettlement.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTax.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxDetails.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxDetails_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxDirectDeduction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxForecast.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxForecastDetail_Loan.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxForecast_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_EmployeeTaxForecast_20210825.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Employee_Education_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Final_Settlement.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_FormMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Formula_Master.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Fuel_DesignationMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_IncreamentHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_IncrementSheetAdditional.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_IncrementSheetHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_IncrementSheetHistory_IncrementLetter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_IncrementSheetInfo.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Interest.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_InterestIncome.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Jv_accounts.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Jv_accounts_20220202.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_LeaveEncashment.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_LeaveEncashment_20220714.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_LoanAttributeDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Loan_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Loan_Detail_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Loan_Master.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Loan_Master_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Loan_Master_20220224.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_MedicalReinbursment.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PayrollDisplay.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Payroll_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Payroll_Log.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Payroll_Master.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Payroll_Master_20210709.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFDetail_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFDetail_20210408.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFLog.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster_20210408.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster_20210712.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster_20211129.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFMaster_20220426.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFWithdraw.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_PFWithdraw_20220608.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_ProvidentFund.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Salary_OverTimeHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Settlement_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Allowance.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Arrear.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Atribute.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_CategoryAllowanceMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_CostCenterAccountMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_CostCenterAccountMapping_20211206.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Definitions.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_FomulaType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Gratuity.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_JV_AccountAllowanceMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_JV_AccountAllowanceMapping_20220629.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Master.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_MenuItem.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Pay_type.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_RM.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_RM_20210611.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_RM_20210708.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_RM_20210807.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_RM_20220330.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_SETUP_SapCostCenter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_SETUP_SapCostCenterNew1.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Settlement.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Tax.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_TaxLaw.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Tax_Slab.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Wppf_Slab.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Setup_Year.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_SP_GET_ACTIVE_EMPLOYEE_DATA_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_SP_GET_ADVANCE_TAX_LIST_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_SP_MARK_ADVANCE_TAX_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_TaxComputation.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_TaxRefund.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Tax_ForecastingDetails.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Tax_Forecast_Allowance_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_VehicleCategoryMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_VehicleDesignationMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_VehicleInformation.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Vehicle_Detail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Vehicle_Detail_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Vehicle_Master.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_Vehicle_Master_20210217.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HCM_WPPF.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_ApplicantApplication.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_CandidateInfo.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_EmployeeBank.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_ProbationEvaluationMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Requisition.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_ResignationDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_SetupDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_SetupMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_AccountType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Applicant.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Bank.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_BankMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_BloodGroup.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_EducationType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_EducationType_Copy.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_EmployeeFunction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_EmployeeSubFunction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Gender.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Grade.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_GroupInsurance.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_HiringType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_MartialStatus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Nationality.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_NoticePeriodType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_PayMode.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_RCAReason.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_Religion.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_ReportingCostCenter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_SeprationStatus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_TerminationType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_ValueType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_VisaType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowFormDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowFormMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowStatus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowStepAction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowStepDetail.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_Setup_WorkflowTaskStatus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="HRMS_WorkFlowTaskMaster.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RoleAccess_Select_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SAPCOSTKOT.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_AD_Location.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Application.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_ApplicationRoleMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Area.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_BusinessUnitCostCenterMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Campaign.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Category.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_City.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Company.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_CompanyDomains.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_CostCenter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Country.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Currency.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Department.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Designation.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_EmployeeCompanyMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_EmployeeType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20210929.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20211221.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20211221_2.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20211222.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20220113.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20220124.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20220203.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_20220215.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_Log.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Employee_Log_20210927.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Floor.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_FloorAreaMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Group.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Location.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_MenuItem.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_OperationType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Profession.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Province.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_Role.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_RoleAccess.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_RoleAccessFunction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_User.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_UserAccessLocation.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_ValueType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Setup_ValueTypeCompanyMapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="SP_HCM_Mark_Employee_Allownce_With_For_Cast_Result.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_HRMS_Setup_BloodGroup.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_HRMS_Setup_EducationType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_HRMS_Setup_Gender.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_HRMS_Setup_MaritalStatus.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_BusinessUnit.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_Category.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_City.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_CostCenter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_Department.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_Designation.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_EmployeeData.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_EmployeeType.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_Location.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_Province.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="STG_Setup_SapCostCenter.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="sysdiagram.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="ThirdParty_Menu_User_Mapping.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="tmpFerdeen.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TMS_AccessFunction.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TMS_Setup_LeaveDefinition.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TMS_Setup_LeaveTypes.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TMS_Setup_Shift.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TS_Setup_BusinessUnit.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserLoginHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+    <Compile Include="UserPasswordHistory.cs">
+      <DependentUpon>DAL.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EntityDeploy Include="DAL.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>DAL.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.Config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="DAL.edmx.diagram">
+      <DependentUpon>DAL.edmx</DependentUpon>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DAL.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>DAL.edmx</DependentUpon>
+      <LastGenOutput>DAL.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="DAL.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>DAL.edmx</DependentUpon>
+      <LastGenOutput>DAL.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

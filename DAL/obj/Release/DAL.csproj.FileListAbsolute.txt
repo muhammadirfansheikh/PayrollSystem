@@ -1,0 +1,11 @@
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\DAL.dll.config
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\DAL.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\DAL.pdb
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\EntityFramework.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\System.Data.Entity.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\bin\Release\EntityFramework.xml
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Release\DAL.csproj.CoreCompileInputs.cache
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Release\DAL.csproj.CopyComplete
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Release\DAL.dll
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Release\DAL.pdb
+D:\Muhammad_Shehroz_Siddiqui\Projects\HCM_Payroll\DAL\obj\Release\DAL.csproj.AssemblyReference.cache

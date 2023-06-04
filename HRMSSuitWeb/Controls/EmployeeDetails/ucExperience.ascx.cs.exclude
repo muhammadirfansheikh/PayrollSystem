@@ -1,0 +1,185 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucExperience : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindDropDown()
+    {
+        var ListCurrency = context.Setup_Currency.Where(c => c.IsActive == true).OrderBy(c => c.CurrencyTitle).ToList();
+        CommonHelper.BindDropDown(ddlCurrency, ListCurrency, "CurrencyTitle", "CurrencyId", true, false);
+        CommonHelper.BindDropDown(ddlLastSalaryCurrency, ListCurrency, "CurrencyTitle", "CurrencyId", true, false);
+    }
+    public void BindRepeaterEmployeeExperience(int EmployeeId)
+    {
+        var EmployeeExpereince = context.HRMS_EmployeeExperience.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmployeeId)
+            ).Select(c => new
+            {
+                EmployeeExperienceId = c.EmployeeExperienceId,
+                EmployeeId = c.EmployeeId,
+                CompanyName = c.CompanyName,
+                Address = c.Address,
+                Designation = c.Designation,
+                InitialSalary = c.InitialSalary,
+                LastSalary = c.LastSalary,
+                InitialSalaryCurrencyId = c.InitialSalaryCurrencyId,
+                LastSalaryCurrencyId = c.LastSalaryCurrencyId,
+                InitialSalaryCurrency = c.Setup_Currency.CurrencyTitle,
+                LastSalaryCurrency = c.Setup_Currency1.CurrencyTitle,
+                JobResponsibility = c.JobResponsibility,
+                Accomplishments = c.Accomplishments,
+                IsStillEmployeed = c.IsStillEmployeed,
+                ReasonForLeaving = c.ReasonForLeaving,
+                TenureFrom = c.TenureFrom,
+                TenureTo = c.TenureTo
+
+
+            }).ToList();
+        rptEmployeeExperience.DataSource = EmployeeExpereince;
+        rptEmployeeExperience.DataBind();
+    }
+    public void resetExpControls()
+    {
+        HfEmployeeExperienceId.Value = "";
+        txtCompanyName.Text = "";
+        txtPhoneAddress.Text = "";
+        txtDesignation.Text = "";
+        txtAccomplishments.Text = "";
+        txtJobResposibity.Text = "";
+        txtLeaveReason.Text = "";
+        txtExpDatefrom.Text = "";
+        txtExpDateto.Text = "";
+        ddlCurrency.SelectedValue = "0";
+        ddlLastSalaryCurrency.SelectedValue = "0";
+        chkStillEmp.Checked = false;
+        txtInitialSalary.Text = "";
+        txtLastSalary.Text = "";
+    }
+    protected void rptEmployeeExperience_ItemCommand1(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            resetExpControls();
+            int EmployeeExperienceId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeExperiencelist = context.HRMS_EmployeeExperience.Where(c => c.EmployeeExperienceId == EmployeeExperienceId).ToList();
+            if (EmployeeExperiencelist != null)
+            {
+                HfEmployeeExperienceId.Value = EmployeeExperienceId.ToString();
+                txtCompanyName.Text = EmployeeExperiencelist[0].CompanyName;
+                txtPhoneAddress.Text = EmployeeExperiencelist[0].Address;
+                txtDesignation.Text = EmployeeExperiencelist[0].Designation;
+                txtAccomplishments.Text = EmployeeExperiencelist[0].Accomplishments;
+                txtJobResposibity.Text = EmployeeExperiencelist[0].JobResponsibility;
+                txtLeaveReason.Text = EmployeeExperiencelist[0].ReasonForLeaving;
+                txtExpDatefrom.Text = EmployeeExperiencelist[0].TenureFrom.Value.ToString(Constant.DateFormat2);
+                txtExpDateto.Text = EmployeeExperiencelist[0].TenureTo.ToString() == "" ? string.Empty : EmployeeExperiencelist[0].TenureTo.Value.ToString(Constant.DateFormat2);
+                ddlCurrency.SelectedValue = EmployeeExperiencelist[0].InitialSalaryCurrencyId.ToString();
+                ddlLastSalaryCurrency.SelectedValue = EmployeeExperiencelist[0].LastSalaryCurrencyId.ToString();
+                chkStillEmp.Checked = Convert.ToBoolean(EmployeeExperiencelist[0].IsStillEmployeed);
+                txtInitialSalary.Text = EmployeeExperiencelist[0].InitialSalary.ToString();
+                txtLastSalary.Text = EmployeeExperiencelist[0].LastSalary.ToString();
+                btnAdd.Text = "Update";
+            }
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeExperienceId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeExperience obj = context.HRMS_EmployeeExperience.FirstOrDefault(j => j.EmployeeExperienceId == EmployeeExperienceId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterEmployeeExperience(EmpID);
+        }
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+        if (HfEmployeeExperienceId.Value == "")
+        {
+            DateTime? date = null;
+            HRMS_EmployeeExperience empExp = new HRMS_EmployeeExperience();
+            empExp.EmployeeId = EmpID;
+            empExp.CompanyName = txtCompanyName.Text;
+            empExp.Address = txtPhoneAddress.Text;
+            empExp.Designation = txtDesignation.Text;
+            empExp.InitialSalary = Convert.ToDecimal(txtInitialSalary.Text.Trim());
+            empExp.LastSalary = Convert.ToDecimal(txtLastSalary.Text.Trim());
+            empExp.InitialSalaryCurrencyId = Convert.ToInt32(ddlCurrency.SelectedValue);
+            empExp.LastSalaryCurrencyId = Convert.ToInt32(ddlLastSalaryCurrency.SelectedValue);
+            empExp.JobResponsibility = txtJobResposibity.Text.Trim();
+            empExp.Accomplishments = txtAccomplishments.Text.Trim();
+            empExp.IsStillEmployeed = chkStillEmp.Checked;
+            empExp.ReasonForLeaving = txtLastSalary.Text;
+            empExp.TenureFrom = txtExpDatefrom.Text.Trim() == string.Empty ? date : Convert.ToDateTime(txtExpDatefrom.Text.Trim());
+            empExp.TenureTo = txtExpDateto.Text.Trim() == string.Empty ? date : Convert.ToDateTime(txtExpDateto.Text.Trim());
+            empExp.IsActive = true;
+            empExp.CreatedDate = dt;
+            empExp.CreatedBy = objBase.UserKey;
+            context.HRMS_EmployeeExperience.Add(empExp);
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(empExp.EmployeeExperienceId.ToString(), "HRMS_EmployeeExperience", (int)Constant.OperationType.INSERT, objBase.UserKey);
+        }
+        else
+        {
+            DateTime? date = null;
+            int EmpExpID = Convert.ToInt32(HfEmployeeExperienceId.Value);
+            HRMS_EmployeeExperience empExp = context.HRMS_EmployeeExperience.FirstOrDefault(x => x.EmployeeExperienceId == EmpExpID);
+            empExp.CompanyName = txtCompanyName.Text;
+            empExp.Address = txtPhoneAddress.Text;
+            empExp.Designation = txtDesignation.Text;
+            empExp.InitialSalary = Convert.ToDecimal(txtInitialSalary.Text.Trim());
+            empExp.LastSalary = Convert.ToDecimal(txtLastSalary.Text.Trim());
+            empExp.InitialSalaryCurrencyId = Convert.ToInt32(ddlCurrency.SelectedValue);
+            empExp.LastSalaryCurrencyId = Convert.ToInt32(ddlLastSalaryCurrency.SelectedValue);
+            empExp.JobResponsibility = txtJobResposibity.Text.Trim();
+            empExp.Accomplishments = txtAccomplishments.Text.Trim();
+            empExp.IsStillEmployeed = chkStillEmp.Checked;
+            empExp.ReasonForLeaving = txtLastSalary.Text;
+            empExp.TenureFrom = txtExpDatefrom.Text.Trim() == string.Empty ? date : Convert.ToDateTime(txtExpDatefrom.Text.Trim());
+            empExp.TenureTo = txtExpDateto.Text.Trim() == string.Empty ? date : Convert.ToDateTime(txtExpDateto.Text.Trim());
+            context.SaveChanges();
+            btnAdd.Text = "Add";
+            context.INSERT_INTO_AuditLog(empExp.EmployeeExperienceId.ToString(), "HRMS_EmployeeExperience", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+        }
+        resetExpControls();
+        BindRepeaterEmployeeExperience(EmpID);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        resetExpControls();
+    }
+    protected void chkStillEmp_CheckedChanged(object sender, EventArgs e)
+    {
+        if (chkStillEmp.Checked)
+        {
+            txtExpDateto.Text = string.Empty;
+            txtExpDateto.Enabled = false;
+        }
+        else
+        {
+            txtExpDateto.Enabled = true;
+        }
+    }
+}

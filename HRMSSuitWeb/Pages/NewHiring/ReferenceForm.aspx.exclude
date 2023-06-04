@@ -1,0 +1,71 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="ReferenceForm.aspx.cs" Inherits="Pages_NewHiring_ReferenceForm" %>
+
+<%@ Register Src="~/Controls/NewHiring/TelephonicReference.ascx" TagPrefix="uc" TagName="TelephonicReference" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+    <div>
+        <div class="panel panel-danger" id="divError" runat="server" visible="false">
+            <div class="panel-heading" id="lblError" runat="server"></div>
+        </div>
+        <uc:TelephonicReference runat="server" ID="TelephonicReference" />
+
+
+
+    </div>
+
+
+    <script type="text/javascript">
+        function pageLoad() {
+
+            debugger;
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                //startDate: '+0d',
+                autoclose: true
+            });
+
+
+            //if ($('.chkBoxRequiredForm').is(":checked")) {
+            //    debugger;
+            //    $(".DivHide").show(300);
+            //} else {
+            //    debugger;
+            //    $(".DivHide").hide(200);
+            //}
+            //$('.chkBoxRequiredForm').click(function () {
+            //    debugger;
+            //    this.checked ? $('.DivHide').show(1000) : $('.DivHide').hide(1000); //time for show
+            //});
+
+        }
+
+
+
+        function OpenRedirectionDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+
+    </script>
+
+</asp:Content>
+

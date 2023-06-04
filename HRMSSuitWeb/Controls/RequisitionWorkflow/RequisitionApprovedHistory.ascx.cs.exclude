@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_RequisitionWorkflow_RequisitionApprovedHistory : System.Web.UI.UserControl
+{
+    public int? RequisitionId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfRequisitionId.Value == string.Empty ? nullint : Convert.ToInt32(hfRequisitionId.Value);
+        }
+        set { hfRequisitionId.Value = value.ToString(); }
+    }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+
+    private void BindRepeater(int RequisitionId)
+    {
+        var lst = context.HRMS_RequisitionDetail.Where(a => a.IsActive == true && a.RequisitionId == RequisitionId)
+            .Select(a => new
+            {
+                RequisitionDetailId = a.RequisitionDetailId,
+                ApprovedVacancy = a.ApprovedVacancy,
+                WorkflowStep = a.HRMS_WorkflowTaskDetail.HRMS_Setup_WorkflowStepDetail.StepName,
+                IsApproved = a.IsApproved == null ? false : a.IsApproved,
+                DecisionId = a.DecisionId,
+                Decision = a.HRMS_SetupDetail.SetupDetailName,
+                Comments = a.Comment
+            })
+            .ToList().OrderByDescending(a => a.RequisitionDetailId);
+
+        rpt.DataSource = lst;
+        rpt.DataBind();
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater(Convert.ToInt32(RequisitionId));
+        }
+    }
+}

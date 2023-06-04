@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_TMS_Employee_ViewAppliedLeave : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        int Leave_id = Convert.ToInt32(Request.QueryString["LeaveID"]);
+
+        //var Leave = context.LeaveApplieds.First(p => p.LeaveAppliedId == Leave_id);
+
+        var Leave = (from LeaApp in context.TMS_LeaveApplied
+                     join leaType in context.TMS_Setup_LeaveTypes on LeaApp.LeaveTypeId equals leaType.LeaveTypeID
+                     where LeaApp.LeaveAppliedId == Leave_id
+                     select new { LeaApp, leaType.LeaveName });
+
+        foreach (var item in Leave)
+        {
+
+            LB_LeaveID.Text = item.LeaApp.LeaveAppliedId.ToString();
+            LB_CreateDate.Text = Convert.ToDateTime(item.LeaApp.CreatedDate).ToString("dd MMM yyy");
+            LB_Status.Text = ((Constant.TMSStatus)item.LeaApp.LeaveStatusId).ToString();
+            LB_Reason.Text = item.LeaApp.EmployeeReason;
+            LB_Type.Text = item.LeaveName;
+            LB_From.Text = Convert.ToDateTime(item.LeaApp.FromDate).ToString("dd MMM yyy");
+            LB_To.Text = Convert.ToDateTime(item.LeaApp.ToDate).ToString("dd MMM yyy");
+            LB_Short_Hours.Text = "00";
+            LB_Short_Min.Text = "00";
+            LB_Approve_Date.Text = item.LeaApp.ModifiedDate != null ? Convert.ToDateTime(item.LeaApp.ModifiedDate).ToString("dd MMM yyy") : "";
+            LB_Incharge_Reson.Text = item.LeaApp.InchargeReason;
+            LB_App_From.Text = Convert.ToDateTime(item.LeaApp.FromDate).ToString("dd MMM yyy");
+            LB_App_To.Text = Convert.ToDateTime(item.LeaApp.ToDate).ToString("dd MMM yyy");
+            LB_NumberOfDays.Text = item.LeaApp.NoOfDays.ToString();
+        }
+    }
+}

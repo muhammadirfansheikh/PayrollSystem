@@ -1,0 +1,7 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="EmpLeaveHistory.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Employee_EmpLeaveHistory" %>
+
+<asp:content id="Content1" contentplaceholderid="HeadContent" runat="Server">
+</asp:content>
+<asp:content id="Content2" contentplaceholderid="MainContent" runat="Server">
+    <uc:ucLeaveHistory ID="ucLeaveHistory" runat="server" />
+</asp:content>

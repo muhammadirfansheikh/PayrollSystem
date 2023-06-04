@@ -1,0 +1,86 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ITStarterReview.ascx.cs" Inherits="Controls_NewHiring_ITStarterReview" %>
+
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+
+        <asp:Label runat="server" ID="lblTaskHeading"></asp:Label>
+    </div>
+
+    <div class="panel-body">
+        <div class="panel panel-danger" id="divError" runat="server" visible="false">
+            <div class="panel-heading" id="lblError" runat="server"></div>
+        </div>
+        <input type="hidden" runat="server" id="hfWorkflowItemId" class="hfWorkflowItemId" value="0" />
+        <input type="hidden" runat="server" id="hfIsControlInitialize" class="hfIsControlInitialize" value="false" />
+
+        <div class="form-group col-lg-12">
+
+            <div class="tab-content">
+
+
+                <div id="one" class="tab-pane active">
+                    <div class="project-list">
+
+
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Criteria</th>
+                                    <th>Decision</th>
+
+
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                                    <ItemTemplate>
+                                        <tr style="line-height: 10px !important;">
+                                            <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                <asp:Label runat="server" ID="lblSeperationCriteriaDetail" CssClass="exampleInputEmail2 " Text='<%# Eval("SeperationCriteriaDetail") %>'></asp:Label>
+
+
+                                                <input type="hidden" runat="server" id="hfValueTypeId" class="hfValueTypeId" value='<%# Eval("ValueTypeId") %>' />
+
+                                                <input type="hidden" runat="server" id="hfTableName" class="hfTableName" value='<%# Eval("TableName") %>' />
+
+                                                <input type="hidden" runat="server" id="hfSeperationCriteriaDetailId" class="hfSeperationCriteriaDetailId" value='<%# Eval("SeperationCriteriaDetailId") %>' />
+
+
+                                            </td>
+
+                                            <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                <asp:RadioButtonList runat="server" ID="rbtnEvaluationStatus" Width="100px" class="rbtnEvaluationStatus " Visible="false" RepeatDirection="Horizontal" Enabled="false" />
+
+                                                <asp:DropDownList runat="server" ID="dllEvaluationStatus" Width="100px" class="dllEvaluationStatus form-control" Visible="false" Enabled="false" />
+
+
+
+                                                <asp:TextBox ID="txtComment" TextMode="MultiLine" Style="height: 70px; max-height: 70px;" runat="server" Visible="false" CssClass="form-control" Enabled="false">
+                                                </asp:TextBox>
+
+
+
+                                                <asp:TextBox ID="txtDate" Style="height: 70px; max-height: 30px;" runat="server" Visible="false" CssClass="form-control DatePicker" Enabled="false">
+                                                </asp:TextBox>
+
+
+                                            </td>
+
+                                        </tr>
+
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,139 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucBarChart.ascx.cs" Inherits="Controls_Charts_ucBarChart" %>
+
+<canvas id="income" class="income" runat="server"  style="max-height: 100%; max-width: 100%;"></canvas>
+
+<script>
+    function PopulateBarValues(LabelObj, DataObj, controlname, color, label) {
+
+
+       
+        for (var i = 0, l = LabelObj.length; i < l; ++i) {
+            LabelObj[i] = LabelObj[i].replace(/\ /g, '\n');
+        }
+
+
+
+        //LabelObj = LabelObj.split(',');
+        //DataObj = DataObj.split(',');
+        var ctx = document.getElementById("MainContent_" + controlname + "_income");
+        
+        var options = {
+            tooltips: {
+                titleFontSize: 22,
+                bodyFontSize: 17
+            },
+            legend: {
+                //labels: { fontSize: 15 }
+                //labels: {
+                display: false
+                //}
+            },
+            scales: {
+                responsive: true,
+                maintainAspectRatio: true,
+
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    }
+                }]
+               ,
+                xAxes: [{
+                    padding: 10,
+                    afterTickToLabelConversion: function (data) {
+                        var xLabels = data.ticks;
+
+                        xLabels.forEach(function (labels, i) {
+                           
+                            if (xLabels[i].length > 10) {
+                                //xLabels[i] = xLabels[i].slice(0, 8);
+                                //var temp = xLabels[i].split(' ');
+                                //xLabels[i] = temp;
+                                //var temp = xLabels[i].replace(' ', '\n');
+                                //xLabels[i] = temp;
+                                //var arr = [];
+                                //arr.push(temp[0]);
+                                //arr.push(temp[1]);
+                                //xLabels[i] = arr;
+                            }
+                        });
+                    },
+                    gridLines: {
+                        color: "rgba(0, 0, 0, 0)",
+                    },
+
+                }]
+            },
+        }
+        var barData = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: LabelObj,
+                datasets: [{
+                    label: label,
+                    fillColor: color,
+                    strokeColor: color,
+                    data: DataObj,
+                    //backgroundColor: [
+                    //        'rgba(255, 99, 132, 0.2)',
+                    //        'rgba(54, 162, 235, 0.2)',
+                    //        'rgba(255, 206, 86, 0.2)',
+                    //        'rgba(75, 192, 192, 0.2)',
+                    //        'rgba(153, 102, 255, 0.2)',
+                    //        'rgba(255, 159, 64, 0.2)'
+                    //],
+                    //borderColor: [
+                    //    'rgba(255,99,132,1)',
+                    //    'rgba(54, 162, 235, 1)',
+                    //    'rgba(255, 206, 86, 1)',
+                    //    'rgba(75, 192, 192, 1)',
+                    //    'rgba(153, 102, 255, 1)',
+                    //    'rgba(255, 159, 64, 1)'
+                    //],
+                    backgroundColor: eval(color),
+                    borderColor: eval(color),
+                    borderWidth: 1
+                }]
+            }, options: options
+
+
+        });
+        //console.log(barData);
+        // get bar chart canvas
+        //var income = document.getElementById("income").getContext("2d");
+        //var income = document.getElementById("MainContent_" + controlname + "_income").getContext("2d");
+
+        // draw bar chart
+        //new Chart(income).Bar(barData);        
+        //var ctx = document.getElementById("MainContent_" + controlname + "_income");
+
+        //var myLine = new Chart(ctx).Line(chartData, {
+        //    showTooltips: false,
+        //    onAnimationComplete: function () {
+
+        //        var ctx = this.chart.ctx;
+        //        ctx.font = this.scale.font;
+        //        ctx.fillStyle = this.scale.textColor
+        //        ctx.textAlign = "center";
+        //        ctx.textBaseline = "bottom";
+
+        //        this.datasets.forEach(function (dataset) {
+        //            dataset.points.forEach(function (points) {
+        //                ctx.fillText(points.value, points.x, points.y - 10);
+        //            });
+        //        })
+        //    }
+        //});
+    }
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+</script>

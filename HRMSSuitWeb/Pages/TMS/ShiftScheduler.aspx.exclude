@@ -1,0 +1,166 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ShiftScheduler.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_ShiftScheduler" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div>
+        <div class="row wrapper border-bottom white-bg page-heading">
+            <div class="col-lg-10">
+                <h2>Shift Scheduler</h2>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="/Pages/Default.aspx">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="/Pages/Default.aspx">TMS</a>
+                    </li>
+                    <li class="active">
+                        <strong>Shift Scheduler</strong>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <asp:UpdatePanel ID="UP1" runat="server">
+            <ContentTemplate>
+                <div class="col-lg-12 white-bg" style="margin-top: 11px; padding: 0px;">
+                    <div class="panel panel-info" style="margin-bottom: 0px;">
+                        <div class="panel-body">
+                            <div id="RightContentError" runat="server" visible="false">
+                                <asp:Label ID="LB_Error" runat="server" />
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="">Group</label>
+                                <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span1" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="">Company</label>
+                                <asp:DropDownList ID="ddlCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span3" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Location</label>
+                                <asp:DropDownList ID="ddlLocation" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlLocation" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="">Department</label>
+                                <asp:DropDownList ID="ddlDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span2" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-3">
+                                <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">Employees</label>
+                                <asp:ListBox ID="lbEmployees" runat="server" SelectionMode="Multiple" Height="125px" Width="100%"
+                                    AutoPostBack="True" OnSelectedIndexChanged="ddlListEmp_SelectedIndexChanged"></asp:ListBox>
+                                <span id="Span4" style="color: Red; display: none;">*</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="wrapper wrapper-content" runat="server" id="divEmployeeDetails">
+                    <div class="col-lg-12 white-bg" style="margin-top: 11px;  padding: 0px;">
+                        <div class="panel panel-info" style="margin-bottom: 0px;">
+                            <div class="panel-heading">Shift Details</div>
+                            <div class="panel-body">
+                                <asp:PlaceHolder ID="PlaceHolder1" runat="server">
+                                    <asp:Table ID="PHTable" runat="server">
+                                    </asp:Table>
+                                </asp:PlaceHolder>
+                                <asp:Repeater ID="RepeaterShiftSch" runat="server" OnItemDataBound="RepeaterShiftSch_ItemDataBound">
+                                    <HeaderTemplate>
+                                        <table class="table">
+                                            <tr>
+                                                <th>
+                                                    <b>Employee</b>
+                                                </th>
+                                                <th>
+                                                    <b>Shift</b>
+                                                </th>
+                                                <th>
+                                                    <b>From</b>
+                                                </th>
+                                                <th>
+                                                    <b>Active / Inactive</b>
+                                                </th>
+                                            </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td>
+                                                <%# DataBinder.Eval(Container.DataItem, "object2")%>
+                                            </td>
+                                            <td>
+                                                <asp:DropDownList ID="DropDownForShift" CssClass="form-control" runat="server">
+                                                </asp:DropDownList>
+                                                <br />
+                                                <asp:RequiredFieldValidator ControlToValidate="DropDownForShift" ID="RequiredFieldValidator_Shift"
+                                                    ForeColor="Red" Display="Dynamic" ErrorMessage="Please Select Shift" runat="server"
+                                                    ValidationGroup="validGroup1" InitialValue="0" Text="*">
+                                                </asp:RequiredFieldValidator>
+                                            </td>
+                                            <td>
+                                                <asp:TextBox ID="TextBoxFromDate" CssClass="form-control datetime" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "object3")%>'></asp:TextBox>
+                                                <br />
+                                                <asp:RequiredFieldValidator ControlToValidate="TextBoxFromDate" ID="ValidationForDate"
+                                                    ForeColor="Red" Display="Dynamic" ErrorMessage="Please Enter Date" runat="server"
+                                                    ValidationGroup="validGroup1" Text="*">
+                                                </asp:RequiredFieldValidator>
+                                            </td>
+                                            <td>
+                                                <asp:CheckBox runat="server" ID="CheckBoxIsActive" />
+                                            </td>
+                                            <asp:HiddenField ID="HFShiftID" runat="server" Value=' <%# DataBinder.Eval(Container.DataItem, "object4")%>' />
+                                            <asp:HiddenField ID="HFStatus" Value='<%# DataBinder.Eval(Container.DataItem, "object5")%>'
+                                                runat="server" />
+                                            <asp:HiddenField ID="HF_Rec_ID" Value='<%# DataBinder.Eval(Container.DataItem, "object1")%>'
+                                                runat="server" />
+                                        </tr>
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        </table>
+                                    </FooterTemplate>
+                                </asp:Repeater>
+                                <asp:PlaceHolder ID="phContactDetails" runat="server"></asp:PlaceHolder>
+                                <div class="col-lg-12">
+                                    <asp:Button CssClass="btn btn-primary pull-right" ID="AddNewShift" Text="Add New" runat="server" OnClick="AddNewShift_Click"
+                                        Visible="false" Enabled="false" />
+                                    <asp:Button CssClass="btn btn-success pull-right" ID="ButtonSaveRec" runat="server" Text="Update" OnClick="ButtonSaveRec_Click"
+                                        Visible="false" Enabled="false" ValidationGroup="validGroup1" />
+                                    <asp:Button CssClass="btn btn-danger pull-right" ID="Remove_Shift" runat="server" Text="Remove" OnClick="Remove_Shift_Click"
+                                        Visible="false" Enabled="false" />
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+        <asp:UpdateProgress ID="UPProgress" runat="server" AssociatedUpdatePanelID="UP1">
+            <ProgressTemplate>
+                <uc:InProgress ID="InProgress" runat="server" />
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </div>
+    <script>
+        function pageLoad() {
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                format: 'dd/mm/yyyy'
+                //format: 'mm/dd/yyyy'
+            });
+        }
+    </script>
+</asp:Content>

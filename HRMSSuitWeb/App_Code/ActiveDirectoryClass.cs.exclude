@@ -1,0 +1,1615 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
+using System.Data;
+using DAL;
+
+namespace HRMS
+{
+    public class ActiveDirectoryClass
+    {
+        int catchCount = 0;
+        public ActiveDirectoryClass()
+        {
+
+        }
+
+        //Update Users At ERP Server 
+        public void UpdateUserAtAD(string EmployeeCode, int locationid, string FirstName, string LastName, string Department, string Designation, string Manager, string Country, string OfficeLocation, string BusinessUnit, string HodempCode, string ManagerEmployeeCode, string resignedDate)
+        {
+            try
+            {
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+                string ldap2stAddress = "";
+                string password2st = "";
+                string username2st = "";
+
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[0]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[0]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[0]["Password"].ToString();
+
+                ldap2stAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username2st = listLdapAddress.Rows[1]["UserName"].ToString();
+                password2st = listLdapAddress.Rows[1]["Password"].ToString();
+
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;//createDirectoryEntry(locationid);
+
+                DirectorySearcher search = new DirectorySearcher(myLdapConnection);
+                search.Filter = "(employeeID=" + EmployeeCode + ")";
+
+                SearchResult result = search.FindOne();
+
+                if (result != null)
+                {
+                    DirectoryEntry entryToUpdate = result.GetDirectoryEntry();
+
+                    //entryToUpdate.Properties["employeeID"].Value != null ? Convert.ToString(entryToUpdate.Properties["employeeID"][0]) : "";
+
+                    string EmployeeCodeAD = entryToUpdate.Properties["employeeID"].Value != null ? Convert.ToString(entryToUpdate.Properties["employeeID"][0]) : "";
+                    string FirstNameAD = entryToUpdate.Properties["givenName"].Value != null ? Convert.ToString(entryToUpdate.Properties["givenName"][0]) : "";
+                    string LastNameAD = entryToUpdate.Properties["sn"].Value != null ? Convert.ToString(entryToUpdate.Properties["sn"][0]) : "";
+                    string DisplayNameAD = entryToUpdate.Properties["displayName"].Value != null ? Convert.ToString(entryToUpdate.Properties["displayName"][0]) : "";
+                    string DepartmentAD = entryToUpdate.Properties["department"].Value != null ? Convert.ToString(entryToUpdate.Properties["department"][0]) : "";
+                    string DesignationAD = entryToUpdate.Properties["title"].Value != null ? Convert.ToString(entryToUpdate.Properties["title"][0]) : "";
+                    string CountryAD = entryToUpdate.Properties["co"].Value != null ? Convert.ToString(entryToUpdate.Properties["co"][0]) : ""; 
+                    //string ManagerAD = entryToUpdate.Properties["manager"][0].ToString();
+                    string EmailAD = entryToUpdate.Properties["mail"].Value != null ? Convert.ToString(entryToUpdate.Properties["mail"][0]) : "";
+                    string OfficeLocationAD = entryToUpdate.Properties["l"].Value != null ? Convert.ToString(entryToUpdate.Properties["l"][0]) : "";
+                    string sYBTeamAD = entryToUpdate.Properties["sYBTeam"].Value != null ? Convert.ToString(entryToUpdate.Properties["sYBTeam"][0]) : "";
+                    string BusinessUnitAD = entryToUpdate.Properties["sYBBusinessUnit"].Value != null ? Convert.ToString(entryToUpdate.Properties["sYBBusinessUnit"][0]) : "";
+                    string HODsybAD = entryToUpdate.Properties["hodsyb"].Value != null ? Convert.ToString(entryToUpdate.Properties["hodsyb"][0]) : "";
+
+
+
+
+                    //string new_title = "", new_department = "",
+                    //    new_manager = "CN=Naseer Ahmed,OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local";
+
+                    if (LastName != LastNameAD && LastName != "")
+                    {
+                        entryToUpdate.Properties["sn"].Value = LastName;
+                    }
+
+                    if (FirstName != FirstNameAD && FirstName != "")
+                    {
+                        entryToUpdate.Properties["givenName"].Value = FirstName;
+                    }
+
+                    string displayname = FirstName + LastName;
+                    if (displayname != DisplayNameAD && displayname != "")
+                    {
+                        entryToUpdate.Properties["displayName"].Value = displayname;
+                    }
+
+                    if (Department != DepartmentAD && Department != "")
+                    {
+                        entryToUpdate.Properties["department"].Value = Department;
+                    }
+
+                    if (Designation != DesignationAD && Designation != "")
+                    {
+                        entryToUpdate.Properties["title"].Value = Designation;
+                    }
+                    if (Country != CountryAD && Country != "")
+                    {
+                        entryToUpdate.Properties["co"].Value = Country;
+                    }
+
+                    if (OfficeLocation != OfficeLocationAD && OfficeLocation != "")
+                    {
+                        entryToUpdate.Properties["l"].Value = OfficeLocation;
+                    }
+
+                    if (Department != sYBTeamAD && Department != "")
+                    {
+                        entryToUpdate.Properties["sYBTeam"].Value = Department;
+                    }
+                    if (BusinessUnit != BusinessUnitAD && BusinessUnit != "")
+                    {
+                        entryToUpdate.Properties["sYBTeam"].Value = BusinessUnit;
+                    }
+
+                    string distinguishedName = "";
+                    //for manager or incharge
+                    if (ManagerEmployeeCode != "")
+                    {
+                        DirectorySearcher searchManager = new DirectorySearcher(myLdapConnection);
+                        searchManager.Filter = "(employeeID=" + ManagerEmployeeCode + ")";
+
+                        SearchResult resultManager = searchManager.FindOne();
+                        DirectoryEntry entryToUpdateManager = new DirectoryEntry();
+                        //DirectoryEntry entryToUpdateManager = resultManager.GetDirectoryEntry();
+
+                        if (resultManager != null)
+                        {
+                            entryToUpdateManager = resultManager.GetDirectoryEntry();
+                            distinguishedName = entryToUpdateManager.Properties["distinguishedName"][0].ToString();
+                            string ManagerAD = entryToUpdateManager.Properties["name"][0].ToString();
+                            if (Manager.Trim() != ManagerAD.Trim())
+                            {
+                                entryToUpdate.Properties["manager"].Value = distinguishedName;
+                            }
+                        }
+                    }
+
+
+                    //for HOD 
+                    if (HodempCode != "")
+                    {
+                        DirectorySearcher searchHod = new DirectorySearcher(myLdapConnection);
+                        searchHod.Filter = "(employeeID=" + HodempCode + ")";
+
+                        SearchResult resultHod = searchHod.FindOne();
+                        DirectoryEntry entryToUpdateHod = new DirectoryEntry();
+                        //DirectoryEntry entryToUpdateHod = resultHod.GetDirectoryEntry();
+
+                        if (resultHod != null)
+                        {
+                            entryToUpdateHod = resultHod.GetDirectoryEntry();
+                            distinguishedName = entryToUpdateHod.Properties["distinguishedName"][0].ToString();
+                            entryToUpdate.Properties["hodsyb"].Value = distinguishedName;
+                        }
+                    }
+
+                    //entryToUpdate.CommitChanges();
+
+                    if (DepartmentAD != Department)
+                    {
+                        var listDept = context.Setup_Department.Where(a => a.IsActive == true && (a.DepartmentName == Department)).ToList();
+                        int depatrmentid = listDept[0].DepartmentId;
+                        movekhiUser(depatrmentid, locationid, FirstName + " " + LastName);
+                    }
+
+                    if (resignedDate!="")
+                    {
+                        DisableKhiUser(locationid, FirstName + " " + LastName);
+                    }
+
+
+                    DirectoryEntry ldap2ndConnection = new DirectoryEntry(ldap2stAddress, username2st, password2st);
+
+                    ldap2ndConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                    //UpdateUserAtADForWindow(ldap2ndConnection, EmployeeCode, locationid, FirstName, LastName, Department, Designation, Manager, Country, OfficeLocation, BusinessUnit, HodempCode, ManagerEmployeeCode, resignedDate);
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception caught:\n\n" + e.ToString());
+            }
+        }
+
+        //Update Users At Windows users Server 
+        public void UpdateUserAtADForWindow(DirectoryEntry ldapAddess, string EmployeeCode, int locationid, string FirstName, string LastName, string Department, string Designation, string Manager, string Country, string OfficeLocation, string BusinessUnit, string HodempCode, string ManagerEmployeeCode, string resignedDate)
+        {
+            try
+            {
+                if (catchCount <= 2)
+                {
+                    // DirectoryEntry ldap2ndConnection = new DirectoryEntry(ldap2stAddress, username2st, password2st);
+
+                    ldapAddess.AuthenticationType = AuthenticationTypes.Secure;
+
+                    DirectoryEntry myLdapConnection = ldapAddess;//createDirectoryEntry(locationid);
+
+                    DirectorySearcher search = new DirectorySearcher(myLdapConnection);
+                    search.Filter = "(employeeID=" + EmployeeCode + ")";
+
+                    SearchResult result = search.FindOne();
+
+                    if (result != null)
+                    {
+                        DirectoryEntry entryToUpdate = result.GetDirectoryEntry();
+
+                        string EmployeeCodeAD = entryToUpdate.Properties["employeeID"][0].ToString();
+                        string FirstNameAD = entryToUpdate.Properties["givenName"][0].ToString();
+                        string LastNameAD = entryToUpdate.Properties["sn"][0].ToString();
+                        string DisplayNameAD = entryToUpdate.Properties["displayName"][0].ToString();
+                        string DepartmentAD = entryToUpdate.Properties["department"][0].ToString();
+                        string DesignationAD = entryToUpdate.Properties["title"][0].ToString();
+                        //  string CountryAD = entryToUpdate.Properties["co"][0].ToString();
+                        // string ManagerAD = entryToUpdate.Properties["manager"][0].ToString();
+                        //  string EmailAD = entryToUpdate.Properties["mail"][0].ToString();
+                        //   string OfficeLocationAD = entryToUpdate.Properties["l"][0].ToString();
+                        // string sYBTeamAD = entryToUpdate.Properties["sYBTeam"][0].ToString();
+                        //   string BusinessUnitAD = entryToUpdate.Properties["sYBBusinessUnit"][0].ToString();
+                        //   string HODsybAD = entryToUpdate.Properties["hodsyb"][0].ToString();
+
+
+                        if (LastName != LastNameAD && LastName != "")
+                        {
+                            entryToUpdate.Properties["sn"].Value = LastName;
+                        }
+
+                        if (FirstName != FirstNameAD && FirstName != "")
+                        {
+                            entryToUpdate.Properties["givenName"].Value = FirstName;
+                        }
+
+                        string displayname = FirstName + LastName;
+                        if (displayname != DisplayNameAD && displayname != "")
+                        {
+                            entryToUpdate.Properties["displayName"].Value = displayname;
+                        }
+
+                        if (Department != DepartmentAD && Department != "")
+                        {
+                            entryToUpdate.Properties["department"].Value = Department;
+                        }
+
+                        if (Designation != DesignationAD && Designation != "")
+                        {
+                            entryToUpdate.Properties["title"].Value = Designation;
+                        }
+                        //if (Country != CountryAD && Country != "")
+                        //{
+                        //    entryToUpdate.Properties["co"].Value = Country;
+                        //}
+
+                        //if (OfficeLocation != OfficeLocationAD && OfficeLocation != "")
+                        //{
+                        //    entryToUpdate.Properties["l"].Value = OfficeLocation;
+                        //}
+
+                        //if (Department != sYBTeamAD && Department != "")
+                        //{
+                        //    entryToUpdate.Properties["sYBTeam"].Value = Department;
+                        //}
+                        //if (BusinessUnit != BusinessUnitAD && BusinessUnit != "")
+                        //{
+                        //    entryToUpdate.Properties["sYBTeam"].Value = BusinessUnit;
+                        //}
+
+                        //string distinguishedName = "";
+                        // for manager or incharge
+                        //if (ManagerEmployeeCode != "")
+                        //{
+                        //    DirectorySearcher searchManager = new DirectorySearcher(myLdapConnection);
+
+                        //    if (catchCount == 0)
+                        //    {
+                        //        searchManager.Filter = "(sAMAccountName=" + SharepointPortalId + ")";
+                        //    }
+                        //    else if (catchCount == 1)
+                        //    {
+                        //        searchManager.Filter = "(mail=" + InchargeEmail + ")";
+                        //    }
+                        //    else if (catchCount == 2)
+                        //    {
+                        //        searchManager.Filter = "(employeeID=" + ManagerEmployeeCode + ")";
+                        //    }
+
+
+                        //    SearchResult resultManager = searchManager.FindOne();
+                        //    DirectoryEntry entryToUpdateManager = resultManager.GetDirectoryEntry();
+
+                        //    if (resultManager != null)
+                        //    {
+                        //        distinguishedName = entryToUpdateManager.Properties["distinguishedName"][0].ToString();
+                        //        string ManagerAD = entryToUpdateManager.Properties["name"][0].ToString();
+                        //        if (Manager.Trim() != ManagerAD.Trim())
+                        //        {
+                        //            entryToUpdate.Properties["manager"].Value = distinguishedName;
+                        //        }
+                        //    }
+                        //}
+
+
+                        ////for HOD 
+                        //if (HodempCode != "")
+                        //{
+                        //    DirectorySearcher searchHod = new DirectorySearcher(myLdapConnection);
+                        //    searchHod.Filter = "(employeeID=" + HodempCode + ")";
+
+                        //    SearchResult resultHod = searchHod.FindOne();
+                        //    DirectoryEntry entryToUpdateHod = resultHod.GetDirectoryEntry();
+
+                        //    if (resultHod != null)
+                        //    {
+                        //        distinguishedName = entryToUpdateHod.Properties["distinguishedName"][0].ToString();
+                        //        entryToUpdate.Properties["hodsyb"].Value = distinguishedName;
+                        //    }
+                        //}
+
+                        entryToUpdate.CommitChanges();
+
+                        if (resignedDate != "")
+                        {
+                            DisableWindowUser(locationid, FirstName + " " + LastName);
+                        }
+
+                        Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                        if (DepartmentAD != Department)
+                        {
+                            var listDept = context.Setup_Department.Where(a => a.IsActive == true && (a.DepartmentName == Department)).ToList();
+                            int depatrmentid = listDept[0].DepartmentId;
+                            movekhiUser(depatrmentid, locationid, FirstName + " " + LastName);
+                        }
+
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+
+                //  catchCount++;
+                // UpdateUserAtADForWindow(ldapAddess, EmployeeCode, locationid, FirstName, LastName, Department, Designation, Manager, Country, OfficeLocation, BusinessUnit, HodempCode, ManagerEmployeeCode, InchargeEmail, SharepointPortalId);
+                Console.WriteLine("Exception caught:\n\n" + e.ToString());
+
+            }
+        }
+
+        //create users at ERP Server
+
+        public void CreateUser(String empcode, int LocationId, String firstname, String middlename, String lastname, String designation, String description, String deptartment, String username, String email, String CompanyName, String Country, String City, String SybBusunit, String HodempCode, String ManagerEmployeeCode, bool enabled)
+        {
+            try
+            {
+                int locationid = LocationId;
+
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+                string ldap2stAddress = "";
+                string password2st = "";
+                string username2st = "";
+                string UserPrinDomain = "";
+                string UserPrinDomainforInt = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[0]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[0]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[0]["Password"].ToString();
+                UserPrinDomain = listLdapAddress.Rows[0]["UserPrincipalDomain"].ToString();
+
+                ldap2stAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username2st = listLdapAddress.Rows[1]["UserName"].ToString();
+                password2st = listLdapAddress.Rows[1]["Password"].ToString();
+                UserPrinDomainforInt = listLdapAddress.Rows[1]["UserPrincipalDomain"].ToString();
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = createDirectoryEntry(locationid);
+                string SamAccountName ="";// GetSamAccountName(firstname, middlename, lastname);
+
+                var emplist = context.Setup_Employee.Where(a => a.IsActive == true && (a.EmployeeCode == empcode) &&  a.LocationId==locationid).ToList();
+                string SharepointPortalId = emplist[0].SharepointPortalId;
+                if(SharepointPortalId!="")
+                {
+                    string[] portalid = SharepointPortalId.Split('\\');
+                    SamAccountName = portalid[1];
+                }
+              
+
+                // create new user object and write into AD  
+                DirectoryEntry user;
+                if (firstname != "" && lastname != "")
+                {
+                    user = myLdapConnection.Children.Add(
+                                       "CN=" + firstname + " " + lastname, "user");
+                }
+                else
+                {
+                    user = myLdapConnection.Children.Add("NULL", "user");
+                }
+
+                // User name (domain based)  
+                if (SamAccountName != "" && UserPrinDomain != "")
+                {
+                    user.Properties["userPrincipalName"].Add(SamAccountName + "@" + UserPrinDomain);
+                }
+                else
+                {
+                    user.Properties["userPrincipalName"].Add("NULL");
+                }
+
+                // User name (older systems)  it is use for account name
+                if (SamAccountName != "")
+                {
+                    user.Properties["sAMAccountName"].Add(SamAccountName);
+                }
+                else
+                {
+                    user.Properties["sAMAccountName"].Add("NULL");
+                }
+
+                // Surname  
+                if (lastname != "")
+                {
+                    user.Properties["sn"].Add(lastname);
+                }
+                else
+                {
+                    user.Properties["sn"].Add("NULL");
+                }
+
+                // Firstname 
+                if (firstname != "")
+                {
+                    user.Properties["givenName"].Add(firstname);
+                }
+                else
+                {
+                    user.Properties["givenName"].Add("NULL");
+                }
+
+                // Display name  
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["displayName"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["displayName"].Add("NULL");
+                }
+
+
+                // Description  
+                //if (description != "")
+                //{
+                //    user.Properties["description"].Add(description); // Sr. Software Engineer
+                //}
+                //else
+                //{
+                //    user.Properties["description"].Add("NULL"); // Sr. Software Engineer
+                //}
+
+                // E-mail  
+                if (email != "")
+                {
+                    user.Properties["mail"].Add(email);
+                }
+                else
+                {
+                    user.Properties["mail"].Add("NULL");
+                }
+
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["cn"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["cn"].Add("NULL");
+                }
+
+                // c hold country abrivation
+                // user.Properties["c"].Add("PK");
+
+                // l holds city name
+                if (City != "")
+                {
+                    user.Properties["l"].Add(City);
+                }
+                else
+                {
+                    user.Properties["l"].Add("NULL");
+                }
+
+
+                //provence name
+                user.Properties["st"].Add("NULL");
+
+                //title is use for designation
+                if (designation != "")
+                {
+                    user.Properties["title"].Add(designation);
+                }
+                else
+                {
+                    user.Properties["title"].Add("NULL");
+                }
+
+                //postalcode
+                user.Properties["postalCode"].Add("NULL");
+
+                //user.Properties["initials"].Add("");
+
+                user.Properties["whenCreated"].Add(DateTime.Now);
+
+                user.Properties["whenChanged"].Add(DateTime.Now);
+
+                //co holds country name
+                if (Country != "")
+                {
+                    user.Properties["co"].Add(Country);
+                }
+                else
+                {
+                    user.Properties["co"].Add("NULL");
+                }
+
+                if (deptartment != "")
+                {
+                    user.Properties["department"].Add(deptartment);
+                }
+                else
+                {
+                    user.Properties["department"].Add("NULL");
+                }
+
+                if (CompanyName != "")
+                {
+                    user.Properties["company"].Add(CompanyName);
+                }
+                else
+                {
+                    user.Properties["company"].Add("NULL");
+                }
+
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["name"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["name"].Add("NULL");
+                }
+
+                if (empcode != "")
+                {
+                    user.Properties["employeeID"].Add(empcode);
+                }
+
+                //user.Properties["distinguishedName"].Add("CN=Ammar Khan,OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string distinguishedNameManager = "";
+                if (ManagerEmployeeCode != "")
+                {
+                    DirectorySearcher searchManager = new DirectorySearcher(myLdapConnection);
+                    searchManager.Filter = "(employeeID=" + ManagerEmployeeCode + ")";
+
+                    SearchResult result = searchManager.FindOne();
+
+                    DirectoryEntry entrymanager = new DirectoryEntry();
+                    //    DirectoryEntry entrymanager = result.GetDirectoryEntry();
+                   
+
+                    if (result != null)
+                    {
+                        entrymanager = result.GetDirectoryEntry();
+                        distinguishedNameManager = entrymanager.Properties["distinguishedName"][0].ToString();
+                        user.Properties["manager"].Add(distinguishedNameManager);
+                        // user.Properties["distinguishedName"].Add(distinguishedName);
+                    }
+                }
+
+
+
+
+
+                //for hod 
+                string distinguishedNameHOD = "";
+                if (HodempCode != "")
+                {
+                    DirectorySearcher searchhod = new DirectorySearcher(myLdapConnection);
+                    searchhod.Filter = "(employeeID=" + HodempCode + ")";
+
+                    SearchResult resulthod = searchhod.FindOne();
+                    DirectoryEntry entryhod = new DirectoryEntry();
+                 //   DirectoryEntry entryhod = resulthod.GetDirectoryEntry();
+                   
+
+                    if (resulthod != null)
+                    {
+                        entryhod = resulthod.GetDirectoryEntry();
+                        distinguishedNameHOD = entryhod.Properties["distinguishedName"][0].ToString();
+                        user.Properties["hodsyb"].Add(distinguishedNameHOD);
+                    }
+
+                }
+                else
+                {
+                    user.Properties["hodsyb"].Add("NULL");
+                }
+
+                if (SybBusunit != "")
+                {
+                    user.Properties["sYBBusinessUnit"].Add(SybBusunit);
+                }
+                else
+                {
+                    user.Properties["sYBBusinessUnit"].Add("NULL");
+                }
+
+                //user.Properties["sYBJobTitle"].Add(designation);
+
+                if (deptartment != "")
+                {
+                    user.Properties["sYBTeam"].Add(deptartment);
+                }
+                else
+                {
+                    user.Properties["sYBTeam"].Add("NULL");
+                }
+
+                user.CommitChanges();
+
+                string password = "Designed1988";
+                user.Invoke("SetPassword", new object[] { password });
+
+                user.CommitChanges();
+                EnableKhiUser(locationid, firstname + " " + lastname);
+
+                var listDept = context.Setup_Department.Where(a => a.IsActive == true && (a.DepartmentName == deptartment)).ToList();
+                int depatrmentid = listDept[0].DepartmentId;
+                movekhiUser(depatrmentid, LocationId, firstname + " " + lastname);
+                DirectoryEntry ldap2ndConnection = new DirectoryEntry(ldap2stAddress, username2st, password2st);
+
+                ldap2ndConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                CreateintUser(SamAccountName, UserPrinDomainforInt, ldap2ndConnection, empcode, LocationId, firstname, middlename, lastname, designation, description, deptartment, username, email, CompanyName, Country, City, SybBusunit, HodempCode, ManagerEmployeeCode, enabled);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception caught:\n\n" + e.ToString());
+            }
+
+        }
+
+        // Create Users At Windows users Server 
+
+        public void CreateintUser(string SamAccountName, string UserPrinDomain, DirectoryEntry ldapAddess, String empcode, int LocationId, String firstname, String middlename, String lastname, String designation, String description, String deptartment, String username, String email, String CompanyName, String Country, String City, String SybBusunit, String HodempCode, String ManagerEmployeeCode, bool enabled)
+        {
+            try
+            {
+                //List<string> groups = GetGroupsForUser("ammar.khan");
+
+                DirectoryEntry myLdapConnection = ldapAddess;
+
+                // create new user object and write into AD  
+                DirectoryEntry user;
+                if (firstname != "" && lastname != "")
+                {
+                    user = myLdapConnection.Children.Add(
+                                       "CN=" + firstname + " " + lastname, "user");
+                }
+                else
+                {
+                    user = myLdapConnection.Children.Add("NULL", "user");
+                }
+
+
+                // User name (domain based)  
+                if (SamAccountName != "" && UserPrinDomain != "")
+                {
+                    user.Properties["userPrincipalName"].Add(SamAccountName + "@" + UserPrinDomain);
+                }
+                else
+                {
+                    user.Properties["userPrincipalName"].Add("NULL");
+                }
+
+                // User name (older systems)  it is use for account name
+                if (SamAccountName != "")
+                {
+                    user.Properties["sAMAccountName"].Add(SamAccountName);
+                }
+                else
+                {
+                    user.Properties["sAMAccountName"].Add("NULL");
+                }
+
+                // Surname  last name
+                if (lastname != "")
+                {
+                    user.Properties["sn"].Add(lastname);
+                }
+                else
+                {
+                    user.Properties["sn"].Add("NULL");
+                }
+
+                // Firstname 
+                if (firstname != "")
+                {
+                    user.Properties["givenName"].Add(firstname);
+                }
+                else
+                {
+                    user.Properties["givenName"].Add("NULL");
+                }
+
+                // Display name  
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["displayName"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["displayName"].Add("NULL");
+                }
+
+                // Description  
+                if (description != "")
+                {
+                    user.Properties["description"].Add(description); // Sr. Software Engineer
+                }
+                else
+                {
+                    user.Properties["description"].Add("NULL"); // Sr. Software Engineer
+                }
+
+                //offical E-mail  
+                if (email != "")
+                {
+                    user.Properties["mail"].Add(email);
+                }
+                else
+                {
+                    user.Properties["mail"].Add("NULL");
+                }
+
+
+                //code past
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["cn"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["cn"].Add("NULL");
+                }
+
+                // c hold country abrivation
+                // user.Properties["c"].Add("PK");
+
+                // l holds city name
+                //if (City != "")
+                //{
+                //    user.Properties["l"].Add(City);
+                //}
+                //else
+                //{
+                //    user.Properties["l"].Add("NULL");
+                //}
+
+                //title is use for designation
+                if (designation != "")
+                {
+                    user.Properties["title"].Add(designation);
+                }
+                else
+                {
+                    user.Properties["title"].Add("NULL");
+                }
+
+                //postalcode
+                user.Properties["postalCode"].Add("NULL");
+
+                //user.Properties["initials"].Add("");
+
+                user.Properties["whenCreated"].Add(DateTime.Now);
+
+                user.Properties["whenChanged"].Add(DateTime.Now);
+
+                //co holds country name
+                //if (Country != "")
+                //{
+                //    user.Properties["co"].Add(Country);
+                //}
+                //else
+                //{
+                //    user.Properties["co"].Add("NULL");
+                //}
+
+                if (deptartment != "")
+                {
+                    user.Properties["department"].Add(deptartment);
+                }
+                else
+                {
+                    user.Properties["department"].Add("NULL");
+                }
+
+                if (CompanyName != "")
+                {
+                    user.Properties["company"].Add(CompanyName);
+                }
+                else
+                {
+                    user.Properties["company"].Add("NULL");
+                }
+
+                if (firstname != "" && lastname != "")
+                {
+                    user.Properties["name"].Add(firstname + " " + lastname);
+                }
+                else
+                {
+                    user.Properties["name"].Add("NULL");
+                }
+
+                if (empcode != "")
+                {
+                    user.Properties["employeeID"].Add(empcode);
+                }
+
+                //if (ManagerEmployeeCode != "")
+                //{
+                //    DirectorySearcher searchManager = new DirectorySearcher(myLdapConnection);
+                //    searchManager.Filter = "(employeeID=" + ManagerEmployeeCode + ")";
+
+                //    SearchResult result = searchManager.FindOne();
+                //    DirectoryEntry entrymanager = result.GetDirectoryEntry();
+                //    string distinguishedName = "";
+
+                //    if (result != null)
+                //    {
+                //        distinguishedName = entrymanager.Properties["distinguishedName"][0].ToString();
+
+
+                //        user.Properties["manager"].Add(distinguishedName);
+
+                //    }
+                //}
+
+                //for hod 
+                //if (HodempCode != "")
+                //{
+                //    DirectorySearcher searchhod = new DirectorySearcher(myLdapConnection);
+                //    searchhod.Filter = "(employeeID=" + HodempCode + ")";
+
+                //    SearchResult resulthod = searchhod.FindOne();
+                //    DirectoryEntry entryhod = resulthod.GetDirectoryEntry();
+                //    string distinguishedName = "";
+
+                //    if (resulthod != null)
+                //    {
+                //        distinguishedName = entryhod.Properties["distinguishedName"][0].ToString();
+                //        user.Properties["hodsyb"].Add(distinguishedName);
+                //    }
+
+                //}
+                //else
+                //{
+                //    user.Properties["hodsyb"].Add("NULL");
+                //}
+
+                //if (SybBusunit != "")
+                //{
+                //    user.Properties["sYBBusinessUnit"].Add(SybBusunit);
+                //}
+                //else
+                //{
+                //    user.Properties["sYBBusinessUnit"].Add("NULL");
+                //}
+
+                //user.Properties["sYBJobTitle"].Add(designation);
+
+                //if (deptartment != "")
+                //{
+                //    user.Properties["sYBTeam"].Add(deptartment);
+                //}
+                //else
+                //{
+                //    user.Properties["sYBTeam"].Add("NULL");
+                //}
+
+
+                user.CommitChanges();
+
+                string password = "Designed1988";
+                user.Invoke("SetPassword", new object[] { password });
+
+                user.CommitChanges();
+
+                EnableIntUser(LocationId, firstname + " " + lastname);
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+                var listDept = context.Setup_Department.Where(a => a.IsActive == true && (a.DepartmentName == deptartment)).ToList();
+                int depatrmentid = listDept[0].DepartmentId;
+                moveWindowsUser(depatrmentid, LocationId, firstname + " " + lastname);
+
+                //  ChangePassAtFirstLoginOfWindow(depatrmentid, LocationId, firstname + " " + lastname);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception caught:\n\n" + e.ToString());
+            }
+
+        }
+
+        public void movekhiUser(int depatrmentid, int locationId, string CN)
+        {
+            try
+            {
+                string ldapAddress = "";
+                string password = "";
+                string username = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationId)).ToList().ToDataTable();
+
+                ldapAddress = listLdapAddress.Rows[0]["LDAPAddress"].ToString();
+                username = listLdapAddress.Rows[0]["UserName"].ToString();
+                password = listLdapAddress.Rows[0]["Password"].ToString();
+                locationId = Convert.ToInt32(listLdapAddress.Rows[0]["ADLocationId"]);
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldapAddress, username, password);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry eLocation = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationId);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + CN + "," + DcPath;
+
+                eLocation = new DirectoryEntry(dcpath, username, password);
+
+                //CN=TestFname TestLname,DC=int,DC=sybrid,DC=com   //LDAP://CN=TestFname TestLname,DC=int,DC=sybrid,DC=com
+                //CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local
+
+                DirectoryEntry nLocation = myLdapConnection;   //new DirectoryEntry("LDAP://OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local");
+
+
+                string ldp = "LDAP://";
+
+                string OuPath = getOuPath(depatrmentid, 1);
+                string oupath = ldp + OuPath + "," + DcPath;
+                nLocation = new DirectoryEntry(oupath, username, password);
+
+                //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=int,DC=sybrid,DC=com
+                //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local
+                string newName = eLocation.Name;
+                eLocation.MoveTo(nLocation, newName);
+                nLocation.Close();
+                eLocation.Close();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        public void moveWindowsUser(int depatrmentid, int locationId, string CN)
+        {
+            try
+            {
+                string ldapAddress = "";
+                string password = "";
+                string username = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationId)).ToList().ToDataTable();
+
+                ldapAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username = listLdapAddress.Rows[1]["UserName"].ToString();
+                password = listLdapAddress.Rows[1]["Password"].ToString();
+                locationId = Convert.ToInt32(listLdapAddress.Rows[1]["ADLocationId"]);
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldapAddress, username, password);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry eLocation = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationId);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + CN + "," + DcPath;
+
+                eLocation = new DirectoryEntry(dcpath, username, password);
+
+                //CN=TestFname TestLname,DC=int,DC=sybrid,DC=com   //LDAP://CN=TestFname TestLname,DC=int,DC=sybrid,DC=com
+                //CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local
+
+                DirectoryEntry nLocation = myLdapConnection;   //new DirectoryEntry("LDAP://OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local");
+
+
+                string ldp = "LDAP://";
+
+                string OuPath = getOuPath(depatrmentid, 1);
+                string oupath = ldp + OuPath + "," + DcPath;
+                nLocation = new DirectoryEntry(oupath, username, password);
+
+                //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=int,DC=sybrid,DC=com
+                //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local
+                string newName = eLocation.Name;
+                eLocation.MoveTo(nLocation, newName);
+                nLocation.Close();
+                eLocation.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+        }
+
+        public void EnableKhiUser(int locationid, string cn)
+        {
+            try
+            {
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[0]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[0]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[0]["Password"].ToString();
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry user = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationid);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + cn + "," + DcPath;
+
+                user = new DirectoryEntry(dcpath, username1st, password1st);
+
+                int val = (int)user.Properties["userAccountControl"].Value;
+                user.Properties["userAccountControl"].Value = val & ~0x2;
+
+                user.CommitChanges();
+                user.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        public void EnableIntUser(int locationid, string cn)
+        {
+            try
+            {
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[1]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[1]["Password"].ToString();
+                locationid = Convert.ToInt32(listLdapAddress.Rows[1]["ADLocationId"]);
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry user = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationid);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + cn + "," + DcPath;
+
+                user = new DirectoryEntry(dcpath, username1st, password1st);
+
+                int val = (int)user.Properties["userAccountControl"].Value;
+                user.Properties["userAccountControl"].Value = val & ~0x2;
+
+                user.CommitChanges();
+                user.Close();
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+        public void DisableKhiUser(int locationid, string cn)
+        {
+            try
+            {
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[0]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[0]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[0]["Password"].ToString();
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry user = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationid);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + cn + "," + DcPath;
+
+                user = new DirectoryEntry(dcpath, username1st, password1st);
+
+                int val = (int)user.Properties["userAccountControl"].Value;
+                user.Properties["userAccountControl"].Value = val | 0x2;
+
+                user.CommitChanges();
+                user.Close();
+            }
+            catch (Exception ex) { }
+        }
+
+        public void DisableWindowUser(int locationid, string cn)
+        {
+            try
+            {
+                string ldap1stAddress = "";
+                string password1st = "";
+                string username1st = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                ldap1stAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username1st = listLdapAddress.Rows[1]["UserName"].ToString();
+                password1st = listLdapAddress.Rows[1]["Password"].ToString();
+                locationid = Convert.ToInt32(listLdapAddress.Rows[1]["ADLocationId"]);
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldap1stAddress, username1st, password1st);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry myLdapConnection = ldapConnection;
+
+                DirectoryEntry user = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+
+                string DcPath = getdcpath(locationid);
+                string ldpap = "LDAP://CN= ";
+                string dcpath = ldpap + cn + "," + DcPath;
+
+                user = new DirectoryEntry(dcpath, username1st, password1st);
+
+                int val = (int)user.Properties["userAccountControl"].Value;
+                user.Properties["userAccountControl"].Value = val | 0x2;
+
+                user.CommitChanges();
+                user.Close();
+            }
+            catch (Exception ex) { }
+        }
+     
+        public void ChangePassAtFirstLoginOfWindow(int departmentid, int locationId, string CN)
+        {
+            try
+            {
+                string ldapAddress = "";
+                string password = "";
+                string username = "";
+
+                Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+                DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationId)).ToList().ToDataTable();
+
+                ldapAddress = listLdapAddress.Rows[1]["LDAPAddress"].ToString();
+                username = listLdapAddress.Rows[1]["UserName"].ToString();
+                password = listLdapAddress.Rows[1]["Password"].ToString();
+                locationId = Convert.ToInt32(listLdapAddress.Rows[1]["ADLocationId"]);
+
+                DirectoryEntry ldapConnection = new DirectoryEntry(ldapAddress, username, password);
+
+                ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+
+                DirectoryEntry user = ldapConnection;
+
+
+                string DcPath = getdcpath(locationId);
+                string ldpap = "LDAP://CN= ";
+
+                string OuPath = getOuPath(departmentid, 1);
+
+                string Path = ldpap + CN + "," + OuPath + "," + DcPath;
+
+
+                user = new DirectoryEntry(Path, username, password);
+
+                int val = (int)user.Properties["userAccountControl"].Value;
+                user.Properties["userAccountControl"].Value = val | 0x80000; //0x80000 0x800000
+                // de.Properties["passwordExpired"][0] = 1;           
+                // de.CommitChanges();
+                //user.Properties["pwdLastSet"].Value = 0;
+
+                user.CommitChanges();
+                user.Close();
+            }
+            catch (Exception ex)
+            {
+
+
+            }
+        }
+
+        private string getdcpath(int locationid)
+        {
+
+            string dcpath = "";
+            string dc = "DC=";
+
+            Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();//DC=sybridkhi,DC=sybrid,DC=local
+
+            DataTable listLDcPath = context.Setup_AD_DC.Where(a => a.IsActive == true && (a.ADLocationId == locationid)).ToList().ToDataTable();
+
+            for (int i = 0; i < listLDcPath.Rows.Count; i++)
+            {
+                //dcpath = dc;
+                dcpath = dcpath + dc + listLDcPath.Rows[i]["DCName"].ToString();
+                if (listLDcPath.Rows.Count - 1 > i)
+                {
+                    dcpath = dcpath + ",";
+                }
+            }
+
+            return dcpath;
+        }
+
+        private string getOuPath(int deptid, int index)
+        {
+
+            string oupath = "";
+            string OU = "OU=";
+
+            Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();//OU=Users,OU=ERP-Team,OU=Sybrid-KHI
+
+            var listouid = context.AD_OU_DepartmentMapping.Where(a => a.IsActive == true && (a.HRMSDepartmentId == deptid)).ToList();
+            int OuId = listouid[index].OUID;
+
+            // DataTable listOUPath = context.Setup_AD_OU.Where(a => a.IsActive == true && (a.OUID == OuId)).ToList().ToDataTable();
+            DataTable createOUtable = dataOU(OuId);
+
+
+            for (int i = 0; i < createOUtable.Rows.Count; i++)
+            {
+                //dcpath = dc;
+                oupath = oupath + OU + createOUtable.Rows[i]["OUName"].ToString();
+                if (createOUtable.Rows.Count - 1 > i)
+                {
+                    oupath = oupath + ",";
+                }
+            }
+
+            return oupath;
+        }
+
+        public DataTable dataOU(int ouid)
+        {
+            DataTable createOUtable = new DataTable();
+
+            createOUtable.Columns.Add("Id");
+            createOUtable.Columns.Add("OUName");
+
+            Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+            var list = context.Setup_AD_OU.Where(a => a.IsActive == true && (a.OUID == ouid)).ToList();
+            ouid = Convert.ToInt32(list[0].ParentID);
+            int counter = 1;
+            do
+            {
+
+
+                int i = 0;
+                do
+                {
+                    i = 0; ouid = Convert.ToInt32(list[0].ParentID);
+                    createOUtable.Rows.Add(counter, "");
+                    createOUtable.Rows[counter - 1]["OUName"] = list[0].OUName;
+                    i++;
+                } while (i > 1);
+
+                list = context.Setup_AD_OU.Where(a => a.IsActive == true && (a.OUID == ouid)).ToList();
+                counter++;
+            } while (list[0].ParentID != null);
+
+            createOUtable.Rows.Add(counter, "");
+            createOUtable.Rows[counter - 1]["OUName"] = list[0].OUName;
+
+            return createOUtable;
+        }
+
+        //public void movekhiUser()
+        //{
+        //    try
+        //    {
+        //        string password = "Sybr1d123";
+        //        string username = "sharepoint.admin";
+
+        //        DirectoryEntry myLdapConnection = createDirectoryEntry();
+
+        //        DirectoryEntry eLocation = myLdapConnection; //new DirectoryEntry("LDAP://CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local");
+        //        eLocation = new DirectoryEntry("LDAP://CN=TestFname TestLname,DC=int,DC=sybrid,DC=com", username, password);
+        //        //CN=TestFname TestLname,DC=int,DC=sybrid,DC=com   //LDAP://CN=TestFname TestLname,DC=int,DC=sybrid,DC=com
+        //        //CN=TestAD10 TestUser10,DC=sybridkhi,DC=sybrid,DC=local
+        //        DirectoryEntry nLocation = myLdapConnection;   //new DirectoryEntry("LDAP://OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local");
+
+        //        nLocation = new DirectoryEntry("LDAP://OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=int,DC=sybrid,DC=com", username, password);
+        //        //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=int,DC=sybrid,DC=com
+        //        //OU=Users,OU=ERP-Team,OU=Sybrid-KHI,DC=sybridkhi,DC=sybrid,DC=local
+        //        string newName = eLocation.Name;
+        //        eLocation.MoveTo(nLocation, newName);
+        //        nLocation.Close();
+        //        eLocation.Close();
+        //    }
+        //    catch (Exception ex)
+        //    {
+
+        //    }
+
+        //}
+
+        public DataTable GetAllPropertyByEmpID(string user_id, int locationid)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("PropertyName");
+            dt.Columns.Add("PropertyValue");
+
+            string employeeCode = user_id;
+            string filter = string.Format("(&(ObjectClass={0})(employeeID={1}))", "person", employeeCode);
+            string[] properties = new string[] { "fullname" };
+            //you must provide a username and password to authenticate (this is not the username and password of the person you're looking for):
+            DirectoryEntry adRoot = createDirectoryEntry(locationid);
+            DirectorySearcher searcher = new DirectorySearcher(adRoot);
+            searcher.SearchScope = SearchScope.Subtree;
+            searcher.ReferralChasing = ReferralChasingOption.All;
+            searcher.PropertiesToLoad.AddRange(properties);
+            searcher.Filter = filter;
+            SearchResult result = searcher.FindOne();
+
+            if (result != null)
+            {
+                DirectoryEntry de = result.GetDirectoryEntry();
+                foreach (string propName in de.Properties.PropertyNames)
+                {
+                    dt.Rows.Add(propName, de.Properties[propName].Value.ToString());
+                }
+            }
+
+            return dt;
+        }
+
+        public DataTable GetAllPropertyBySamaccountName(string user_id, int locationId)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("PropertyName");
+            dt.Columns.Add("PropertyValue");
+
+            string sAMAccountName = user_id;
+            string filter = string.Format("(&(ObjectClass={0})(sAMAccountName={1}))", "person", sAMAccountName);
+            string[] properties = new string[] { "fullname" };
+            //you must provide a username and password to authenticate (this is not the username and password of the person you're looking for):
+            DirectoryEntry adRoot = createDirectoryEntry(locationId);
+            DirectorySearcher searcher = new DirectorySearcher(adRoot);
+            searcher.SearchScope = SearchScope.Subtree;
+            searcher.ReferralChasing = ReferralChasingOption.All;
+            searcher.PropertiesToLoad.AddRange(properties);
+            searcher.Filter = filter;
+            SearchResult result = searcher.FindOne();
+
+            if (result != null)
+            {
+                DirectoryEntry de = result.GetDirectoryEntry();
+                foreach (string propName in de.Properties.PropertyNames)
+                {
+                    dt.Rows.Add(propName, de.Properties[propName].Value.ToString());
+                }
+            }
+
+            return dt;
+        }
+
+        static DirectoryEntry createDirectoryEntry(int locationid)
+        {
+            // create and return new LDAP connection with desired settings  
+
+
+            string ldapAddress = "";
+            string password = "";
+            string username = "";
+
+
+            Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+            var listLdapAddress = context.Setup_AD_Location.FirstOrDefault(a => a.IsActive == true && (a.ADLocationId == locationid));
+
+            ldapAddress = listLdapAddress.LDAPAddress;//"LDAP://int.sybrid.com:389";
+            username = listLdapAddress.UserName;
+            password = listLdapAddress.Password;
+
+
+            DirectoryEntry ldapConnection = new DirectoryEntry(ldapAddress, username, password);
+
+            ldapConnection.AuthenticationType = AuthenticationTypes.Secure;
+            return ldapConnection;
+        }
+
+        public string GetSamAccountName(string FirstName, string Middlename, string LastName,int locationId)
+        {
+            string ADSamAccountName = "";
+            DataTable dtADUers = new DataTable();
+            dtADUers.Columns.Add("Id");
+            dtADUers.Columns.Add("UserName");
+
+            FirstName = FirstName.Trim().ToLower();
+            Middlename = Middlename.Trim().ToLower();
+            LastName = LastName.Trim().ToLower();
+
+            if (FirstName != "" && LastName != "" && Middlename == "")
+            {
+                string Sugg1 = FirstName + "." + LastName;
+                string Sugg2 = LastName + "." + FirstName;
+                string Sugg3 = FirstName.Substring(0, 1) + "." + LastName;
+                string Sugg4 = LastName.Substring(0, 1) + "." + FirstName;
+                string Sugg5 = FirstName + "." + LastName.Substring(0, 1);
+                string Sugg6 = LastName + "." + FirstName.Substring(0, 1);
+                string Sugg7 = FirstName + "." + FirstName + LastName.Substring(0, 1);
+                string Sugg8 = LastName + "." + LastName + FirstName.Substring(0, 1);
+
+                if (Sugg1.Length > 20)
+                {
+                    Sugg1 = FirstName.Substring(0, 1) + "." + LastName;
+                }
+
+                if (Sugg2.Length > 20)
+                {
+                    Sugg2 = LastName.Substring(0, 1) + "." + FirstName;
+                }
+
+                dtADUers.Rows.Add(1, Sugg1);
+                dtADUers.Rows.Add(2, Sugg2);
+
+                dtADUers.Rows.Add(3, Sugg3);
+                dtADUers.Rows.Add(4, Sugg4);
+                dtADUers.Rows.Add(5, Sugg5);
+                dtADUers.Rows.Add(6, Sugg6);
+                dtADUers.Rows.Add(7, Sugg7);
+                dtADUers.Rows.Add(8, Sugg8);
+            }
+            else if (FirstName != "" && LastName != "" && Middlename != "")
+            {
+                string Sugg1 = FirstName + "." + Middlename;
+                string Sugg2 = FirstName + "." + LastName;
+                string Sugg3 = Middlename + "." + FirstName;
+                string Sugg4 = Middlename + "." + LastName;
+                string Sugg5 = LastName + "." + Middlename;
+
+                if (Sugg1.Length > 20 && Sugg3.Length > 20)
+                {
+                    Sugg1 = FirstName.Substring(0, 1) + "." + Middlename;
+                    Sugg3 = FirstName + "." + Middlename.Substring(0, 1);
+                }
+                if (Sugg4.Length > 20 && Sugg5.Length > 20)
+                {
+                    Sugg4 = Middlename.Substring(0, 1) + "." + LastName;
+                    Sugg5 = LastName.Substring(0, 1) + "." + Middlename;
+                }
+                if (Sugg2.Length > 20)
+                {
+                    Sugg2 = FirstName.Substring(0, 1) + "." + LastName;
+                }
+
+                string Sugg6 = FirstName.Substring(0, 1) + "." + Middlename;
+                string Sugg7 = FirstName + "." + Middlename.Substring(0, 1);
+
+                string Sugg8 = FirstName.Substring(0, 1) + "." + LastName;
+                string Sugg9 = FirstName + "." + LastName.Substring(0, 1);
+
+                string Sugg10 = LastName.Substring(0, 1) + "." + FirstName;
+                string Sugg11 = LastName + "." + FirstName.Substring(0, 1);
+
+                string Sugg12 = Middlename.Substring(0, 1) + "." + FirstName;
+                string Sugg13 = Middlename + "." + FirstName.Substring(0, 1);
+
+                string Sugg14 = Middlename.Substring(0, 1) + "." + LastName;
+                string Sugg15 = Middlename + "." + LastName.Substring(0, 1);
+
+                string Sugg16 = LastName.Substring(0, 1) + "." + Middlename;
+                string Sugg17 = LastName + "." + Middlename.Substring(0, 1);
+
+                dtADUers.Rows.Add(1, Sugg1);
+                dtADUers.Rows.Add(2, Sugg2);
+
+                dtADUers.Rows.Add(3, Sugg3);
+                dtADUers.Rows.Add(4, Sugg4);
+                dtADUers.Rows.Add(5, Sugg5);
+                dtADUers.Rows.Add(6, Sugg6);
+
+                dtADUers.Rows.Add(7, Sugg7);
+                dtADUers.Rows.Add(8, Sugg8);
+                dtADUers.Rows.Add(9, Sugg9);
+                dtADUers.Rows.Add(10, Sugg10);
+
+                dtADUers.Rows.Add(11, Sugg11);
+                dtADUers.Rows.Add(12, Sugg12);
+
+                dtADUers.Rows.Add(13, Sugg13);
+                dtADUers.Rows.Add(14, Sugg14);
+
+                dtADUers.Rows.Add(15, Sugg15);
+                dtADUers.Rows.Add(16, Sugg16);
+                dtADUers.Rows.Add(17, Sugg17);
+            }
+
+            for (int j = 0; j < dtADUers.Rows.Count; j++)
+            {
+                bool IsExist = IsAdSamnameExist(dtADUers.Rows[j]["UserName"].ToString(),locationId);
+
+                if (IsExist)
+                {
+                    ADSamAccountName = dtADUers.Rows[j]["UserName"].ToString();
+                    break;
+                }
+            }
+
+            return ADSamAccountName;
+        }
+
+        private bool IsAdSamnameExist(string SamAccountName, int locationId)
+        {
+            bool IsExist = false;
+            ActiveDirectoryClass objAD = new ActiveDirectoryClass();
+            DataTable dt = objAD.GetAllPropertyBySamaccountName(SamAccountName, locationId);
+
+            //checking SharepointPortalId/sameaccount in database
+            Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+            DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationId)).ToList().ToDataTable();
+            
+            string Bakslash = @"\";
+            string DBSamAccountName = listLdapAddress.Rows[0]["ADLocationName"].ToString() + Bakslash + SamAccountName;
+
+            var emplist = context.Setup_Employee.Where(a => a.IsActive == true && a.SharepointPortalId == DBSamAccountName && a.LocationId == locationId).ToList();
+            //string SharepointPortalId = emplist[0].SharepointPortalId;
+            //if (SharepointPortalId != "")
+            //{
+            //    string[] portalid = SharepointPortalId.Split('\\');
+            //    DBSamAccountName = portalid[1];
+            //}
+
+
+            if (dt.Rows.Count == 0 && dt != null && emplist.Count == 0)
+            {
+                IsExist = true;
+            }
+
+            return IsExist;
+        }
+    }
+}

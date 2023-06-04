@@ -1,0 +1,223 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucContactDetail : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objBase = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+        }
+    }
+    public void BindDropdown()
+    {
+        var ListCountry = context.Setup_Country.Where(c => c.IsActive == true).OrderBy(c => c.CountryName).ToList();
+        CommonHelper.BindDropDown(ddlCountry, ListCountry, "CountryName", "CountryId", true, false);
+        var ListCountryPerson = context.Setup_Country.Where(c => c.IsActive == true).OrderBy(c => c.CountryName).ToList();
+        CommonHelper.BindDropDown(ddlPersoncountry, ListCountryPerson, "CountryName", "CountryId", true, false);
+    }
+    protected void ddlCountry_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CountryID = Convert.ToInt32(ddlCountry.SelectedValue);
+        if (CountryID != 0)
+        {
+            var ListCity = context.Setup_City.Where(c => c.IsActive == true && c.CountryId == CountryID).OrderBy(c => c.CityName).OrderBy(c => c.CityName).ToList();
+            CommonHelper.BindDropDown(ddlCity, ListCity, "CityName", "CityId", true, false);
+
+        }
+    }
+    protected void ddlPersoncountry_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CountryID = Convert.ToInt32(ddlPersoncountry.SelectedValue);
+        if (CountryID != 0)
+        {
+            var ListCity = context.Setup_City.Where(c => c.IsActive == true && c.CountryId == CountryID).OrderBy(c => c.CityName).OrderBy(c => c.CityName).ToList();
+            CommonHelper.BindDropDown(ddlPersoncity, ListCity, "CityName", "CityId", true, false);
+        }
+    }
+    #region Custom Methods
+    public void SetUserContacts(Setup_Employee Employees)
+    {
+        txtOfficeemail.Text = Employees.OfficeEmailAddress;
+        txtPersonalemail.Text = Employees.PersonalEmailAddress;
+        txtOfficialMobNumber.Text = Employees.OfficialMobileNumber;
+        txtHomephone.Text = Employees.Phone;
+        txtMobilenumber.Text = Employees.Cell;
+        ddlCountry.SelectedValue = Employees.CountryId == null ? "0" : Employees.CountryId.ToString();
+        ddlCountry_SelectedIndexChanged(null, null);
+        ddlCity.SelectedValue = Employees.CityId == null ? "0" : Employees.CityId.ToString();
+        txtPermanentaddress.Text = Employees.PermanentAddress;
+        txtPresentaddress.Text = Employees.PresentAddress;
+        BindEmergencyContactRepeater(Employees.EmployeeId);
+    }
+    public void BindEmergencyContactRepeater(int EmpID)
+    {
+
+        var ContactPersonDetail = context.HRMS_EmployeeContactPerson.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmpID)
+            ).Select(c => new
+            {
+                EmployeeContactId = c.EmployeeContactId,
+                EmployeeId = c.EmployeeId,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                CellNumber = c.CellNumber,
+                PhoneNumber = c.PhoneNumber,
+                Address = c.Address,
+                EmailAddress = c.EmailAddress,
+                CityId = c.CityId,
+                CityName = c.Setup_City.CityName,
+                CountryId = c.CountryId,
+                CountryName = c.Setup_Country.CountryName
+            }).ToList();
+        RptEmployeeContactPerson.DataSource = ContactPersonDetail;
+        RptEmployeeContactPerson.DataBind();
+    }
+
+    public void UpdatePersonContact(int EmpID)
+    {
+        int? intnull = null;
+        var Employees = context.Setup_Employee.Where(c => c.EmployeeId == EmpID).FirstOrDefault();
+        Employees.OfficeEmailAddress = txtOfficeemail.Text.Trim() == string.Empty ? null : txtOfficeemail.Text.Trim();
+        Employees.OfficialMobileNumber = txtOfficialMobNumber.Text.Trim();
+        Employees.PersonalEmailAddress = txtPersonalemail.Text.Trim();
+        Employees.Phone = txtHomephone.Text.Trim();
+        Employees.Cell = txtMobilenumber.Text.Trim();
+        Employees.CountryId = ddlCountry.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlCountry.SelectedValue);
+        Employees.CityId = (ddlCity.SelectedValue == "0" || ddlCity.SelectedValue == "") ? intnull : Convert.ToInt32(ddlCity.SelectedValue);
+        Employees.PermanentAddress = txtPermanentaddress.Text.Trim();
+        Employees.PresentAddress = txtPresentaddress.Text.Trim();
+        context.SaveChanges();
+    }
+    #endregion
+    protected void RptEmployeeContactPerson_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Delete")
+        {
+            int EmployeeContactId = Convert.ToInt32(e.CommandArgument);
+            HRMS_EmployeeContactPerson obj = context.HRMS_EmployeeContactPerson.FirstOrDefault(j => j.EmployeeContactId == EmployeeContactId);
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindEmergencyContactRepeater(EmpID);
+        }
+        else if (e.CommandName == "Edit")
+        {
+
+            resetPersonDetail();
+
+            int EmployeeContactId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeContactPersons = context.HRMS_EmployeeContactPerson.Where(c => c.EmployeeContactId == EmployeeContactId).ToList();
+            if (EmployeeContactPersons != null)
+            {
+                hfContactPersonId.Value = EmployeeContactId.ToString();
+                txtPersonfirstname.Text = EmployeeContactPersons[0].FirstName;
+                txtPersonlastname.Text = EmployeeContactPersons[0].LastName;
+                txtpersoncellno.Text = EmployeeContactPersons[0].CellNumber.ToString();
+                txtpersonphone.Text = EmployeeContactPersons[0].PhoneNumber.ToString();
+                txtpersonemail.Text = EmployeeContactPersons[0].EmailAddress.ToString();
+                txtpersonaddress.Text = EmployeeContactPersons[0].Address.ToString();
+                ddlPersoncountry.SelectedValue = EmployeeContactPersons[0].CountryId == null ? "0" : EmployeeContactPersons[0].CountryId.ToString();
+                ddlPersoncountry_SelectedIndexChanged(null, null);
+                ddlPersoncity.SelectedValue = EmployeeContactPersons[0].CityId == null ? "0" : EmployeeContactPersons[0].CityId.ToString();
+
+
+                btnAdd.Text = "Update ";
+            }
+        }
+    }
+
+
+
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            DateTime dt = DateTime.Now;
+            int? intnull = null;
+            long? longnull = null;
+            if (hfContactPersonId.Value == "")
+            {
+                HRMS_EmployeeContactPerson person = new HRMS_EmployeeContactPerson();
+                person.FirstName = txtPersonfirstname.Text.Trim();
+                person.LastName = txtPersonlastname.Text.Trim();
+                person.PhoneNumber = txtpersonphone.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtpersonphone.Text.Trim());
+                person.CellNumber = txtpersoncellno.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtpersoncellno.Text.Trim());
+                person.EmailAddress = txtpersonemail.Text.Trim();
+                person.CountryId = ddlPersoncountry.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlPersoncountry.SelectedValue);
+                person.CityId = ddlPersoncity.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlPersoncity.SelectedValue);
+                person.Address = txtpersonaddress.Text.Trim();
+                person.IsActive = true;
+                person.EmployeeId = EmpID;
+                person.CreatedDate = dt;
+                person.CreatedBy = objBase.UserKey;
+                context.HRMS_EmployeeContactPerson.Add(person);
+                context.SaveChanges();
+                context.INSERT_INTO_AuditLog(person.EmployeeContactId.ToString(), "HRMS_EmployeeContactPerson", (int)Constant.OperationType.INSERT, objBase.UserKey);
+
+            }
+            else
+            {
+                int EmployeeContactId = Convert.ToInt32(hfContactPersonId.Value);
+                HRMS_EmployeeContactPerson person = context.HRMS_EmployeeContactPerson.FirstOrDefault(j => j.EmployeeContactId == EmployeeContactId);
+                person.FirstName = txtPersonfirstname.Text.Trim();
+                person.LastName = txtPersonlastname.Text.Trim();
+                person.PhoneNumber = txtpersonphone.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtpersonphone.Text.Trim());
+                person.CellNumber = txtpersoncellno.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtpersoncellno.Text.Trim());
+                person.EmailAddress = txtpersonemail.Text.Trim();
+                person.CountryId = ddlPersoncountry.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlPersoncountry.SelectedValue);
+                person.CityId = ddlPersoncity.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlPersoncity.SelectedValue);
+                person.Address = txtpersonaddress.Text.Trim();
+                person.IsActive = true;
+                person.EmployeeId = EmpID;
+                person.ModifiedDate = dt;
+                person.ModifiedBy = objBase.UserKey;
+                context.SaveChanges();
+                btnAdd.Text="Add";
+                context.INSERT_INTO_AuditLog(person.EmployeeContactId.ToString(), "HRMS_EmployeeContactPerson", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+
+            }
+            resetPersonDetail();
+            BindEmergencyContactRepeater(EmpID);
+
+        }
+        catch (Exception)
+        {
+            //throw;
+        }
+    }
+    public void HideControlsForEmployee()
+    {
+        txtOfficeemail.Enabled = false;
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        resetPersonDetail();
+        btnAdd.Text = "Add";
+    }
+    public void resetPersonDetail()
+    {
+        hfContactPersonId.Value = "";
+        txtPersonfirstname.Text = "";
+        txtPersonlastname.Text = "";
+        txtpersonphone.Text = "";
+        txtpersoncellno.Text = "";
+        txtpersonemail.Text = "";
+        ddlPersoncountry.SelectedValue = "0";
+        ddlPersoncountry_SelectedIndexChanged(null, null);
+        txtpersonaddress.Text = "";
+    }
+}

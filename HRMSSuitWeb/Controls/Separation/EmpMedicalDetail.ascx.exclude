@@ -1,0 +1,116 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="EmpMedicalDetail.ascx.cs" Inherits="Controls_Separation_EmpMedicalDetail" %>
+
+
+<div class="row" runat="server" id="DivSearchPanel">
+    <div class="col-lg-12" style="margin-top: 11px;">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">Medical Reimbursement </h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group col-lg-4">
+                    <label for="exampleInputEmail2">Employee Name</label>
+                    <asp:Label ID="lblEmpName" runat="server" CssClass="form-control"></asp:Label>
+
+                </div>
+                <div class="form-group col-lg-2">
+                    <label for="exampleInputPassword2">Claim Type </label>
+
+                    <asp:Label ID="lblClaimType" runat="server" CssClass="form-control "></asp:Label>
+
+                </div>
+
+                <div class="form-group col-lg-2">
+                    <label for="exampleInputEmail2">Claim Date </label>
+
+
+                    <asp:Label ID="lblClaimDate" runat="server" CssClass="form-control "></asp:Label>
+                </div>
+
+                <div class="form-group col-lg-2">
+                    <label for="exampleInputEmail2">Employee Code</label>
+
+                    <asp:Label ID="lblEmployeeCode" runat="server" CssClass="form-control "></asp:Label>
+                </div>
+                <div class="form-group col-lg-2">
+                    <label for="exampleInputEmail2">Amount Approve</label>
+
+                    <asp:Label ID="lblAmountApprove" runat="server" CssClass="form-control "></asp:Label>
+                </div>
+
+            </div>
+
+       
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content animated fadeInUp">
+
+    <div class="panel panel-info">
+
+        <div class="panel-heading">
+            Medical Reimbursement Detail
+        </div>
+        <div class="panel-body">
+            <div class="row m-b-sm m-t-sm">
+                <div class="col-md-12">
+                    <%--   <a href="#" class="btn btn-primary btnAdd pull-right">Add new </a>--%>
+                    <input type="button" data-toggle="modal" data-target="#ApplyForJob" class="ApplyJob" style="display: none;" />
+                    <%--<input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />--%>
+                </div>
+            </div>
+            <div class="project-list">
+
+                <table class="table table-hover table-responsive row-fluid " style="overflow-x: scroll;">
+                    <thead>
+                        <tr>
+                            <th>Bill Or Reciept No</th>
+                            <th>Date </th>
+                            <th>Name of  Laboratory</th>
+                            <th>Claim For</th>
+                            <th>Claim Amount</th>
+                             
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <asp:Repeater ID="rpt" runat="server">
+                            <ItemTemplate>
+                                <tr>
+                                    <td class="project-title"  >
+                                        <%# Eval("BillRecieptNo") %>
+                                        <br />
+                                        
+                                    </td>
+                                    <td class="project-title"  >
+                                        <%# Convert.ToDateTime(Eval("checkupDate")).ToString(Constant.DateFormat) %>
+                                        <br />
+                                    </td>
+                                    <td class="project-title"  >
+                                        <%# Eval("LaboratoryName") %>
+                                        <br />
+                                    </td>
+                                    <td class="project-title" >
+                                        <%# Eval("ClaimForText") %>
+                                        
+                                        <br />
+                                    </td>
+
+                                    <td class="project-title" >
+                                        <%# Eval("ClaimAmount") %>
+                                        <br />
+                                    </td>
+
+
+                                    
+                                </tr>
+
+                            </ItemTemplate>
+                        </asp:Repeater>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

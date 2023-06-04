@@ -1,0 +1,129 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ViewAppliedLeave.aspx.cs" Inherits="Pages_TMS_Employee_ViewAppliedLeave" MasterPageFile="~/MasterPage/AdminMaster.master" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <style>
+        .navbar-static-top
+        {
+            display: none;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3>Applied Leave History</h3>
+        </div>
+  <div class="panel-body">
+
+ 
+    <table id="Table1" runat="server" class="table table-bordered">
+        <tr>
+            <th colspan="2">Leave Detail
+            </th>
+        </tr>
+        <tr>
+            <td>Leave ID
+            </td>
+            <td>
+                <asp:Label ID="LB_LeaveID" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Leave Creation Date
+            </td>
+            <td>
+                <asp:Label ID="LB_CreateDate" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Status
+            </td>
+            <td>
+                <asp:Label ID="LB_Status" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Reason for Leave
+            </td>
+            <td>
+                <asp:Label ID="LB_Reason" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Type Of Leave
+            </td>
+            <td>
+                <asp:Label ID="LB_Type" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Number Of Days
+            </td>
+            <td>
+                <asp:Label ID="LB_NumberOfDays" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>From Date
+            </td>
+            <td>
+                <asp:Label ID="LB_From" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>To Date
+            </td>
+            <td>
+                <asp:Label ID="LB_To" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr style="display: none;">
+            <td>Short Leave Hours
+            </td>
+            <td>
+                <asp:Label ID="LB_Short_Hours" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr style="display: none;">
+            <td>Short Leave Minutes
+            </td>
+            <td>
+                <asp:Label ID="LB_Short_Min" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <th colspan="2">Approval / Denial Status
+            </th>
+        </tr>
+        <tr>
+            <td>Date Time
+            </td>
+            <td>
+                <asp:Label ID="LB_Approve_Date" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>Incharge Reason
+            </td>
+            <td>
+                <asp:Label ID="LB_Incharge_Reson" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>From Date
+            </td>
+            <td>
+                <asp:Label ID="LB_App_From" runat="server"></asp:Label>
+            </td>
+        </tr>
+        <tr>
+            <td>To Date
+            </td>
+            <td>
+                <asp:Label ID="LB_App_To" runat="server"></asp:Label>
+            </td>
+        </tr>
+    </table>
+       </div>
+          </div>
+</asp:Content>

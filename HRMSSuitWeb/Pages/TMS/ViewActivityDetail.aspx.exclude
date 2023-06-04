@@ -1,0 +1,197 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ViewActivityDetail.aspx.cs" Inherits="pages_employee_ViewDetail" MasterPageFile="~/MasterPage/AdminMaster.master" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <style>
+        .navbar-static-top
+        {
+            display: none;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div>
+        <div id="divSummary" runat="server" visible="false">
+            <asp:Label ID="lblSummary" runat="server"></asp:Label>
+        </div>
+    </div>
+    <div>
+        <table id="Table1" runat="server" class="table">
+            <tr>
+                <th colspan="2">Activity Details
+                </th>
+            </tr>
+            <tr>
+                <td>Activity ID
+                </td>
+                <td>
+                    <asp:Label ID="lblActivityId" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Activity Creation Date
+                </td>
+                <td>
+                    <asp:Label ID="lblActivityCreationDate" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Employee No.
+                </td>
+                <td>
+                    <asp:Label ID="lblEmployeeNo" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Card No.
+                </td>
+                <td>
+                    <asp:Label ID="lblCardNo" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Employee Name
+                </td>
+                <td>
+                    <asp:Label ID="lblEmployeeName" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>In Time
+                </td>
+                <td>
+                    <asp:Label ID="lblInTime" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>In Reader ID
+                </td>
+                <td>
+                    <asp:Label ID="lblInReaderID" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Out Time
+                </td>
+                <td>
+                    <asp:Label ID="lblOutTime" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Out Reader ID
+                </td>
+                <td>
+                    <asp:Label ID="lblOutReaderID" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Month End Process
+                </td>
+                <td>
+                    <asp:Label ID="lblMonthEndProcess" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Designation
+                </td>
+                <td>
+                    <asp:Label ID="lblDesignation" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Incharge
+                </td>
+                <td>
+                    <asp:Label ID="lblIncharge" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>Department
+                </td>
+                <td>
+                    <asp:Label ID="lblDepartment" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <asp:Image ID="imgExpandCollapse" runat="server" ImageUrl="~/images/expand_collapse.png" CssClass="ExpandCollapse pointer" />
+                    Shift Details
+                </td>
+                <td>
+                    <asp:Label ID="lblShiftDetail" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr class="trExpandCollapse" style="display: none;">
+                <td colspan="2">
+                    <table class="list listChild">
+                        <tr>
+                            <td style="width: 125px;">Description
+                            </td>
+                            <td>
+                                <asp:Label ID="lblDescription" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Shift Start Time
+                            </td>
+                            <td>
+                                <asp:Label ID="lblShiftStartTime" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Shift End Time
+                            </td>
+                            <td>
+                                <asp:Label ID="lblShiftEndTime" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Flexi In (Minutes)
+                            </td>
+                            <td>
+                                <asp:Label ID="lblFlexiIn" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Flexi Out (Minutes)
+                            </td>
+                            <td>
+                                <asp:Label ID="lblFlexiOut" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Work Hours
+                            </td>
+                            <td>
+                                <asp:Label ID="lblWorkHours" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Day
+                            </td>
+                            <td>
+                                <asp:Label ID="lblDay" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Nature of Day
+                            </td>
+                            <td>
+                                <asp:Label ID="lblNatureOfDay" runat="server"></asp:Label>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script type="text/javascript">
+        function pageLoad() {
+           
+            $('.ExpandCollapse').click(function () {
+                $('.trExpandCollapse').toggle("slow");
+            });
+        }
+    </script>
+</asp:Content>

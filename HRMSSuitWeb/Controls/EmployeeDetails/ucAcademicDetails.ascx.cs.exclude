@@ -1,0 +1,163 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucAcademicDetails : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindDropdown()
+    {
+        var ListEducationType = context.HRMS_Setup_EducationType.Where(c => c.IsActive == true).OrderBy(c => c.educationType).ToList();
+        var ListEducationStatus = context.HRMS_Setup_EducationStatus.Where(c => c.IsActive == true).OrderBy(c => c.EducationStatusTitle).ToList();
+        var ListCountry = context.Setup_Country.Where(c => c.IsActive == true).OrderBy(c => c.CountryName).ToList();
+        var ListPosition = context.HRMS_Setup_EducationScore.Where(c => c.IsActive == true).OrderBy(c => c.ScoreTitle).ToList();
+        CommonHelper.BindDropDown(ddlEducationType, ListEducationType, "educationType", "educationTypeId", true, false);
+        CommonHelper.BindDropDown(ddlAcademicStatus, ListEducationStatus, "EducationStatusTitle", "EducationStatusId", true, false);
+        CommonHelper.BindDropDown(ddlAcademicScore, ListPosition, "ScoreTitle", "ScoreId", true, false);
+        CommonHelper.BindDropDown(ddlAcademicCountry, ListCountry, "CountryName", "CountryId", true, false);
+    }
+    public void BindRepeaterEmployeeEducation(int EmployeeId)
+    {
+        var EmployeeEducation = context.HRMS_EmployeeEducation.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmployeeId)
+            ).Select(c => new
+            {
+                EmployeeEducationId = c.EmployeeEducationId,
+                EmployeeId = c.EmployeeId,
+                EducationTypeId = c.EducationTypeId,
+                EducationType = c.HRMS_Setup_EducationType.educationType,
+                Institution = c.Institution,
+                degree = c.degree,
+                percentage = c.percentage,
+                EducationScoreId = c.EducationScoreId,
+                EducationScore = c.HRMS_Setup_EducationScore.ScoreTitle,
+                EducationStatusId = c.EducationStatusId,
+                EducationStatus = c.HRMS_Setup_EducationStatus.EducationStatusTitle,
+                CountryId = c.CountryId,
+                CountryName = c.Setup_Country.CountryName,
+                fromDate = c.fromDate,
+                toDate = c.toDate,
+
+            }).ToList();
+        rptEmployeeAcademic.DataSource = EmployeeEducation;
+        rptEmployeeAcademic.DataBind();
+    }
+    protected void rptEmployeeAcademic_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+
+
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlEmployeeExperience();
+
+            int EmployeeEducationId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeEducationlist = context.HRMS_EmployeeEducation.Where(c => c.EmployeeEducationId == EmployeeEducationId).ToList();
+            if (EmployeeEducationlist != null)
+            {
+                hfAcademicID.Value = EmployeeEducationId.ToString();
+                txtAcademicMajor.Text = EmployeeEducationlist[0].degree;
+                txtAcademicInstitute.Text = EmployeeEducationlist[0].Institution;
+                txtAcademicpercentage.Text = EmployeeEducationlist[0].percentage;
+                ddlEducationType.SelectedValue = EmployeeEducationlist[0].EducationTypeId == null ? "0" : EmployeeEducationlist[0].EducationTypeId.ToString();
+                ddlAcademicScore.SelectedValue = EmployeeEducationlist[0].EducationScoreId == null ? "0" : EmployeeEducationlist[0].EducationScoreId.ToString();
+                ddlAcademicStatus.SelectedValue = EmployeeEducationlist[0].EducationStatusId == null ? "0" : EmployeeEducationlist[0].EducationStatusId.ToString();
+                ddlAcademicCountry.SelectedValue = EmployeeEducationlist[0].CountryId.ToString();
+                txtAcademicDatefrom.Text = EmployeeEducationlist[0].fromDate.Value.ToString(Constant.DateFormat2);
+                txtAcademicDateTo.Text = EmployeeEducationlist[0].toDate.ToString() == "" ? string.Empty : EmployeeEducationlist[0].toDate.Value.ToString(Constant.DateFormat2);
+
+                btnAdd.Text = "Update";
+            }
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeEducationId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeEducation obj = context.HRMS_EmployeeEducation.FirstOrDefault(j => j.EmployeeEducationId == EmployeeEducationId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objbase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterEmployeeEducation(EmpID);
+        }
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+    public void ResetControlEmployeeExperience()
+    {
+        hfAcademicID.Value = "";
+        ddlAcademicCountry.SelectedValue = "0";
+        ddlAcademicScore.SelectedValue = "0";
+        ddlAcademicStatus.SelectedValue = "0";
+        ddlEducationType.SelectedValue = "0";
+        txtAcademicDatefrom.Text = "";
+        txtAcademicDateTo.Text = "";
+        txtAcademicInstitute.Text = "";
+        txtAcademicMajor.Text = "";
+        txtAcademicpercentage.Text = "";
+    }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+        if (hfAcademicID.Value=="")
+        {
+            HRMS_EmployeeEducation empEdu = new HRMS_EmployeeEducation();
+            empEdu.EducationTypeId= Convert.ToInt32(ddlEducationType.SelectedValue);
+            empEdu.degree = txtAcademicMajor.Text.Trim();
+            empEdu.Institution = txtAcademicInstitute.Text.Trim();
+            empEdu.EducationStatusId = Convert.ToInt32(ddlAcademicStatus.SelectedValue);
+            empEdu.fromDate = Convert.ToDateTime(txtAcademicDatefrom.Text);
+            empEdu.toDate = Convert.ToDateTime(txtAcademicDateTo.Text.Trim());
+            empEdu.percentage = txtAcademicpercentage.Text.Trim();
+            empEdu.EducationScoreId = Convert.ToInt32(ddlAcademicScore.SelectedValue);
+            empEdu.CountryId = Convert.ToInt32(ddlAcademicCountry.SelectedValue);
+            empEdu.IsActive = true;
+            empEdu.CreatedDate = dt;
+            empEdu.CreatedBy = objbase.UserKey;
+            empEdu.EmployeeId = EmpID;
+            context.HRMS_EmployeeEducation.Add(empEdu);
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(empEdu.EmployeeEducationId.ToString(), "HRMS_EmployeeEducation", (int)Constant.OperationType.INSERT, objbase.UserKey);
+        }
+        else
+        {
+            int EmpEduID = Convert.ToInt32(hfAcademicID.Value);
+            HRMS_EmployeeEducation empEdu = context.HRMS_EmployeeEducation.FirstOrDefault(x => x.EmployeeEducationId == EmpEduID);
+            empEdu.EducationTypeId = Convert.ToInt32(ddlEducationType.SelectedValue);
+            empEdu.degree = txtAcademicMajor.Text.Trim();
+            empEdu.Institution = txtAcademicInstitute.Text.Trim();
+            empEdu.EducationStatusId = Convert.ToInt32(ddlAcademicStatus.SelectedValue);
+            empEdu.fromDate = Convert.ToDateTime(txtAcademicDatefrom.Text);
+            empEdu.toDate = Convert.ToDateTime(txtAcademicDateTo.Text.Trim());
+            empEdu.percentage = txtAcademicpercentage.Text.Trim();
+            empEdu.EducationScoreId = Convert.ToInt32(ddlAcademicScore.SelectedValue);
+            empEdu.CountryId = Convert.ToInt32(ddlAcademicCountry.SelectedValue);
+            empEdu.IsActive = true;
+            empEdu.ModifiedDate = dt;
+            empEdu.ModifiedBy = objbase.UserKey;
+            empEdu.EmployeeId = EmpID;
+            context.SaveChanges();
+            btnAdd.Text = "Add";
+            context.INSERT_INTO_AuditLog(empEdu.EmployeeEducationId.ToString(), "HRMS_EmployeeEducation", (int)Constant.OperationType.UPDATE, objbase.UserKey);
+        }
+        ResetControlEmployeeExperience();
+        BindRepeaterEmployeeEducation(EmpID);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControlEmployeeExperience();
+    }
+}

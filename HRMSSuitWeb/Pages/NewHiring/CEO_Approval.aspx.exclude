@@ -1,0 +1,209 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="CEO_Approval.aspx.cs" Inherits="Pages_NewHiring_CEO_Approval" %>
+
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>CEO Approval Form</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">CEO Approval</a>
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+              <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <asp:Label class="panel-heading" id="lblError" runat="server"></asp:Label>
+            </div>
+
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Applicant Information</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Name</label>
+                                    <asp:Label runat="server" ID="lblCandidateName" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Contact No</label>
+                                    <asp:Label runat="server" ID="lblCandidateContactNo" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Designation</label>
+                                    <asp:Label runat="server" ID="lblCandidateDesignation" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Last Qualification</label>
+                                    <asp:Label runat="server" ID="lblLastQualification" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Last Drawn Salary</label>
+                                    <asp:Label runat="server" ID="lblCandidateLastDrawnSalary" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">ExpectedSalary</label>
+                                    <asp:Label runat="server" ID="lblCandidateExpectedSalary" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Department</label>
+                                    <asp:Label runat="server" ID="lblCandidateDepartment" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+
+                                </div>
+                                <%-- <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Supervisor Name</label>
+                                    <asp:Label runat="server" ID="lblCandidateSupervisorName" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+
+                                </div>--%>
+                                <%--  <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Interview Date</label>
+                                    <asp:Label runat="server" ID="lblCandidateInterviewDate" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+                                </div>--%>
+                            </div>
+                            <%-- <div class="row">
+                                <div class="form-group col-lg-12">
+                                    <label for="exampleInputEmail2">Interview No</label>
+                                    <asp:Label runat="server" ID="lblInterCount" CssClass="exampleInputEmail2 label label-primary" Text=""></asp:Label>
+
+
+                                </div>
+                            </div>--%>
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">HR Offer</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Offer Amount</label>
+                                    <asp:Label runat="server" ID="lblOfferAmount" CssClass="exampleInputEmail2 label label-primary" Text="10000"></asp:Label>
+                                </div>
+                                <%--<div class="form-group col-lg-8">
+                                    <label for="exampleInputEmail2">HR Comments</label>
+                                    <asp:Label runat="server" ID="lblHrComments" CssClass="exampleInputEmail2 label label-primary" Text="Kindly accept our offer letter"></asp:Label>
+                                </div>--%>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">CEO Decision </h3>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="form-group col-lg-6">
+                                <div class="  col-lg-12">
+                                    <label class="control-label">Accept Offer</label>
+
+                                    <asp:DropDownList runat="server" ID="dllOfferAccept" Width="200px" CssClass="dllOfferAccept form-control" />
+                                    <asp:RequiredFieldValidator ID="rfvdllOfferAccept" runat="server"
+                                        Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="offerAccepted" InitialValue="0"
+                                        Display="Dynamic" ControlToValidate="dllOfferAccept"></asp:RequiredFieldValidator>
+                                </div>
+
+
+                            </div>
+
+                            <div class="form-group col-lg-6">
+                                <div class="  col-lg-12">
+                                    <label for="exampleInputEmail2">Comments</label>
+
+
+                                    <asp:TextBox ID="txtComment" TextMode="MultiLine" Style="height: 70px; max-height: 70px;" runat="server" CssClass="form-control">
+                                    </asp:TextBox>
+                                </div>
+
+                            </div>
+
+                            <div class="row" style="margin-right: 32px;">
+
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+
+
+
+                                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right btnSearch" OnClick="btnSave_Click" ValidationGroup="Interview" />
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <br />
+            <br />
+
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+
+
+
+    <script type="text/javascript">
+        function pageLoad() {
+
+
+
+
+
+
+        }
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+
+
+    </script>
+
+
+
+</asp:Content>
+

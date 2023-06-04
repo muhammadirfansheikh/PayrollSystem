@@ -1,0 +1,117 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RequisitionDetail.ascx.cs" Inherits="Controls_RequisitionWorkflow_RequisitionDetail" %>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        <asp:HiddenField ID="hfRequisitionId" runat="server" />
+        Requisition Details
+    </div>
+
+    <div class="panel-body">
+
+        <div class="col-lg-2 ">
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Requisition No.</label>
+                <asp:Label ID="lblRequisitionNo" runat="server" CssClass="label label-success col-lg-12" Text="01"></asp:Label>
+            </div>
+            <div class="form-group  ">
+                <label for="exampleInputEmail2 col-lg-12">Country</label>
+                <asp:Label ID="lblCountry" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Location</label>
+                <asp:Label ID="lblLocation" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Department</label>
+                <asp:Label ID="lblDepartment" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-lg-offset-1">
+
+            <div class="form-group   ">
+                <label for="exampleInputPassword2 col-lg-12">Designation</label>
+                <asp:Label ID="lblDesignation" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Job Type</label>
+                <asp:Label ID="lblJobType" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Total Vacancies</label>
+                <asp:Label ID="lblTotalVacancies" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+
+          
+
+             <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Is Budgeted</label>
+                <%--<asp:CheckBox ID="chkbxIsBudgeted" runat="server" Checked="true" CssClass="form-control i-checks col-lg-12" Enabled="false" />--%>
+                 <asp:Label ID="lblBudgeted" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+        </div>
+
+
+        <div class="col-lg-2 col-lg-offset-1">
+            
+
+
+            <div class="form-group ">
+                <label for="exampleInputPassword2 col-lg-12">Min.Degree Req.</label>
+                <asp:Label ID="lblMinDegreeReq" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+
+            <div class="form-group ">
+                <label for="exampleInputPassword2 col-lg-12">Experience Req.</label>
+                <asp:Label ID="lblExpReq" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group ">
+                <label for="exampleInputPassword2 col-lg-12">  Placement Type</label>
+                <asp:Label ID="lblPlacementType" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+
+              <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Is Replacement</label>
+                <%--<asp:CheckBox ID="chkIsReplacement" runat="server" CssClass="form-control i-checks col-lg-12" Enabled="false" />--%>
+                  <asp:Label ID="lblReplacement" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+        </div>
+
+        <div class="col-lg-2 col-lg-offset-1">
+
+             <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Joining Date</label>
+                <asp:Label ID="lblJoiningDate" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+
+            <div class="form-group  ">
+                <label for="exampleInputPassword2 col-lg-12">Salary Range</label>
+                <asp:Label ID="lblSalaryRange" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group">
+                <label for="exampleInputPassword2 col-lg-12">Reason of Hiring</label>
+                <asp:Label ID="lblHiringReason" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+          
+        </div>
+
+
+      <%--  <div class="form-group col-lg-6">
+            <label for="exampleInputPassword2">Remarks</label>
+            <asp:TextBox ID="txtRemarks" runat="server" CssClass="form-control" ReadOnly="true"> </asp:TextBox>
+        </div>--%>
+
+        <div class="form-group col-lg-12" style="display:none;">
+            <label for="exampleInputPassword2">Job Description</label>
+
+            <%--<cc1:editor id="txtJobDesc" runat="server"></cc1:editor>--%>
+        </div>
+
+
+
+
+
+
+    </div>
+
+</div>

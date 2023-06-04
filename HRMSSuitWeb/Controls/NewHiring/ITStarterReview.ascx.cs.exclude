@@ -1,0 +1,250 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Web.UI.HtmlControls;
+
+public partial class Controls_NewHiring_ITStarterReview : System.Web.UI.UserControl
+{
+    public bool IsControlInitialize
+    {
+        get
+        {
+
+            return hfIsControlInitialize.Value == string.Empty ? false : Convert.ToBoolean(hfIsControlInitialize.Value);
+        }
+        set { hfIsControlInitialize.Value = value.ToString(); }
+    }
+
+    public int? WorkflowItemId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfWorkflowItemId.Value == string.Empty ? nullint : Convert.ToInt32(hfWorkflowItemId.Value);
+        }
+        set { hfWorkflowItemId.Value = value.ToString(); }
+    }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        SetRepeater();
+    }
+
+    protected void rpt_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+
+            //int EmployeeId = Convert.ToInt32(_EmployeeId);
+            int SeperationCriteriaId = (int)Constant.SeperationCriteriaMaster.ITLeaver;
+
+            if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+            {
+                RadioButtonList rbtnEvaluationStatus = (RadioButtonList)e.Item.FindControl("rbtnEvaluationStatus");
+                DropDownList ddlEvaluationStatus = (DropDownList)e.Item.FindControl("dllEvaluationStatus");
+                TextBox txtComment = (TextBox)e.Item.FindControl("txtComment");
+                TextBox txtDate = (TextBox)e.Item.FindControl("txtDate");
+
+                rbtnEvaluationStatus.Enabled = false;
+                ddlEvaluationStatus.Enabled = false;
+                txtComment.Enabled = false;
+                txtDate.Enabled = false;
+
+                HtmlInputHidden hfSeperationCriteriaDetailId = (HtmlInputHidden)e.Item.FindControl("hfSeperationCriteriaDetailId");
+
+
+                int SeperationCriteriaDetailId = Convert.ToInt32(hfSeperationCriteriaDetailId.Value);
+
+
+                var list = context.HRMS_Setup_WorkflowFormDetail.FirstOrDefault(a => a.IsActive == true && a.FormDetailId == SeperationCriteriaDetailId);
+
+
+                if ((int)Constant.ValueTypeControl.Textbox == list.HRMS_Setup_ValueType.ValueTypeId)
+                {
+                    if (list.TableName == null)
+                    {
+                        txtComment.Visible = true;
+                    }
+                }
+                else if ((int)Constant.ValueTypeControl.RadioButton == list.HRMS_Setup_ValueType.ValueTypeId)
+                {
+                    if (list.TableName == "HRMS_SetupDetail")
+                    {
+                        //int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        //int StatusNo = (int)Constant.SeperationStatus.No;
+
+                        var rbtlist = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == (int)Constant.RequisitionSetupMaster.YES_No)
+                            .Select(c => new
+                            {
+                                Id = c.SetupDetailId,
+                                Value = c.SetupDetailName,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        rbtnEvaluationStatus.Items[0].Selected = true;
+                    }
+
+                    /*if (list.TableName == "HRMS_Setup_SeprationStatus")
+                    {
+                        int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        int StatusNo = (int)Constant.SeperationStatus.No;
+                        int Suspended = (int)Constant.SeperationStatus.Suspended;
+
+                        var rbtlist = context.HRMS_Setup_SeprationStatus.Where(a => a.IsActive == true && (a.SeperationStatusId == StatusYes || a.SeperationStatusId == Suspended || a.SeperationStatusId == StatusNo))
+                            .Select(c => new
+                            {
+                                Id = c.SeperationStatusId,
+                                Value = c.SeperationStatus,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        rbtnEvaluationStatus.Items[0].Selected = true;
+                    }
+                    else if (list.TableName == "HRMS_Setup_TerminationType")
+                    {
+                        int Resigned = (int)Constant.TerminationType.Resigned;
+                        int Layoff = (int)Constant.TerminationType.Layoff;
+                        int Dissmiss = (int)Constant.TerminationType.Dissmiss;
+
+                        var rbtlist = context.HRMS_Setup_TerminationType.Where(a => a.IsActive == true)
+                            .Select(c => new
+                            {
+                                Id = c.TerminationTypeId,
+                                Value = c.TerminationType,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        rbtnEvaluationStatus.Items[0].Selected = true;
+                    }
+                    if (list.TableName == null)
+                    {
+                        int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        int StatusNo = (int)Constant.SeperationStatus.No;
+                        //int Suspended = (int)Constant.SeperationStatus.Suspended;
+
+                        var rbtlist = context.HRMS_Setup_SeprationStatus.Where(a => a.IsActive == true && (a.SeperationStatusId == StatusYes || a.SeperationStatusId == StatusNo))
+                            .Select(c => new
+                            {
+                                Id = c.SeperationStatusId,
+                                Value = c.SeperationStatus,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        rbtnEvaluationStatus.Items[0].Selected = true;
+                    }*/
+                }
+                else if ((int)Constant.ValueTypeControl.Dropdown == list.HRMS_Setup_ValueType.ValueTypeId)
+                {
+                    if (list.TableName == "HRMS_Setup_SeprationStatus")
+                    {
+                        int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        int StatusNo = (int)Constant.SeperationStatus.No;
+
+
+                        var ddlist = context.HRMS_Setup_SeprationStatus.Where(a => a.IsActive == true && a.SeperationStatusId == StatusYes
+                            || a.SeperationStatusId == StatusNo)
+                            .Select(c => new
+                            {
+                                Id = c.SeperationStatusId,
+                                Value = c.SeperationStatus,
+
+                            }).ToList();
+
+                        CommonHelper.BindDropDown(ddlEvaluationStatus, ddlist, "Value", "Id", false, false);
+                        ddlEvaluationStatus.Visible = true;
+                    }
+                    else if (list.TableName == "HRMS_Setup_NoticePeriodType")
+                    {
+                        var ddlist = context.HRMS_Setup_NoticePeriodType.Where(a => a.IsActive == true)
+                            .Select(c => new
+                            {
+                                Id = c.NoticePeriodTypeId,
+                                Value = c.NoticePeriodType,
+
+                            }).ToList();
+
+                        CommonHelper.BindDropDown(ddlEvaluationStatus, ddlist, "Value", "Id", false, false);
+                        ddlEvaluationStatus.Visible = true;
+                    }
+                }
+                else if ((int)Constant.ValueTypeControl.DatePicker == list.HRMS_Setup_ValueType.ValueTypeId)
+                {
+                    if (list.TableName == null)
+                    {
+                        txtDate.Visible = true;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
+            lblError.InnerText = ex.ToString();
+            divError.Visible = true;
+
+        }
+    }
+
+    public void SetRepeater()
+    {
+        if (IsControlInitialize)
+        {
+            int EmployeeId = 0;
+            int SeperationCriteriaId = (int)Constant.SeperationCriteriaMaster.HODStarterCriteria;
+
+            var ListHRStarterCriteria = context.HRMS_Setup_WorkflowFormDetail.Where(a => a.IsActive == true && a.FormMasterId == SeperationCriteriaId)
+               .Select(c => new
+               {
+                   SeperationCriteriaDetailId = c.FormDetailId,
+                   SeperationCriteriaDetail = c.FieldName,
+                   ValueTypeId = c.ValueTypeId,
+                   TableName = c.TableName,
+               }).ToList();
+
+            rpt.DataSource = ListHRStarterCriteria;
+            rpt.DataBind();
+
+            EmployeeId = context.Setup_Employee.Where(a => a.CandidateId == WorkflowItemId).FirstOrDefault().EmployeeId;
+
+            //   var lst = context.HRMS_HODStarterDetail.Where(a => a.EmployeeId == EmployeeId && a.HRMS_Setup_WorkflowFormDetail.FormMasterId == SeperationCriteriaId).ToList();
+            var lst = context.HRMS_HODStarterDetail.Where(a => a.EmployeeId == EmployeeId && a.HRMS_Setup_WorkflowFormDetail.FormMasterId == SeperationCriteriaId).ToList();
+
+            if (lst != null && lst.Count > 0)
+            {
+                for (int i = 0; i < ListHRStarterCriteria.Count; i++)
+                {
+                    if (lst[i].IsYes != null)
+                    {
+                        RadioButtonList rdb = (RadioButtonList)rpt.Items[i].FindControl("rbtnEvaluationStatus");
+
+                        rdb.SelectedValue = lst[i].IsYes == true ? Convert.ToString((int)Constant.RequisitionSetupDetail.Yes) :
+                            Convert.ToString((int)Constant.RequisitionSetupDetail.No);
+
+                        //                        StatusId == (int)Constant.RequisitionSetupDetail.Yes ? true :
+                        //StatusId == (int)Constant.RequisitionSetupDetail.No ? false
+                    }
+                    else
+                    {
+                        TextBox txt = (TextBox)rpt.Items[i].FindControl("txtComment");
+                        txt.Text = lst[i].Remarks;
+                    }
+                }
+            }
+        }
+    }
+
+}

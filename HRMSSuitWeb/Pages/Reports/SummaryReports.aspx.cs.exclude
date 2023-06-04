@@ -1,0 +1,167 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Pages_Reports_SummaryReports : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!IsPostBack)
+            {
+
+                string numberOfdays = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month).ToString();
+                txtStartDate.Text = DateTime.Now.Month.ToString() + "/01/" + DateTime.Now.Year;
+                txtEndDate.Text = DateTime.Now.Month.ToString() + "/" + numberOfdays + "/" + DateTime.Now.Year;
+                BindDropDown();
+                // BindRepeater();
+            }
+        }
+        catch (Exception ex) { }
+    }
+
+    private void BindDropDown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", department.Count > 1 ? true : false, false);
+
+        //var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == UserKey || IsSuperAdmin == true || (RoleCode == roleAdmin && e.CompanyId == CompanyId)))
+        //    .OrderBy(e => e.EmployeeCode)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.EmployeeCode + " - " + e.FirstName
+        //    })
+        //    .ToList();
+
+
+
+
+     
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        //var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+        //    .OrderBy(e => e.FirstName)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.FirstName + " - " + e.EmployeeCode
+        //    })
+        //    .ToList();
+        ////.OrderBy("Name").ToList();
+        //CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+       
+    }
+
+    private void BindRepeater()
+    {
+        try
+        {
+            List<TMS_Summary_Report_Result> Summary_rep = new List<TMS_Summary_Report_Result>();
+            DateTime StartDate = Convert.ToDateTime(txtStartDate.Text);
+            DateTime EndDate = Convert.ToDateTime(txtEndDate.Text);
+            string Dep_ID = null;
+
+            if (ddlDepartment.SelectedValue != "0")
+            {
+                Dep_ID = ddlDepartment.SelectedValue;
+            }
+
+
+            Summary_rep = context.TMS_Summary_Report(StartDate, EndDate, Dep_ID).ToList();
+            rpt.DataSource = Summary_rep;
+            rpt.DataBind();
+
+            if (Summary_rep.Count > 0)
+            {
+                LB_Export_To_Excel.Visible = true;
+            }
+            else
+            {
+                LB_Export_To_Excel.Visible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            lblError.Visible = true;
+            lblError.InnerText = ex.Message;
+            divError.Attributes.Add("class", "validationSummary");
+            divError.Visible = true;
+        }
+    }
+    protected void LB_Export_To_Excel_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            Response.ClearContent();
+            Response.Buffer = true;
+            Response.AddHeader("content-disposition", "attachment; filename=Summary_Report.xls");
+            Response.ContentType = "application/vnd.ms-excel";
+            Response.Charset = "";
+            StringWriter sw = new StringWriter();
+            HtmlTextWriter htw = new HtmlTextWriter(sw);
+            rpt.RenderControl(htw);
+            Response.Output.Write(sw.ToString());
+            Response.Flush();
+            Response.End();
+            /*
+           Response.Clear();
+            Response.ContentType = "application/vnd.ms-excel";
+            Response.AddHeader("content-disposition", "attachment;filename=" + fileName);
+
+            DataSet ds = new DataSet("New_DataSet");
+
+            DataTable dt = new DataTable();
+            dt = Summary_rep.ToDataTable();
+
+            ds.Tables.Add(dt);
+            using (MemoryStream m = new MemoryStream())
+            {
+                ExcelLibrary.DataSetHelper.CreateWorkbook(m, ds);
+                m.WriteTo(Response.OutputStream);
+                Response.End();
+            }*/
+        }
+        catch (Exception ex)
+        {
+            lblError.Visible = true;
+            lblError.InnerText = ex.Message;
+            divError.Attributes.Add("class", "validationSummary");
+            divError.Visible = true;
+        }
+
+
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+}

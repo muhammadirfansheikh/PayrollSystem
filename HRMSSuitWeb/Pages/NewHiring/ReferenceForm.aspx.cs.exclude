@@ -1,0 +1,101 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_NewHiring_ReferenceForm : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    #region Properties
+    public string FormMasterId
+    {
+        get
+        {
+            return Request.QueryString["FormMasterId"];
+        }
+    }
+    //public string EmployeeId
+    //{
+    //    get
+    //    {
+    //        return Request.QueryString["EmployeeId"];
+    //    }
+    //}
+
+    public string CandidateId
+    {
+        get
+        {
+            return Request.QueryString["CandidateId"];
+        }
+    }
+    public string WorkflowItemId
+    {
+        get
+        {
+            return Request.QueryString["CandidateId"];
+        }
+    }
+    public string WorkflowStepDetailId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowStepDetailId"];
+        }
+    }
+    #endregion
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!IsPostBack)
+            {
+                //if (Convert.ToInt32(FormMasterId) == (int)Constant.SeperationCriteriaMaster.TelephoneReferenceCheckForm)
+                //{
+                TelephonicReference.IsControlInitialize = true;
+                TelephonicReference.FormMasterId = Convert.ToInt32(FormMasterId);
+                TelephonicReference.WorkflowItemId = Convert.ToInt32(WorkflowItemId);
+                TelephonicReference.WorkflowStepDetailId = Convert.ToInt32(WorkflowStepDetailId);
+                TelephonicReference.CandidateId = Convert.ToInt32(CandidateId);
+
+                int _CandidateId = Convert.ToInt32(CandidateId);
+                int employeeid = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.CandidateId == _CandidateId).EmployeeId;
+
+
+                TelephonicReference.EmployeeId = Convert.ToInt32(employeeid);
+
+
+                //}
+                //else if (Convert.ToInt32(FormMasterId) == (int)Constant.SeperationCriteriaMaster.EmploymentReferenceCheckForm)
+                //{
+
+
+                //}
+                //else if (Convert.ToInt32(FormMasterId) == (int)Constant.SeperationCriteriaMaster.PersonalReferenceCheckForm)
+                //{
+
+
+                //}
+
+
+            }
+        }
+        catch (Exception ex)
+        {
+
+
+            lblError.InnerText = ex.ToString();
+            divError.Visible = true;
+        }
+    }
+
+
+
+
+
+}

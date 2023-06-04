@@ -1,0 +1,447 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="Leave.aspx.cs" Inherits="Pages_HRMS_Setup_Leave" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Leave</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Setup</a>
+                </li>
+                <li class="active">
+                    <strong>Leave</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <div>
+
+
+        <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+            <ContentTemplate>
+                <div class="col-lg-12" style="margin-top: 11px;">
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Description</label>
+                                <asp:TextBox ID="txtDescriptionSearch" runat="server" CssClass="form-control"></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Company</label>
+                                <asp:DropDownList ID="ddlCompanyNameSearch" runat="server" CssClass="form-control"
+                                    AutoPostBack="true" OnSelectedIndexChanged="ddlCompanyNameSearch_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-4">
+
+                                <label for="exampleInputEmail2">Job Category</label>
+                                <asp:DropDownList ID="ddlCategoryNameSearch" runat="server" CssClass="form-control"
+                                    Enabled="false">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-12">
+
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-default pull-right"
+                                    OnClick="btnSearch_Click" />
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </ContentTemplate>
+
+        </asp:UpdatePanel>
+
+
+
+
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="wrapper wrapper-content animated fadeInUp">
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            Cities
+                        </div>
+                        <asp:UpdatePanel ID="upData" runat="server">
+                            <ContentTemplate>
+
+                                <div id="divError" runat="server" class="validationSummary" visible="false">
+                                    <asp:Label ID="lblError" runat="server"></asp:Label>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row m-b-sm m-t-sm">
+                                        <div class="col-md-12">
+                                            <a href="#" class="btn btn-primary btnAdd pull-right">Add new </a>
+                                            <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                        </div>
+                                    </div>
+                                    <div class="project-list">
+
+                                        <asp:Repeater ID="rpt" runat="server">
+                                            <HeaderTemplate>
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Company
+                                                            </th>
+                                                            <th>Gender
+                                                            </th>
+                                                            <th>Job Category
+                                                            </th>
+                                                            <th>Description
+                                                            </th>
+                                                            <th style="width: 170px; text-align: center;">Action<%--Edit
+                                        </th>
+                                        <th style="width: 70px; text-align: center;" class='editFunction'>
+                                            Delete--%>
+                                                            </th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                            </HeaderTemplate>
+                                            <ItemTemplate>
+                                                <tr>
+                                                    <td class='project-title'>
+
+                                                        <%# Eval("Company_Name") %>
+                                                       
+                                                    </td>
+                                                    <td class='project-title'>
+
+                                                        <%# Eval("Gender") %>
+                                                         
+                                                    </td>
+                                                    <td class='project-title'>
+                                                        <span class='clsCategoryName'>
+                                                            <%# Eval("Category_Name") %>
+                                                        </span>
+                                                    </td>
+                                                    <td class='project-title'>
+                                                        <span class='clsLeaveName'>
+                                                            <%# Eval("Description_Name") %></span>
+                                                        <input type="hidden" runat="server" id="hfLeaveDefIdRpt" class="hfLeaveDefIdRpt"
+                                                            value='<%# Eval("LeaveDef_Id") %>' />
+                                                        <input type="hidden" runat="server" id="hfCompanyIdRpt" class="hfCompanyIdRpt" value='<%# Eval("Company_Id") %>' />
+                                                        <input type="hidden" runat="server" id="hfCategoryIdRpt" class="hfCategoryIdRpt"
+                                                            value='<%# Eval("Category_Id") %>' />
+                                                        <input type="hidden" runat="server" id="hfGenderRpt" class="hfGenderRpt" value='<%# Eval("Gender") %>' />
+                                                        <input type="hidden" runat="server" id="hfAnnualLeavesNODRpt" class="hfAnnualLeavesNODRpt"
+                                                            value='<%# Eval("Annual_Leaves_NOD") %>' />
+                                                        <input type="hidden" runat="server" id="hfAnnualLeavesCFRpt" class="hfAnnualLeavesCFRpt"
+                                                            value='<%# Eval("Annual_Leaves_CF") %>' />
+                                                        <input type="hidden" runat="server" id="hfSickLeavesNODRpt" class="hfSickLeavesNODRpt"
+                                                            value='<%# Eval("Sick_Leaves_NOD") %>' />
+                                                        <input type="hidden" runat="server" id="hfSickLeavesCFRpt" class="hfSickLeavesCFRpt"
+                                                            value='<%# Eval("Sick_Leaves_CF") %>' />
+                                                        <input type="hidden" runat="server" id="hfCasualLeavesNODRpt" class="hfCasualLeavesNODRpt"
+                                                            value='<%# Eval("Casual_Leaves_NOD") %>' />
+                                                        <input type="hidden" runat="server" id="hfCasualLeavesCFRpt" class="hfCasualLeavesCFRpt"
+                                                            value='<%# Eval("Casual_Leaves_CF") %>' />
+                                                        <input type="hidden" runat="server" id="hfMaternityLeavesNODRpt" class="hfMaternityLeavesNODRpt"
+                                                            value='<%# Eval("Maternity_Leaves_NOD") %>' />
+                                                        <input type="hidden" runat="server" id="hfMaternityLeavesCFRpt" class="hfMaternityLeavesCFRpt"
+                                                            value='<%# Eval("Maternity_Leaves_CF") %>' />
+                                                        <input type="hidden" runat="server" id="hfDefaultLeavesNODRpt" class="hfDefaultLeavesNODRpt"
+                                                            value='<%# Eval("Default_Leaves_NOD") %>' />
+                                                        <input type="hidden" runat="server" id="hfDefaultLeavesCFRpt" class="hfDefaultLeavesCFRpt"
+                                                            value='<%# Eval("Default_Leaves_CF") %>' />
+                                                    </td>
+                                                    <td class="project-actions">
+                                                        <asp:LinkButton ID="btnEdit"
+                                                            runat="server"
+                                                            CssClass="  btnmargin"
+                                                            OnClick="btnEdit_Click">
+                                                                <span aria-hidden="true" class="fa fa-edit"></span>
+                                                             <%--  Visible='  <%#  Convert.ToBoolean(Convert.ToInt32(Eval("ApplicationCount")) >0 ?true:false) %>'--%>
+                                                              
+                                                        </asp:LinkButton>
+
+
+                                                        <asp:ImageButton ID="btnDeleteLeave" runat="server" OnClientClick="return confirm('Are you sure you want to delete?')"
+                                                            OnClick="btnDeleteLeave_Click" ImageUrl="~/images/delete-icon.png" />
+                                                    </td>
+                                                </tr>
+                                            </ItemTemplate>
+                                            <FooterTemplate>
+                                                </tbody> </table>
+                                            </FooterTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </div>
+                            </ContentTemplate>
+                            <Triggers>
+                                <asp:AsyncPostBackTrigger ControlID="btnSearch" EventName="Click" />
+                            </Triggers>
+                        </asp:UpdatePanel>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <%-- Create   Modal End--%>
+        <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" style="width: 50%;">
+                <div class="modal-content animated flipInY">
+                    <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Add Leave Definition</h4>
+                        <%--<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>--%>
+                    </div>
+                    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                        <ContentTemplate>
+                            <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px; height: 500px;">
+                                <input type="hidden" id="Hidden1" runat="server" class="hfModalId" />
+                                <div id="div3" runat="server" visible="false" class="alert alert-warning">
+                                </div>
+                                <div class="form-group row ">
+
+
+                                    <div class="col-lg-6">
+                                        <label for="exampleInputPassword2">Description:<em>*</em></label>
+
+                                        <input type="text" id='txtLeaveName' runat="server" class="clsTxtLeaveName form-control" /><%-- style="width: 250px;"--%>
+                                        <asp:RequiredFieldValidator ID="rfvLeaveName" CssClass="rfvLeaveName" runat="server"
+                                            ValidationGroup="Leave" ErrorMessage="*" Display="Dynamic" ControlToValidate="txtLeaveName"></asp:RequiredFieldValidator>
+                                        <input type="hidden" id="hfLeaveDefId" runat="server" class="hfLeaveDefId" />
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <%--style="width: 110px;"--%>
+                                        <label class="exampleInputPassword2">Company:</label>
+
+                                        <asp:DropDownList ID="ddlCompany" runat="server" CssClass="ddlCompany form-control" AutoPostBack="true"
+                                            OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged">
+                                        </asp:DropDownList>
+                                        <asp:RequiredFieldValidator ID="rfvddlCompany" runat="server" ValidationGroup="Leave"
+                                            ErrorMessage="*" Display="Dynamic" ControlToValidate="ddlCompany" InitialValue="0"
+                                            CssClass="rfvddlCompany"></asp:RequiredFieldValidator>
+                                    </div>
+
+                                </div>
+                                <br />
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <label class="exampleInputPassword2">Job Category:</label>
+                                        <asp:DropDownList ID="ddlCategory" runat="server" CssClass="ddlCategory form-control" Enabled="false">
+                                        </asp:DropDownList>
+                                        <asp:RequiredFieldValidator ID="rfvddlCategory" runat="server" ValidationGroup="Leave"
+                                            ErrorMessage="*" Display="Dynamic" ControlToValidate="ddlCategory" CssClass="rfvddlCategory"
+                                            InitialValue="0"></asp:RequiredFieldValidator>
+                                    </div>
+
+
+
+                                    <div class="col-lg-6">
+                                        <label class="exampleInputPassword2">Gender:</label>
+                                        <asp:DropDownList ID="ddlGender" runat="server" CssClass="ddlGender form-control">
+                                        </asp:DropDownList>
+
+                                        <%--<asp:DropDownList ID="ddlGender" runat="server" CssClass="ddlGender form-control">
+                                            <asp:ListItem Text="-Select-" Value="0"></asp:ListItem>
+                                            <asp:ListItem Text="Male" Value="Male"></asp:ListItem>
+                                            <asp:ListItem Text="Female" Value="Female"></asp:ListItem>
+                                        </asp:DropDownList>--%>
+                                        <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Leave"
+                                            ErrorMessage="*" Display="Dynamic" ControlToValidate="ddlGender" CssClass="rfvddlCategory"
+                                            InitialValue="0"></asp:RequiredFieldValidator>
+
+                                    </div>
+                                </div>
+                                <br />
+
+                                <div class="form-group row">
+                                    <div class="col-lg-4">
+                                        <label class="exampleInputPassword2">Leave Type</label>
+
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label class="exampleInputPassword2">No Of Days </label>
+                                    </div>
+                                    <div class="col-lg-4">
+
+                                        <label class="exampleInputPassword2">Carry Forward </label>
+                                    </div>
+
+
+
+                                </div>
+                                <br />
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-6">
+                                            <label class="exampleInputPassword2">Annual Leaves </label>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <input type="text" id='txtAnnualLeaves' runat="server" class="clstxtAnnualLeaves form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtAnnualLeaves" runat="server" ValidationGroup="Leave"
+                                                ErrorMessage="*" Display="Dynamic" ControlToValidate="txtAnnualLeaves" CssClass="rfvtxtAnnualLeaves"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-12 pull-right">
+                                            <input type="checkbox" id="chkAnnualCarryForward" runat="server" class="clschkAnnualCarryForward" /><%--style="width: 250px;"--%>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-6">
+                                            <label class="exampleInputPassword2">Sick Leaves </label>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <input type="text" id='txtSickLeaves' runat="server" class="clstxtSickLeaves form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtSickLeaves" runat="server" ValidationGroup="Leave"
+                                                ErrorMessage="*" Display="Dynamic" ControlToValidate="txtSickLeaves" CssClass="rfvtxtSickLeaves"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-12 pull-right">
+                                            <input type="checkbox" id="chkSickCarryForward" runat="server" class="clschkSickCarryForward" /><%--style="width: 250px;"--%>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-6">
+                                            <label class="exampleInputPassword2">Casual Leaves </label>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <input type="text" id='txtCasualLeaves' runat="server" class="clstxtCasualLeaves form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtCasualLeaves" runat="server" ValidationGroup="Leave"
+                                                ErrorMessage="*" Display="Dynamic" ControlToValidate="txtCasualLeaves" CssClass="rfvtxtCasualLeaves"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-12 pull-right">
+                                            <input type="checkbox" id="chkCasualCarryForward" runat="server" class="clschkCasualCarryForward" /><%--style="width: 250px;"--%>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-6">
+                                            <label class="exampleInputPassword2">Maternity Leaves </label>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <input type="text" id='txtMaternityLeaves' runat="server" class="clstxtMaternityLeaves form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtMaternityLeaves" runat="server" ValidationGroup="Leave"
+                                                ErrorMessage="*" Display="Dynamic" ControlToValidate="txtMaternityLeaves" CssClass="rfvtxtMaternityLeaves"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-12 pull-right">
+                                            <input type="checkbox" id="chkMaternityCarryForward" runat="server" class="clschkMaternityCarryForward " /><%--style="width: 250px;"--%>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-6">
+                                            <label class="exampleInputPassword2">Default Leaves </label>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <input type="text" id='txtDefaultLeaves' runat="server" class="clstxtDefaultLeaves form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtDefaultLeaves" runat="server" ValidationGroup="Leave"
+                                                ErrorMessage="*" Display="Dynamic" ControlToValidate="txtDefaultLeaves" CssClass="rfvtxtDefaultLeaves"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="col-lg-12 pull-right">
+                                            <input type="checkbox" id="chkDefaultCarryForward" runat="server" class="clschkDefaultCarryForward " /><%--style="width: 250px;"--%>
+                                        </div>
+                                    </div>
+                                </div>
+                                <%--style="width: 110px;"--%>
+                            </div>
+                            <label id="Label1" runat="server" class="label label-danger" visible="false"></label>
+
+                            <div class="modal-footer">
+                                <%--<asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" OnClick="btnAdd_Click" runat="server" />--%>
+                                <%--<asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" UseSubmitBehavior="false" ValidationGroup="AddEmployee" CssClass="btn btn-success pull-right" />--%>
+                                <asp:Button Text="Save" CssClass="btn btn-primary" ID="btnSave" ValidationGroup="Leave" OnClick="btnSave_Click" runat="server" />
+                            </div>
+                        </ContentTemplate>
+                    </asp:UpdatePanel>
+                </div>
+            </div>
+        </div>
+        <%-- Modal End Here --%>
+    </div>
+    <script type="text/javascript">
+        function pageLoad() {
+            $(".btnAdd").click(function () {
+              
+                reset();
+                $('.openmodal').click();
+            });
+
+
+
+
+            function reset() {
+
+                $('.hfLeaveDefId').val("");
+                $('.clsTxtLeaveName').val("");
+                $('.ddlCompany').val("0");
+                $('.ddlCategory').val("0");
+                $('.ddlGender').val("0");
+                $('.clstxtAnnualLeaves').val("");
+                $('.clstxtSickLeaves').val("");
+                $('.clstxtCasualLeaves').val("");
+                $('.clstxtMaternityLeaves').val("");
+                $('.clstxtDefaultLeaves').val("");
+                $('.clschkAnnualCarryForward').attr('checked', false);
+                $('.clschkSickCarryForward').attr('checked', false);
+                $('.clschkCasualCarryForward').attr('checked', false);
+                $('.clschkMaternityCarryForward').attr('checked', false);
+                $('.clschkDefaultCarryForward').attr('checked', false);
+
+
+
+            }
+        }
+
+
+        function AlertBox(title, Message, type) {
+            swal(title, Message, type);
+        }
+
+        function ClosePopup() {
+            $('.modal').hide();
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
+        function OpenPopup() {
+            $('.openmodal').click();
+        }
+
+
+
+    </script>
+
+
+</asp:Content>
+

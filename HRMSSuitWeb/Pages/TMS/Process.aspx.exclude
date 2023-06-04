@@ -1,0 +1,90 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Process.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Process" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Process</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">TMS</a>
+                </li>
+                <li class="active">
+                    <strong>Process</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="panel panel-primary" id="divSuccess" runat="server" visible="false">
+                <div class="panel-heading" id="lblSuccess" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;" runat="server" id="divCompany">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><span class="label label-primary" style="font-size: initial;">Process</span></h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-2" runat="server" id="divGroup">
+                                <label for="exampleInputEmail2" class="">Group</label>
+                                <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span1" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" >
+                                <%--<asp:TextBox runat="server" ID="txtSharePointID" CssClass="form-control" />--%>
+                                <label for="exampleInputEmail2">Select Company</label>
+                                <asp:DropDownList ID="ddlCompany" CssClass="form-control col-lg-12" runat="server" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><span class="label label-danger" style="font-size: initial;">Pre</span>  Month End</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="alert alert-warning">
+                                <strong>This Will Backup necessary information and lock some pages. 
+                                            Click Commit only if you are sure about it.</strong>
+                            </div>
+                            <div class="form-group col-lg-offset-5 col-lg-2">
+                                <%--<asp:TextBox runat="server" ID="txtSharePointID" CssClass="form-control" />--%>
+                                <asp:Button Text="Commit" OnClientClick="return confirm('Are you sure you want to commit?')" ID="btnPreCommit" OnClick="btnPreCommit_Click" CssClass="btn btn-danger" runat="server"  Enabled="false"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><span class="label label-warning" style="font-size: initial;">Post</span>  Month End</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="alert alert-warning">
+                                <strong>This Will release the page locked by Pre-Month End Process. 
+                                    Click Commit only if you are sure about it.</strong>
+                            </div>
+                            <div class="form-group col-lg-offset-5 col-lg-2">
+                                <%--<asp:TextBox runat="server" ID="TextBox1" CssClass="form-control" />--%>
+                                <asp:Button ID="btnPostCommit" CssClass="btn btn-warning" OnClientClick="return confirm('Are you sure you want to commit?')" OnClick="btnPostCommit_Click" Text="Commit" runat="server" Enabled="false" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+</asp:Content>

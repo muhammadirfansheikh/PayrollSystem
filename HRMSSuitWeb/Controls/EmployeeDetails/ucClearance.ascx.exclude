@@ -1,0 +1,362 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucClearance.ascx.cs" Inherits="Controls_EmployeeDetails_ucClearance" %>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Separation Details
+    </div>
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your Separation details.</strong>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Resigned Date : </label>
+            <asp:TextBox ID="txtResignDate" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Last Working Date : </label>
+            <asp:TextBox ID="txtLastWorkingDay" runat="server" AutoPostBack="true" OnTextChanged="txtLastWorkingDay_TextChanged" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Notice Period Days : </label>
+            <asp:Label ID="lblNoticeDays" CssClass="form-control" runat="server" />
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Notice Period :</label>
+            <asp:DropDownList ID="ddlNoticePeriod" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Termination Type :</label>
+            <asp:DropDownList ID="ddlTerminationType" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+
+        <div class="form-group col-lg-9">
+            <label for="exampleInputEmail2">Remarks(If Any) : </label>
+            <asp:TextBox ID="txtRemarks" TextMode="MultiLine" Style="height: 137px; max-height: 137px; max-width: 709px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        HR Department
+    </div>
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your Medical insurance details.</strong>
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">
+                Attendance report for the period from to upto the last working day :
+            </label>
+            <%--<asp:Label ID="Label2" CssClass="form-control" runat="server" />--%>
+            <asp:TextBox runat="server" ID="txtattendancereportDetail" CssClass="form-control"/>  
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">
+                Unavailed Annual/Privilege Leave Balance upto the last working day :
+            </label>
+            <%--<asp:Label ID="Label1" CssClass="form-control" runat="server" />--%>
+            <asp:TextBox runat="server" ID="txtLeaveBalance" CssClass="form-control"/>  
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">
+                Employee ID Card :
+            </label>
+            <asp:RadioButtonList ID="rbEmployeeIDCard" runat="server">
+              <asp:ListItem Value="1">Received</asp:ListItem>
+                                                                    <asp:ListItem Value="2">not received</asp:ListItem>
+                                                                    <asp:ListItem Value="3">not issued</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">
+                Time MS ID:
+            </label>
+            <asp:RadioButtonList ID="rblTimeId" runat="server">
+             <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Admin Department
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-12">
+            <div class="form-group col-lg-6">
+                <label for="exampleInputEmail2">
+                    Mobile Set / SIM / Vehicle, etc. recovered :
+                </label>
+                <asp:RadioButtonList runat="server" ID="rbMobileSet">
+                     <asp:ListItem Value="7">Yes</asp:ListItem>
+                                                                        <asp:ListItem Value="8">No</asp:ListItem>
+                </asp:RadioButtonList>
+            </div>
+            <div class="form-group col-lg-3">
+                <label for="exampleInputEmail2">
+                    Access control card :
+                </label>
+                <asp:RadioButtonList runat="server" ID="rbAccessCard">
+                     <asp:ListItem Value="7">Yes</asp:ListItem>
+                                                                    <asp:ListItem Value="8">No</asp:ListItem>
+                </asp:RadioButtonList>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        IT Department
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Laptop (and accessories) :
+            </label>
+            <asp:TextBox ID="txtLaptopaccessories" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Campaign Application :
+            </label>
+            <asp:RadioButtonList runat="server" ID="rbCampaignApp">
+              <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Email/Domain Id(s) :
+            </label>
+            <asp:RadioButtonList ID="rbEmailDomainId" runat="server">
+                  <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Telephony Id (alcatel / asterisk) :
+            </label>
+            <asp:RadioButtonList ID="rbTelephony" runat="server">
+               <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Task MS Id(s) :
+            </label>
+            <asp:RadioButtonList ID="rbTaskMS" runat="server">
+                <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Any other Id(s) :
+            </label>
+            <asp:RadioButtonList ID="rbOtherIds" runat="server">
+               <asp:ListItem Value="4">Active</asp:ListItem>
+                                                                    <asp:ListItem Value="5">Deleted</asp:ListItem>
+                                                                    <asp:ListItem Value="6">N/A</asp:ListItem>
+            </asp:RadioButtonList>
+        </div>
+
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Finance Department
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Float / Tour Advance :
+            </label>
+            <asp:TextBox ID="txtFloatTour" runat="server" CssClass="form-control Numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Company / Car Loan :
+            </label>
+            <asp:TextBox ID="txtCarloan" runat="server" CssClass="form-control Numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Advance Against Salary :
+            </label>
+            <asp:TextBox ID="txtdvanceagainstsalary" runat="server" CssClass="form-control Numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Any Other Advance :
+            </label>
+            <asp:TextBox ID="txtOtheradvance" runat="server" CssClass="form-control Numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Total Dues :
+            </label>
+            <asp:TextBox ID="txtTotaldues" runat="server" CssClass="form-control Numeric">
+            </asp:TextBox>
+        </div>
+    </div>
+</div>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Employee Transfer/Leaver Form For I.T Department
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Ticket No :
+            </label>
+            <asp:TextBox ID="txtTicketNo" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+    </div>
+    <div class="panel-heading">
+        User Details
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Request Raised by :
+            </label>
+            <asp:TextBox ID="txtRequestRaisedBy" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Manager / Supervisor Name :
+            </label>
+            <asp:TextBox ID="txtManagerSupervisor" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Campaign (If applicable) :
+            </label>
+            <asp:TextBox ID="txtCampaign" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+
+    </div>
+    <div class="panel-heading">
+        Details of Access to be Revoked/Suspended
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Revoke official email account?
+            </label>
+            <asp:DropDownList ID="ddlRevokeOfficialEmailAccount" runat="server" CssClass="form-control">
+                <asp:ListItem Value="7">Yes</asp:ListItem>
+                <asp:ListItem Value="8">No</asp:ListItem>
+                <asp:ListItem Value="9">Suspended</asp:ListItem>
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Revoke Sharepoint ID?
+            </label>
+            <asp:DropDownList ID="ddlRevokeSharepointID" runat="server" CssClass="form-control">
+                <asp:ListItem Value="7">Yes</asp:ListItem>
+                <asp:ListItem Value="8">No</asp:ListItem>
+                <asp:ListItem Value="9">Suspended</asp:ListItem>
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Revoke file server access?
+            </label>
+            <asp:DropDownList ID="ddlRevokeServerAccess" runat="server" CssClass="form-control">
+                <asp:ListItem Value="7">Yes</asp:ListItem>
+                <asp:ListItem Value="8">No</asp:ListItem>
+                <asp:ListItem Value="9">Suspended</asp:ListItem>
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Revoke FTP Access?
+            </label>
+            <asp:DropDownList ID="ddlRevokeFTPAccess" runat="server" CssClass="form-control">
+                <asp:ListItem Value="7">Yes</asp:ListItem>
+                <asp:ListItem Value="8">No</asp:ListItem>
+                <asp:ListItem Value="9">Suspended</asp:ListItem>
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-9">
+            <label for="exampleInputEmail2">
+                Please provide extra details to revoke access
+            </label>
+            <asp:TextBox ID="txtExtraDetails" TextMode="MultiLine" Style="height: 137px; max-height: 137px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">
+                Revoke Domain Login ID?
+            </label>
+            <asp:DropDownList ID="ddlRevokeDomainLoginID" runat="server" CssClass="form-control">
+                <asp:ListItem Value="7">Yes</asp:ListItem>
+                <asp:ListItem Value="8">No</asp:ListItem>
+                <asp:ListItem Value="9">Suspended</asp:ListItem>
+            </asp:DropDownList>
+        </div>
+    </div>
+</div>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Root Cause Analysis
+    </div>
+
+    <div class="panel-body">
+        <div class="form-group col-lg-9">
+            <label for="exampleInputEmail2">
+              Comments by Supervisor/Manager/HOD:
+            </label>
+            <asp:TextBox ID="txtCommentsByManager" TextMode="MultiLine" Style="height: 137px; max-height: 137px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-9">
+            <label for="exampleInputEmail2">
+                Comments by HR:
+            </label>
+            <asp:TextBox ID="txtCommentsByHR" TextMode="MultiLine" Style="height: 137px; max-height: 137px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-9">
+            <label for="exampleInputEmail2">
+                Conclusion 
+            </label>
+            <asp:TextBox ID="txtConclusion" TextMode="MultiLine" Style="height: 137px; max-height: 137px;" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+    </div>
+</div>

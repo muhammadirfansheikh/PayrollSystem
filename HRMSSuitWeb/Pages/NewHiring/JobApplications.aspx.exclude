@@ -1,0 +1,1233 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="JobApplications.aspx.cs" Inherits="Pages_NewHiring_JobApplications" %>
+
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<%--<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>--%>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <%--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>--%>
+    <style>
+        .bluebox:hover {
+            cursor: default;
+        }
+
+        .darkbluebox:hover {
+            cursor: default;
+        }
+
+        /*tab css*/
+
+
+        /* custom inclusion of right, left and below tabs */
+
+        .tabs-below > .nav-tabs,
+        .tabs-right > .nav-tabs,
+        .tabs-left > .nav-tabs {
+            border-bottom: 0;
+        }
+
+        .tab-content > .tab-pane,
+        .pill-content > .pill-pane {
+            display: none;
+        }
+
+        .tab-content > .active,
+        .pill-content > .active {
+            display: block;
+        }
+
+        .tabs-below > .nav-tabs {
+            border-top: 1px solid #ddd;
+        }
+
+            .tabs-below > .nav-tabs > li {
+                margin-top: -1px;
+                margin-bottom: 0;
+            }
+
+                .tabs-below > .nav-tabs > li > a {
+                    -webkit-border-radius: 0 0 4px 4px;
+                    -moz-border-radius: 0 0 4px 4px;
+                    border-radius: 0 0 4px 4px;
+                }
+
+                    .tabs-below > .nav-tabs > li > a:hover,
+                    .tabs-below > .nav-tabs > li > a:focus {
+                        border-top-color: #ddd;
+                        border-bottom-color: transparent;
+                    }
+
+            .tabs-below > .nav-tabs > .active > a,
+            .tabs-below > .nav-tabs > .active > a:hover,
+            .tabs-below > .nav-tabs > .active > a:focus {
+                border-color: transparent #ddd #ddd #ddd;
+            }
+
+        .tabs-left > .nav-tabs > li,
+        .tabs-right > .nav-tabs > li {
+            float: none;
+        }
+
+            .tabs-left > .nav-tabs > li > a,
+            .tabs-right > .nav-tabs > li > a {
+                min-width: 74px;
+                margin-right: 0;
+                margin-bottom: 3px;
+            }
+
+        .tabs-left > .nav-tabs {
+            float: left;
+            margin-right: 19px;
+            border-right: 1px solid #ddd;
+        }
+
+            .tabs-left > .nav-tabs > li > a {
+                margin-right: -1px;
+                -webkit-border-radius: 4px 0 0 4px;
+                -moz-border-radius: 4px 0 0 4px;
+                border-radius: 4px 0 0 4px;
+            }
+
+                .tabs-left > .nav-tabs > li > a:hover,
+                .tabs-left > .nav-tabs > li > a:focus {
+                    border-color: #eeeeee #dddddd #eeeeee #eeeeee;
+                }
+
+            .tabs-left > .nav-tabs .active > a,
+            .tabs-left > .nav-tabs .active > a:hover,
+            .tabs-left > .nav-tabs .active > a:focus {
+                border-color: #ddd transparent #ddd #ddd;
+                *border-right-color: #ffffff;
+            }
+
+        .tabs-right > .nav-tabs {
+            float: right;
+            margin-left: 19px;
+            border-left: 1px solid #ddd;
+        }
+
+            .tabs-right > .nav-tabs > li > a {
+                margin-left: -1px;
+                -webkit-border-radius: 0 4px 4px 0;
+                -moz-border-radius: 0 4px 4px 0;
+                border-radius: 0 4px 4px 0;
+            }
+
+                .tabs-right > .nav-tabs > li > a:hover,
+                .tabs-right > .nav-tabs > li > a:focus {
+                    border-color: #eeeeee #eeeeee #eeeeee #dddddd;
+                }
+
+            .tabs-right > .nav-tabs .active > a,
+            .tabs-right > .nav-tabs .active > a:hover,
+            .tabs-right > .nav-tabs .active > a:focus {
+                border-color: #ddd #ddd #ddd transparent;
+                *border-left-color: #ffffff;
+            }
+
+        section {
+            margin-left: -14%;
+        }
+
+        .BtnLinkMargin {
+            margin-top: 2px;
+        }
+    </style>
+
+</asp:Content>
+
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+
+
+
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Job Application</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Job Application</a>
+                    <input type="hidden" class="parenttab" id="hfparenttab" runat="server" value="#one" />
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+
+            <%-- Tabing work start here --%>
+
+            <div class="panel panel-info ">
+                <div class="tabbable tab-content">
+
+                    <ul class="nav nav-tabs parent">
+                        <li class="active"><a href="#one" data-toggle="tab">Applicant</a></li>
+
+                        <li><a href="#two" data-toggle="tab">Candidate</a></li>
+
+
+                    </ul>
+
+
+                    <div class=" tab-pane active" id="one">
+
+
+                        <div class="col-lg-12" style="margin-top: 11px;">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Search</h3>
+                                </div>
+                                <div class="panel-body">
+
+                                    <%-- <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Department</label>
+                                        <asp:DropDownList runat="server" ID="ddlDepartment" Width="200px" CssClass="ddlDepartment form-control" />
+
+                                    </div>--%>
+
+                                    <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Requisition No</label>
+                                        <asp:DropDownList runat="server" ID="ddlRequisitionNoSearch" Width="200px" CssClass="ddlRequisitionNoSearch form-control" />
+
+                                    </div>
+                                    <div class="form-group col-lg-3">
+
+                                        <label for="exampleInputEmail2">Email</label>
+                                        <asp:TextBox ID="txtApplicantEmailSearch" runat="server" CssClass="form-control txtApplicantEmailSearch"></asp:TextBox>
+
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Application Status</label>
+                                        <asp:DropDownList runat="server" ID="ddlApplicationStatusSearch" Width="200px" CssClass="ddlCandidateStatusSearch form-control" />
+
+                                    </div>
+
+                                    <div class="form-group col-lg-12">
+                                        <asp:Button ID="btnApplicantSearchCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnApplicantSearchCancel_Click" />
+                                        <asp:Button ID="btnApplicantSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnApplicantSearch_Click" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="wrapper wrapper-content animated fadeInUp">
+
+                                    <div class="panel panel-info">
+
+                                        <div class="panel-heading">
+                                            Applicant
+                                        </div>
+                                        <div class="panel-body">
+
+                                            <div class="row m-b-sm m-t-sm">
+                                                <div class="col-md-12">
+                                                    <%--<a href="" class="btn btn-primary btnAdd pull-right">Add new </a>--%>
+                                                    <%--    <asp:LinkButton runat="server" OnClick="btnAddSlot_Click" ID="btnAddSlot" CssClass="btn btn-primary  pull-right" Text="Go To Slot Page">
+
+                                                    </asp:LinkButton>--%>
+                                                    <input type="button" data-toggle="modal" data-target="#AlignSlotModal" class="openmodal" style="display: none;" />
+
+
+                                                </div>
+                                            </div>
+                                            <div class="project-list">
+                                                <%-- Applicant Table Start --%>
+
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Applicant</th>
+                                                            <th>Requisition No </th>
+                                                            <%--  <th>File Original Name</th>--%>
+                                                            <%-- <th>File StatusId</th>--%>
+                                                            <th>Expected Salary</th>
+
+                                                            <th>Last Drawn Salary</th>
+
+                                                            <th>Expected Joining Date</th>
+                                                            <th>Notice Period Days</th>
+                                                            <th>Created Date</th>
+                                                            <th>Institute</th>
+                                                            <th>Application Status</th>
+                                                            <th>DownLoad</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <asp:Repeater ID="rpt" runat="server">
+                                                            <ItemTemplate>
+                                                                <tr>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("Applicant") %>
+                                                                        <br />
+                                                                        <input type="hidden" runat="server" id="hfApplicantApplicationId" class="hfApplicantApplicationId" value='<%# Eval("ApplicantApplicationId") %>' />
+                                                                        <input type="hidden" runat="server" id="hfFileStatusId" class="hfFileStatusId" value='<%# Eval("FileStatusId") %>' />
+                                                                        <input type="hidden" runat="server" id="hfIsWebSitePath" class="hfIsWebSitePath" value='<%# Eval("IsWebSitePath") %>' />
+
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("Requisition") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <%--  <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("FileOriginalName") %>
+                                                            <br />
+                                                        </td>--%>
+
+                                                                    <%--  <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("FileStatus") %>
+                                                                        <br />
+                                                                    </td>--%>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("ExpectedSalary") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("LastDrawnSalary") %>
+                                                                        <br />
+                                                                    </td>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%# Convert.ToDateTime(Eval("ExpectedJoiningDate")).ToString(Constant.DateFormat) %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("NoticePeriodDays") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%# Convert.ToDateTime(Eval("CreatedDate")).ToString(Constant.DateFormat) %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%#  Eval("Education")  %>
+                                                                        <br />
+                                                                    </td>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <asp:DropDownList runat="server" ID="ddlStatus" Width="180px" class="ddlStatus form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged" />
+                                                                        <br />
+                                                                    </td>
+
+
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+
+                                                                        <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                                                                            <ContentTemplate>
+                                                                                <asp:LinkButton runat="server" CssClass="btnApplicationDownLoad fa fa-download" ID="btnApplicationDownLoad" OnClick="btnApplicationDownLoad_Click">
+                                                                            
+                                                                                </asp:LinkButton>
+
+                                                                            </ContentTemplate>
+                                                                            <Triggers>
+
+                                                                                <asp:PostBackTrigger ControlID="btnApplicationDownLoad" />
+
+
+                                                                            </Triggers>
+                                                                        </asp:UpdatePanel>
+
+                                                                        <%--   <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                                                                            <ContentTemplate>
+                                                                                <asp:LinkButton runat="server" CssClass="btnApplicationDownLoad fa fa-download" ID="btnApplicationDownLoad" OnClick="btnApplicationDownLoad_Click">
+
+                                                                       
+                                                                                </asp:LinkButton>
+                                                                            </ContentTemplate>
+                                                                            <Triggers>
+                                                                                <asp:AsyncPostBackTrigger ControlID="btnApplicationDownLoad" EventName="Click" />
+
+
+                                                                            </Triggers>
+                                                                        </asp:UpdatePanel>
+                                                                        <br />--%>
+
+
+                                                                    </td>
+
+
+
+
+                                                                </tr>
+
+                                                            </ItemTemplate>
+                                                        </asp:Repeater>
+                                                        <%--  <div class="form-group col-lg-12">
+                                                            <div class="pagging">
+                                                                <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                            </div>
+                                                        </div>--%>
+                                                    </tbody>
+                                                </table>
+
+                                                <%--  Applicant Table End --%>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div class="  tab-pane " id="two">
+
+
+
+                        <div class="col-lg-12" style="margin-top: 11px;">
+                            <div class="panel panel-info">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">Search</h3>
+                                </div>
+                                <div class="panel-body">
+
+                                    <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Requisition No</label>
+                                        <asp:DropDownList runat="server" ID="ddlRequisitionNoCandidateSearch" Width="200px" CssClass="ddlRequisitionNoSearch form-control" />
+
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Candidate Status</label>
+                                        <asp:DropDownList runat="server" ID="ddlCandidateStatusSearch" Width="200px" CssClass="ddlCandidateStatusSearch form-control" />
+
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="exampleInputEmail2">Email</label>
+                                        <asp:TextBox runat="server" ID="txtEmailSearch" CssClass="form-control"></asp:TextBox>
+
+                                    </div>
+                                    <div class="form-group col-lg-12">
+                                        <asp:Button ID="btnCandidateSearchCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCandidateSearchCancel_Click" />
+                                        <asp:Button ID="btnCandidateSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnCandidateSearch_Click" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="wrapper wrapper-content animated fadeInUp">
+
+                                    <div class="panel panel-info">
+
+                                        <div class="panel-heading">
+                                            Candidate
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="row m-b-sm m-t-sm">
+                                                <div class="col-md-12">
+                                                    <%--   <a href="#" class="btn btn-primary btnAdd pull-right">Add new </a>--%>
+                                                    <%--<input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />--%>
+                                                    <input type="button" data-toggle="modal" data-target="#FileModal" class="UploadFile" style="display: none;" />
+                                                    <input type="button" data-toggle="modal" data-target="#OfferAcceptance" class="OfferAccept" style="display: none;" />
+                                                    <input type="button" data-toggle="modal" data-target="#HireModal" class="OpenHireModal" style="display: none;" />
+
+                                                </div>
+                                            </div>
+                                            <div class="project-list">
+
+                                                <%-- Applicant Table Start --%>
+
+                                                <table class="table table-hover">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Applicant</th>
+                                                            <th>Requisition No </th>
+                                                            <%--  <th>File Original Name</th>--%>
+                                                            <th>Candidate Status</th>
+                                                            <th>Expected Salary</th>
+
+                                                            <th>Last Drawn Salary</th>
+
+                                                            <th>Expected Joining Date</th>
+                                                            <th>Notice Period Days</th>
+                                                            <%--  <th>Created Date</th>--%>
+                                                            <th>Education</th>
+                                                            <%--  <th>Application Status</th>--%>
+
+                                                            <th colspan="3">Action</th>
+
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <asp:Repeater ID="rptCandidate" runat="server" OnItemDataBound="rptCandidate_ItemDataBound">
+                                                            <ItemTemplate>
+
+                                                                <tr style='background-color: <%# (Convert.ToInt32(Eval("CandidateStatusId"))==(int)Constant.CandidateStatus.BlackList?"rgba(255, 34, 34, 0.21);": "rgba(0, 255, 99, 0.21);" )%>'>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("Applicant") %>
+                                                                        <br />
+                                                                        <input type="hidden" runat="server" id="hfCandidateId" class="hfCandidateId" value='<%# Eval("CandidateId") %>' />
+                                                                        <input type="hidden" runat="server" id="hfCandidateStatusId" class="hfCandidateStatusId" value='<%# Eval("CandidateStatusId") %>' />
+
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("Requisition") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <%--  <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("FileOriginalName") %>
+                                                            <br />
+                                                        </td>--%>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("CandidateStatus") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("ExpectedSalary") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("LastDrawnSalary") %>
+                                                                        <br />
+                                                                    </td>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%# Convert.ToDateTime(Eval("ExpectedJoiningDate")).ToString(Constant.DateFormat) %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <%# Eval("NoticePeriodDays") %>
+                                                                        <br />
+                                                                    </td>
+                                                                    <%--<td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%# Convert.ToDateTime(Eval("CreatedDate")).ToString(Constant.DateFormat) %>
+                                                                        <br />
+                                                                    </td>--%>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <%#  Eval("Education")  %>
+                                                                        <br />
+                                                                    </td>
+
+                                                                    <%--   <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                            <asp:DropDownList runat="server" ID="ddlStatus" Width="100px" class="ddlStatus form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlStatus_SelectedIndexChanged" />
+                                                            <br />
+                                                        </td>--%>
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <asp:LinkButton ID="btnAlignInterview" ForeColor="White"
+                                                                            CssClass="btn btn-primary "
+                                                                            Text='<%# Convert.ToString( Eval("IsSlotAssign")) == "1"?"Change Slot":"Align Slot" %>'
+                                                                            Visible='<%# Convert.ToBoolean( Convert.ToInt32(Eval("IsSlotExist")) >= 1? true:false )%>'
+                                                                            runat="server" OnClick="btnAlignInterview_Click"></asp:LinkButton>
+                                                                        <br />
+                                                                    </td>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                        <asp:LinkButton ID="btnInterview" CssClass="btn btn-default " ForeColor="White"
+                                                                            Text="Interview" runat="server"
+                                                                            Visible='<%# Convert.ToBoolean( Convert.ToString(Eval("IsSlotAssign")) == "1"? true:false )%>'
+                                                                            OnClick="btnInterview_Click"></asp:LinkButton>
+
+                                                                        <asp:LinkButton ID="btnJobOffer" ForeColor="White"
+                                                                            CssClass="btn btn-warning"
+                                                                            Text="Job Offer"
+                                                                            runat="server" OnClick="btnJobOffer_Click"></asp:LinkButton>
+
+                                                                        <asp:LinkButton ID="btnOfferAccept" ForeColor="White"
+                                                                            CssClass="btn btn-primary "
+                                                                            Text="Offer Accept"
+                                                                            Visible="false"
+                                                                            runat="server" OnClick="btnOfferAccept_Click"></asp:LinkButton>
+                                                                        <%-- <br />
+                                                                        <br />--%>
+
+                                                                        <asp:LinkButton ID="btnCEOApprovalRequired" ForeColor="White"
+                                                                            CssClass="btn btn-danger BtnLinkMargin"
+                                                                            Text="Request To CEO"
+                                                                            Visible="false"
+                                                                            OnClientClick="return confirm('Are you sure you want to send request to CEO?')"
+                                                                            runat="server" OnClick="btnCEOApprovalRequired_Click"></asp:LinkButton>
+
+
+                                                                        <asp:LinkButton ID="btnCreateEmployee" ForeColor="White"
+                                                                            CssClass="btn btn-success BtnLinkMargin"
+                                                                            Text="Create Employee"
+                                                                            Visible="false"
+                                                                            runat="server" OnClick="btnCreateEmployee_Click"></asp:LinkButton>
+
+
+                                                                    </td>
+
+                                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                        <a href='<%# Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["ExCvDownloadlink"]) + Eval("FileName") %>' title="Dowmload" download>
+
+                                                                            <a href='<%# Convert.ToBoolean(Eval("IsWebSitePath")) ? Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["ExCvDownloadlink"]) + Eval("FileName") :
+                                                                                         Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["InCvDownloadlink"]) + Eval("FileName")
+                                                                            %>' title="Dowmload" download>
+
+                                                                            <span>
+                                                                                <label class="fa fa-download text-navy" style="font-size: 15px; color: black;"></label>
+                                                                            </span>
+                                                                        </a>
+                                                                        <br />
+                                                                    </td>
+
+
+
+
+                                                                </tr>
+
+                                                            </ItemTemplate>
+                                                        </asp:Repeater>
+                                                    </tbody>
+                                                </table>
+
+                                                <%--  Applicant Table End --%>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <%--tabing work end here  --%>
+
+                <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                    <div class="panel-heading" id="lblError" runat="server"></div>
+                </div>
+
+            </div>
+
+
+
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+    <%-- Create Project Modal End--%>
+    <div class="modal inmodal" id="AlignSlotModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Allign An Interview</h4>
+
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px; height: 500px; overflow-y: scroll;">
+                            <input type="hidden" id="hfCandidateId" runat="server" class="hfCandidateId" />
+                            <div id="div2" runat="server" visible="false" class="alert alert-warning">
+                            </div>
+
+
+                            <div class="form-group">
+                                <div class="project-list">
+
+                                    <asp:Repeater ID="rptAlignSlot" runat="server">
+                                        <HeaderTemplate>
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Interview Date
+                                                        </th>
+                                                        <th>Candidate
+                                                        </th>
+                                                        <th>Interviewer
+                                                        </th>
+                                                        <th>Start Time
+                                                        </th>
+                                                        <th>End Time
+                                                        </th>
+
+                                                        <th>Slot Duration Minute
+                                                        </th>
+                                                        <th style="width: 40px; text-align: center;" class='editFunction'>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                        </HeaderTemplate>
+                                        <ItemTemplate>
+
+                                            <tr>
+                                                <td>
+
+                                                    <%# Convert.ToDateTime(Eval("InterviewDate")).ToString(Constant.DateFormat) %>
+                                                    <input type="hidden" runat="server" id="hfInterviewSlotId" class="hfInterviewSlotId" value='<%# Eval("InterviewSlotId") %>' />
+                                                </td>
+
+                                                <td>
+                                                    <%# Eval("Candidate") %>
+                                                    <%-- <input type="hidden" runat="server" id="hfCandidateId" class="hfCandidateId" value='<%# Eval("CandidateId") %>' />--%>
+
+                                                </td>
+
+                                                <td>
+                                                    <%# Eval("Interviewer") %>
+                                                </td>
+                                                <td>
+                                                    <%# Eval("StartTime") %>
+                                                </td>
+                                                <td>
+                                                    <%# Eval("EndTime") %>
+                                                </td>
+                                                <td>
+                                                    <%# Eval("SlotDurationMinute") %>
+                                                </td>
+
+                                                <td>
+                                                    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                                                        <ContentTemplate>
+                                                            <asp:CheckBox ID="chkbxIsSelected" CssClass="chkbxIsSelected myCheckbox"
+                                                                Checked='<%# Convert.ToBoolean(Eval("IsOccupied"))%>' runat="server"
+                                                                Visible='<%# Convert.ToBoolean(Convert.ToBoolean(Eval("IsCompleted"))== true ? false : true)%>'
+                                                                AutoPostBack="true" OnCheckedChanged="chkbxIsSelected_CheckedChanged" />
+                                                        </ContentTemplate>
+                                                        <Triggers>
+                                                            <asp:AsyncPostBackTrigger ControlID="chkbxIsSelected" EventName="CheckedChanged" />
+                                                        </Triggers>
+                                                    </asp:UpdatePanel>
+
+                                                </td>
+                                            </tr>
+
+                                        </ItemTemplate>
+                                        <FooterTemplate>
+                                            </tbody>
+                                             </table>
+                                        </FooterTemplate>
+                                    </asp:Repeater>
+                                </div>
+
+
+                            </div>
+
+                            <label id="lbl" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button Text="Send Email" class="btn btn-primary" ID="btnSendEmail" ValidationGroup="Save" OnClick="btnSendEmail_Click" runat="server" />
+                            <asp:CustomValidator ID="customValidator1" runat="server" ErrorMessage="" ValidationGroup="Save"
+                                ClientValidationFunction="ValidateSlotAlign" EnableClientScript="true" />
+
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <%-- <asp:UpdateProgress ID="UpdateProgress2" runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="ucInprogress2" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>--%>
+            </div>
+        </div>
+    </div>
+    <%-- Modal End Here --%>
+
+    <%-- Offer Letter PopUp --%>
+
+
+    <div class="modal inmodal" id="FileModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">Sent Job Offer</h5>
+                </div>
+                <div class="modal-body " style="background-color: transparent;">
+
+
+                    <div class="form-horizontal">
+                        <div class="form-group  ">
+
+                            <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                                <ContentTemplate>
+                                    <div class="col-lg-4">
+                                        <label class="control-label">Offer Amount</label>
+                                        <asp:TextBox runat="server" ID="txtOfferAmount" class="form-control  txtOfferAmount numeric" />
+                                        <asp:RequiredFieldValidator ID="rfvtxtOfferAmount" runat="server"
+                                            Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="fileupload"
+                                            Display="Dynamic" ControlToValidate="txtOfferAmount"></asp:RequiredFieldValidator>
+                                    </div>
+                                    <div class="col-lg-8">
+
+                                        <label class="control-label">File Comment</label>
+                                        <asp:TextBox runat="server" ID="txtOfferComment" TextMode="MultiLine" Rows="2" class="form-control  txtComment" />
+                                        <asp:RequiredFieldValidator ID="rfvtxtOfferComment" runat="server"
+                                            Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="fileupload"
+                                            Display="Dynamic" ControlToValidate="txtOfferComment"></asp:RequiredFieldValidator>
+                                    </div>
+
+                                </ContentTemplate>
+
+                            </asp:UpdatePanel>
+
+                            <div class=" col-lg-4">
+                                <label class="control-label">Attachment</label>
+                                <asp:FileUpload ID="FileUpload" runat="server" max-size="10000000"/>
+                                <asp:RequiredFieldValidator ID="rfvFileUploadTask" runat="server"
+                                    Text="*" ErrorMessage="Priority" ForeColor="Red" ValidationGroup="fileupload"
+                                    Display="Dynamic" ControlToValidate="FileUpload"></asp:RequiredFieldValidator>
+
+                                <asp:RegularExpressionValidator ForeColor="Red" ID="FileUpLoadValidator"
+                                    runat="server" ValidationGroup="fileupload" ErrorMessage="Only .docx,   or .pdf files are allowed!"
+                                    ValidationExpression="(.*?)\.(docx|pdf|doc)$" ControlToValidate="FileUpload"> 
+                                </asp:RegularExpressionValidator>
+
+                            </div>
+
+                        </div>
+                        <div class="form-group  ">
+
+
+
+                            <div class="col-lg-12  ">
+                                <asp:UpdatePanel ID="UpdatePanel4" runat="server">
+                                    <ContentTemplate>
+                                        <asp:Button Text="Upload File" class="btn btn-info" ID="btnSendOffer" ValidationGroup="fileupload" runat="server" OnClick="btnSendOffer_Click" />
+                                        <asp:CustomValidator runat="server" ValidationGroup="fileupload" ForeColor="Red" ErrorMessage="File size should greater then 10 MB" ID="fileuplodsize" CssClass="fileupload" ClientValidationFunction="test"></asp:CustomValidator>
+
+                                    </ContentTemplate>
+                                    <Triggers>
+                                        <asp:PostBackTrigger ControlID="btnSendOffer" />
+                                    </Triggers>
+                                </asp:UpdatePanel>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <%-- offer Letter PopUp End --%>
+
+
+    <%-- Offer Acceptance PopUp --%>
+
+    <div class="modal inmodal" id="OfferAcceptance" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">Accept or Reject Offer</h5>
+                </div>
+                <div class="modal-body " style="background-color: transparent;">
+
+
+                    <div class="form-horizontal">
+
+
+                        <asp:UpdatePanel ID="UpdatePanel5" runat="server">
+                            <ContentTemplate>
+
+                                <div class="form-group  ">
+                                    <div class="col-lg-4">
+
+                                        <label class="control-label">Offer Amount</label>
+
+                                        <asp:Label runat="server" ID="lblOfferAmount" CssClass="control-label"></asp:Label>
+                                    </div>
+                                    <div class="col-lg-8">
+
+                                        <label class="control-label">Offer Comment</label>
+
+                                        <asp:Label runat="server" ID="lblComment" CssClass="control-label"></asp:Label>
+                                    </div>
+                                </div>
+                                <div class="form-group  ">
+                                    <div class="col-lg-4">
+
+                                        <label class="control-label">Accept Offer</label>
+
+                                        <asp:DropDownList runat="server" ID="dllOfferAccept" Width="200px" CssClass="dllOfferAccept form-control" AutoPostBack="true" OnSelectedIndexChanged="dllOfferAccept_SelectedIndexChanged" />
+                                        <asp:RequiredFieldValidator ID="rfvdllOfferAccept" runat="server"
+                                            Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="offerAccepted" InitialValue="0"
+                                            Display="Dynamic" ControlToValidate="dllOfferAccept"></asp:RequiredFieldValidator>
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <div runat="server" id="DivOffer">
+
+
+                                            <label class="control-label">Offer Amount</label>
+                                            <asp:TextBox runat="server" ID="txtRequestedAmount" class="form-control  txtRequestedAmount numeric" />
+                                            <asp:RequiredFieldValidator ID="rfvtxtRequestedAmount" runat="server"
+                                                Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="offerAccepted"
+                                                Display="Dynamic" ControlToValidate="txtRequestedAmount"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-4">
+                                        <label class="control-label">File Comment</label>
+                                        <asp:TextBox runat="server" ID="txtOfferAcceptRejectComment" TextMode="MultiLine" Rows="2" class="form-control  txtOfferAcceptRejectComment" />
+                                        <asp:RequiredFieldValidator ID="rfvtxtOfferAcceptRejectComment" runat="server"
+                                            Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="offerAccepted"
+                                            Display="Dynamic" ControlToValidate="txtOfferAcceptRejectComment"></asp:RequiredFieldValidator>
+                                    </div>
+
+                                </div>
+                            </ContentTemplate>
+
+                        </asp:UpdatePanel>
+
+
+                        <div class="form-group  ">
+
+
+
+                            <div class="col-lg-2 pull-right ">
+                                <asp:UpdatePanel ID="UpdatePanel6" runat="server">
+                                    <ContentTemplate>
+                                        <asp:Button Text="Submit" class="btn btn-info" ID="btnOfferAcceptReject" ValidationGroup="offerAccepted" runat="server" OnClick="btnOfferAcceptReject_Click" />
+                                    </ContentTemplate>
+
+                                </asp:UpdatePanel>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%-- offer Acceptance PopUp End --%>
+
+
+    <%-- Hire Modal --%>
+
+
+
+
+    <div class="modal inmodal" id="HireModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h5 class="modal-title">Hire</h5>
+                </div>
+                <div class="modal-body " style="background-color: transparent;">
+
+
+                    <div class="form-horizontal">
+
+
+                        <asp:UpdatePanel ID="UpdatePanel7" runat="server">
+                            <ContentTemplate>
+
+
+                                <div class="form-group  ">
+                                    <div class="col-lg-4">
+
+                                        <label class="control-label">Employee Type</label>
+
+                                        <asp:DropDownList runat="server" ID="ddlEmployeeType" Width="200px" CssClass="ddlEmployeeType form-control" AutoPostBack="true" OnSelectedIndexChanged="ddlEmployeeType_SelectedIndexChanged" />
+                                        <asp:RequiredFieldValidator ID="rfvddlEmployeeType" runat="server"
+                                            Text="*" ErrorMessage="Comment" ForeColor="Red" ValidationGroup="Hire" InitialValue="0"
+                                            Display="Dynamic" ControlToValidate="ddlEmployeeType"></asp:RequiredFieldValidator>
+                                    </div>
+                                    <div runat="server" id="divTraining" visible="false">
+
+
+                                        <div class="col-lg-4">
+                                            <label class="control-label">Start Date</label>
+                                            <asp:TextBox runat="server" ID="txtTrainingStartDate" class="form-control  txtTrainingStartDate DatePicker" />
+                                            <asp:RequiredFieldValidator ID="rfvtxtTrainingStartDate" runat="server"
+                                                Text="*" ErrorMessage="Start Date" ForeColor="Red" ValidationGroup="Hire"
+                                                Display="Dynamic" ControlToValidate="txtTrainingStartDate"></asp:RequiredFieldValidator>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <label class="control-label">End Date</label>
+                                            <asp:TextBox runat="server" ID="txtTrainingEndDate" class="form-control  txtTrainingEndDate DatePicker" />
+                                            <asp:RequiredFieldValidator ID="rfvtxtTrainingEndDate" runat="server"
+                                                Text="*" ErrorMessage="End Date" ForeColor="Red" ValidationGroup="Hire"
+                                                Display="Dynamic" ControlToValidate="txtTrainingEndDate"></asp:RequiredFieldValidator>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </ContentTemplate>
+
+                        </asp:UpdatePanel>
+
+
+                        <div class="form-group  ">
+
+
+
+                            <div class="col-lg-2 pull-right ">
+                                <asp:UpdatePanel ID="UpdatePanel8" runat="server">
+                                    <ContentTemplate>
+                                        <asp:Button Text="Submit" class="btn btn-info" ID="btnHireSubmit" ValidationGroup="Hire" runat="server" OnClick="btnHireSubmit_Click" />
+                                    </ContentTemplate>
+
+                                </asp:UpdatePanel>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <%-- Hire Modal End --%>
+    <script type="text/javascript">
+        function pageLoad() {
+
+            //$(".btnAdd").click(function () {
+            //    debugger;
+            //    reset();
+            //    $('.openmodal').click();
+            //    $('.UploadFile').click();
+            //});
+
+            //$(".close").click(function () {
+            //    debugger;
+
+            //    ClosePopup();
+            //});
+
+
+
+
+
+            $(".numeric").numeric();
+
+            function reset() {
+                $(".txtAdd").val('');
+                $(".hfModalId").val('');
+            }
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                startDate: '+0d',
+                autoclose: true
+            });
+
+            //on post back tabing change handle
+            if ($('.parenttab').val() != '') {
+
+                //debugger;
+
+                $('.active').removeClass("active");
+                $('.tabbable .parent li').has('a[href="' + $('.parenttab').val() + '"]').addClass('active');
+                $($('.parenttab').val()).addClass('active');
+
+            }
+            $(document).on('click', ".tabbable .parent li a", function () {
+                //debugger;
+                var id = $(this).attr('href');
+                $('.parenttab').val(id);
+            });
+
+
+        }
+
+
+
+        //start validation
+
+        function ValidateSlotAlign(source, args) {
+
+
+
+            var allCheckedCount = $('.myCheckbox').find('input:checkbox:checked').not('input:checkbox[value=0]').size();
+
+
+
+            if (allCheckedCount > 0) {
+
+                args.IsValid = true;
+                return;
+            }
+            else {
+                alert('Kindly select a slot');
+                args.IsValid = false;
+                return;
+            }
+            //var totalVacancy = $('.txtTotalVacancies').val();
+
+            //if ($('.hfWorkflowStepDetailId').val() > 0) {
+            //    totalVacancy = $('.txtApprovedVacancies').val();
+            //    //alert(totalVacancy);
+            //}
+
+            //if (allCheckedCount == totalVacancy) {
+            //    //alert("A");
+            //    args.IsValid = true;
+            //    return;
+            //}
+            //else {
+            //    alert("Total Vacancies and Replacement are not equal");
+            //    args.IsValid = false;
+            //    return;
+            //}
+
+
+
+
+
+        }
+
+
+        //end validation
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+        //function OpenDialog(a, b, c) {
+        //    sweetAlert(a, b, c);
+        //}
+
+        function AlertBox(title, Message, type) {
+            swal(title, Message, type);
+        }
+
+        function ClosePopup() {
+            $('.modal').hide();
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
+
+        function openUploadFile() {
+          
+            $('.UploadFile').click();
+            //  $('.OpenUploadFile').show();
+
+        }
+        //open Hire Popup
+        function openHireModal() {
+            
+            $('.OpenHireModal').click();
+
+
+        }
+        function OfferAccept() {
+            
+            $('.OfferAccept').click();
+            $('.OfferAcceptance').show();
+        }
+        $("#downloadFile").click(function () {
+           
+            $('.btnApplicationDownLoad').click();
+        });
+
+        function ApplicationDownLoad() {
+           
+            $('#downloadFile').click();
+        }
+
+
+        function OpenPopupAlignSlot() {
+            $('.openmodal').click();
+        }
+
+        function test(source, args) {
+
+            var isOk = true;
+           
+            $('input[type=file][max-size]').each(function () {
+
+                if (typeof this.files[0] !== 'undefined') {
+                    var maxSize = parseInt($(this).attr('max-size'));
+                    var size = this.files[0].size;
+
+                    if (maxSize < size) {
+                        isOk = false;
+                        args.IsValid = isOk;
+                        return;
+                        alert("file should be less than 10 mb");
+                        $(this).val("");
+
+                    }
+                    else {
+                        isOk = true;
+                        args.IsValid = isOk;
+                        return;
+                    }
+
+                }
+                else {
+                    isOk = false;
+                    args.IsValid = isOk;
+                    return;
+                    alert("Please upload file");
+                    $(this).val("");
+
+
+                }
+
+            });
+            args.IsValid = isOk;
+            return;
+
+        }
+    </script>
+</asp:Content>
+

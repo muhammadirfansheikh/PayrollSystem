@@ -1,0 +1,590 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+
+public partial class Controls_TMSEmployeeDetails_ucCalenderView : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    public bool IsIncharge { get; set; }
+    public int EmployeeId { get; set; }
+    Base baseClass = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+        try
+        {
+            if (!IsPostBack)
+            {
+                BindDropDown();
+                //BindDataList();
+            }
+            if (!IsIncharge)
+            {
+                ddlEmployee.Visible = false;
+                // ddlMonth.Visible = false;
+                // ddlYear.Visible = false;
+
+                trEmployee.Visible = false;
+                //Emp_Detail.Rows[0].Visible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+
+
+    }
+    public void BindDropDown()
+    {
+        try
+        {
+            Base UserInfo = new Base();
+            //var listEmplyee = context.Employees.Where(c => c.IsActive == true && c.InchargeId == UserInfo.UserKey).OrderBy(c => c.Name).ToList();
+            var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserInfo.UserKey)
+                        .Select(a => new
+                        {
+                            GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                            GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                        })
+                        .ToList().Distinct();
+            CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+
+            ddlGroup_SelectedIndexChanged(null, null);
+            //string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+            //var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin && e.CompanyId == baseClass.CompanyId)))
+            //    .OrderBy(e => e.EmployeeCode)
+            //    .Select(e => new
+            //    {
+            //        EmployeeId = e.EmployeeId,
+            //        Name = e.EmployeeCode + " - " + e.FirstName + " " + e.LastName
+            //    })
+            //    .ToList();
+
+            //CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+
+            for (int i = 2013; i <= DateTime.Now.Year + 1; i++)
+            {
+                ListItem Li = new ListItem(i.ToString(), i.ToString());
+                ddlYear.Items.Add(Li);
+            }
+            ddlYear.SelectedValue = DateTime.Now.Year.ToString();
+
+            string[] MonthNames = DateTimeFormatInfo.CurrentInfo.MonthNames;
+
+            int j = 1;
+            foreach (var item in MonthNames)
+            {
+                if (item.Length > 2)
+                {
+                    ListItem Li = new ListItem(item, j.ToString());
+                    ddlMonth.Items.Add(Li);
+                }
+                j++;
+            }
+            ddlMonth.SelectedValue = DateTime.Now.Month.ToString();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void GetCalendar_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            BindDataList();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    private void BindDataList()
+    {
+
+        try
+        {
+            int employeeId = 0;
+            int year = Convert.ToInt32(ddlYear.SelectedValue);
+            int month = Convert.ToInt32(ddlMonth.SelectedValue);
+            if (IsIncharge)
+                employeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+            else
+                employeeId = baseClass.UserKey;
+
+
+
+            var employeeCalender = context.TMS_TM_Employee_Calendar.Where(p => p.EmployeeID == employeeId && p.Year == year && p.Month == month).ToList();
+            List<showResult> SetEmpCalender = new List<showResult>();
+
+            DateTime Shift_StartDate = new DateTime(year, month, 01);
+
+
+            var Emp_Shift = (from emp_sch_shift in context.TMS_Emp_Shift_Schedule
+                             join shift in context.TMS_Setup_Shift
+                             on emp_sch_shift.ShiftID equals shift.ShiftId
+                             where (emp_sch_shift.EmployeeID == employeeId && emp_sch_shift.IsActive == true)
+                             orderby emp_sch_shift.StartDate descending
+                             select new { emp_sch_shift, shift });
+
+
+            /* var Previous_Shift = (from emp_sch_shift in context.Emp_Shift_Schedule
+                                   join shift in context.Shifts
+                                   on emp_sch_shift.ShiftID equals shift.ShiftId
+                                   where (emp_sch_shift.EmployeeID == employeeId && emp_sch_shift.StartDate <= Shift_StartDate && emp_sch_shift.IsActive == true)
+                                   select new { emp_sch_shift, shift }).Take(1);
+
+           
+
+             foreach (var item in Previous_Shift)
+             {
+                 showResult temp = new showResult();
+
+                 temp.object1 = item.emp_sch_shift.StartDate.ToString();
+                 temp.object2 = item.shift.ShiftName;
+
+                 AllS.Add(temp);
+             }
+ */
+            List<showResult> AllS = new List<showResult>();
+            foreach (var item in Emp_Shift)
+            {
+                showResult temp = new showResult();
+
+                temp.object1 = item.emp_sch_shift.StartDate.ToString();
+                temp.object2 = item.shift.ShiftName;
+
+                AllS.Add(temp);
+            }
+
+            if (employeeCalender.Count > 0)
+            {
+
+                DateTime dateValue = new DateTime(year, month, 1);
+                int NumOfemptyItem = (int)dateValue.DayOfWeek;
+                int NumOfdays = DateTime.DaysInMonth(year, month);
+                for (int i = 1; i <= NumOfdays; i++)
+                {
+                    showResult temp = new showResult();
+                    temp.object1 = employeeCalender[0].Record_ID.ToString();
+                    DateTime Cur_Date = new DateTime(year, month, i);
+                    bool flag = true;
+                    if (i == 1)
+                    {
+
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY1 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY1 == Constant.TMSDayTypes.Alternate)
+                        {
+                            foreach (var item in AllS)
+                            {
+                                DateTime st_date = Convert.ToDateTime(item.object1);
+                                if (flag)
+                                {
+                                    if (Cur_Date >= st_date)
+                                    {
+                                        temp.object4 = item.object2; flag = false;
+
+                                    }
+                                }
+
+
+                            }
+                        }
+
+                        temp.object2 = "1";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY1).ToString();
+                        SetEmpCalender.Add(temp);
+                    }
+                    if (i == 2)
+                    {
+
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY2 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY2 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "2"; temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY2).ToString(); SetEmpCalender.Add(temp);
+                    }
+                    if (i == 3)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY3 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY3 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "3";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY3).ToString();
+                        SetEmpCalender.Add(temp);
+                    }
+                    if (i == 4)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY4 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY4 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "4";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY4).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 5)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY5 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY5 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "5";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY5).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 6)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY6 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY6 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "6";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY6).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 7)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY7 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY7 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "7";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY7).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 8)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY8 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY8 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "8";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY8).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+
+                    if (i == 9)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY9 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY9 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "9";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY9).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+
+                    if (i == 10)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY10 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY10 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "10";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY10).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 11)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY11 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY11 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "11";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY11).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+
+                    if (i == 12)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY12 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY12 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "12";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY12).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 13)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY13 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY13 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "13";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY13).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 14)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY14 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY14 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+                        temp.object2 = "14";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY14).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 15)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY15 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY15 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+                        temp.object2 = "15";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY15).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 16)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY16 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY16 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+                        temp.object2 = "16";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY16).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 17)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY17 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY17 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "17";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY17).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 18)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY18 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY18 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "18";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY18).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 19)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY19 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY19 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "19";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY19).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 20)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY20 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY20 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "20";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY20).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 21)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY21 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY21 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "21";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY21).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 22)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY22 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY22 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "22";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY22).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 23)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY23 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY23 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "23";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY23).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 24)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY24 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY24 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "24";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY24).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 25)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY25 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY25 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "25";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY25).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 26)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY26 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY26 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "26";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY26).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 27)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY27 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY27 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+                        temp.object2 = "27";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY27).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 28)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY28 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY28 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "28";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY28).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 29 && employeeCalender[0].DAY29 != 0)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY29 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY29 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "29";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY29).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 30 && employeeCalender[0].DAY30 != 0)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY30 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY30 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "30";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY30).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                    if (i == 31 && employeeCalender[0].DAY31 != 0)
+                    {
+                        if ((Constant.TMSDayTypes)employeeCalender[0].DAY31 == Constant.TMSDayTypes.Working || (Constant.TMSDayTypes)employeeCalender[0].DAY31 == Constant.TMSDayTypes.Alternate)
+                        { foreach (var item in AllS) { DateTime st_date = Convert.ToDateTime(item.object1); if (flag) { if (Cur_Date >= st_date) { temp.object4 = item.object2; flag = false; } } } }
+
+                        temp.object2 = "31";
+                        temp.object3 = ((Constant.TMSDayTypes)employeeCalender[0].DAY31).ToString(); SetEmpCalender.Add(temp);
+
+                    }
+                }
+                // int NumOfemptyItem = Convert.ToInt32( employeeCalender[0].DayOfWeekInt);
+                showResult temp1 = new showResult();
+                for (int i = 0; i < NumOfemptyItem; i++)
+                {
+                    temp1.object1 = "0";
+                    SetEmpCalender.Insert(0, temp1);
+                }
+            }
+
+            /*  if (employeeCalender[0].DayOfWeekInt == 3)
+              {
+                  EmployeeShiftDetail temp = new EmployeeShiftDetail();
+                  for (int i = 0; i < 3; i++)
+                  {
+                      employeeCalender.Insert(0, temp);
+                  }
+              }
+              */
+            dlCalendarView.DataSource = SetEmpCalender;
+
+            dlCalendarView.DataBind();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void dlCalendarView_ItemDataBound(object sender, DataListItemEventArgs e)
+    {
+        try
+        {
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                HiddenField hf_daytye = (HiddenField)e.Item.FindControl("HfDayType");
+
+                if (hf_daytye.Value == (Constant.TMSDayTypes.Holiday).ToString() || hf_daytye.Value == (Constant.TMSDayTypes.Off).ToString())
+                {
+                    e.Item.BackColor = System.Drawing.ColorTranslator.FromHtml("#aaaaaa");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        Base UserInfo = new Base();
+
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserInfo.UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        if (ddlCompany.Items.Count > 1)
+        {
+            ddlCompany.SelectedIndex = 1;
+        }
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        //var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+        //   .Select(a => new
+        //   {
+        //       LocationId = a.Setup_Location.LocationId,
+        //       LocationName = a.Setup_Location.LocationName,
+
+        //   })
+        //   .ToList();
+        //CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+        //
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+    }
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        int DepartmentID = Convert.ToInt32(ddlDepartment.SelectedValue);
+        var listEmplyee = context.Setup_Employee.Where(a => a.IsActive == true && (a.DepartmentId == DepartmentID))
+            .OrderBy(a => a.EmployeeCode)
+            .Select(a => new
+            {
+                EmployeeId = a.EmployeeId,
+                Name = a.EmployeeCode + " - " + a.FirstName + " " + a.LastName
+            })
+            .ToList();
+
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+
+    }
+}

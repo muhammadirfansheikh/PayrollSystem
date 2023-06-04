@@ -1,0 +1,194 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="HRStarter.aspx.cs" Inherits="Pages_NewHiring_HRStarter" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>HR Starter Form</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">HR Starter</a>
+                </li>
+
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+             <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <asp:Label class="panel-heading" id="lblError" runat="server"></asp:Label>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+
+                    
+                    <%-- Applicant Form Start--%>
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Employee Information</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Name</label>
+                                    <asp:Label runat="server" ID="lblEmployeeName" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Contact No</label>
+                                    <asp:Label runat="server" ID="lblContactNo" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Joining Date</label>
+                                    <asp:Label runat="server" ID="lblJoiningDate" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Department</label>
+                                    <asp:Label runat="server" ID="lblDepartment" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+
+
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Designation</label>
+                                    <asp:Label runat="server" ID="lblDesignation" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label for="exampleInputEmail2">Requested By</label>
+                                    <asp:Label runat="server" ID="lblRequestedBy" CssClass="exampleInputEmail2 label label-primary" Text=" "></asp:Label>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <%-- Applicant Form End --%>
+
+
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">HR Starter</h3>
+
+                        </div>
+                        <div class="panel-body">
+
+
+                            <div class="project-list">
+
+
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>HR Starter Criteria</th>
+                                            <th>Decision</th>
+                                            <th>Comment</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <asp:Repeater ID="rpt" runat="server">
+                                            <ItemTemplate>
+                                                <tr style="line-height: 10px !important;">
+                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+
+                                                        <asp:Label runat="server" ID="lblEvaluationData" CssClass="exampleInputEmail2 " Text='<%# Eval("Value") %>'></asp:Label>
+
+                                                        <input type="hidden" runat="server" id="hfHRStarterCriteriaId" class="hfHRStarterCriteriaId" value='<%# Eval("HRStarterCriteriaId") %>' />
+                                                    </td>
+
+                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                        <%--<asp:DropDownList runat="server" ID="dllEvaluationStatus" Width="100px" class="ddlStatus form-control" />--%>
+                                                        <asp:RadioButtonList ID="ddlIsRequired" runat="server" RepeatDirection="Horizontal">
+                                                            <%--<asp:ListItem Text="-Select-" Value="0" />--%>
+
+                                                            <asp:ListItem Text="No" Value="false" Selected="True" />
+                                                            <asp:ListItem Text="Yes" Value="true" />
+
+
+                                                        </asp:RadioButtonList>
+                                                        <%--<asp:RequiredFieldValidator ID="rfvddlIsRequired" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                            Display="Dynamic" ControlToValidate="ddlIsRequired" InitialValue="0"></asp:RequiredFieldValidator>--%>
+
+                                                    </td>
+                                                    <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                        <asp:TextBox ID="txtComment" TextMode="MultiLine" Style="height: 70px; max-height: 70px;" runat="server" CssClass="form-control">
+                                                        </asp:TextBox>
+
+                                                        <asp:RequiredFieldValidator ID="rfvtxtComment" runat="server" ValidationGroup="HrStarter" Text="*" ErrorMessage="*" ForeColor="Red"
+                                                            Display="Dynamic" ControlToValidate="txtComment"></asp:RequiredFieldValidator>
+
+                                                    </td>
+                                                </t>
+
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </tbody>
+                                </table>
+
+                            </div>
+
+                            
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right" ValidationGroup="HrStarter" OnClick="btnSave_Click" />
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+
+                </div>
+            </div>
+
+
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+    <script type="text/javascript">
+        function pageLoad() {
+
+
+
+
+
+
+        }
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+
+
+
+    </script>
+
+</asp:Content>
+

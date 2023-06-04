@@ -1,0 +1,9 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="ViewCalender.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Incharge_ViewCalender" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <uc:ucCalenderView ID="ucCalender" IsIncharge="true" runat="server" />
+</asp:Content>
+

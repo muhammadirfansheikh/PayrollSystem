@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+public partial class Pages_TMS_LeaveApply : System.Web.UI.Page
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        var CheckShift = context.Setup_Employee.Where(x => x.TMSShiftId!=null && x.IsActive == true && x.EmployeeCode==baseClass.EmployeeCode).ToList();
+        if (CheckShift.Count == 0)
+        {
+            ucLeaveApply.Visible = false;
+            lblwarning.InnerText = "Shift Has Not Been Mapped Yet From HR";
+        }
+        else
+        {
+            lblwarning.Visible = false;
+        }
+    }
+}

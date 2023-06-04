@@ -1,0 +1,309 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="Resignation.aspx.cs" Inherits="Pages_SeparationWorkFlow_Resignation" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+
+    <%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+    <%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+
+</asp:Content>
+
+
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Employee Resignation</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Employee Resignation</a>
+                </li>
+
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+
+
+
+
+                                <div class="col-lg-3">
+
+                                    <label for="exampleInputEmail2">Department</label>
+                                    <asp:DropDownList runat="server" ID="ddlDepartmentSearch" class="form-control ddlDepartmentSearch" />
+                                  <%--  <asp:RequiredFieldValidator ID="rfvddlDepartmentSearch" runat="server" ValidationGroup="search" Text="Required" ForeColor="Red"
+                                        Display="Dynamic" InitialValue="0" ControlToValidate="ddlDepartmentSearch" CssClass="ddlDepartmentSearch"></asp:RequiredFieldValidator>--%>
+
+                                </div>
+                                <div class="col-lg-3">
+
+                                    <label for="exampleInputEmail2">Employee Name</label>
+
+                                    <asp:TextBox ID="txtEmployeeNameSearch" runat="server" CssClass="form-control"></asp:TextBox>
+
+                                    <%--<asp:DropDownList runat="server" ID="ddlCategorySearch" class="form-control ddlCategorySearch" />--%>
+                                </div>
+                            </div>
+                            <div class="form-group col-lg-12" style="margin-top: 10px;">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" ValidationGroup="search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+
+                            <div class="panel-heading">
+                                Employee Resignations
+                            </div>
+                            <div class="panel-body">
+                                <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                        <a href="#" id="ancaddbtn" class="btn btn-primary btnAdd pull-right">Add</a>
+                                        <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                    </div>
+                                </div>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Designation Name </th>
+                                                <th>Department </th>
+                                                <th>Resignation Date</th>
+                                                <th>Lastworking Date</th>
+                                                <th>Workflow Task Assignee</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("Name") %>
+                                                            <input type="hidden" runat="server" id="hfEmployeeId" class="hfEmployeeId" value='<%# Eval("EmployeeId") %>' />
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("DesignationName") %>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                            <%# Eval("Department") %>
+                                                            <input type="hidden" runat="server" id="hfDepartmentId" class="hfDepartmentId" value='<%# Eval("DepartmentId") %>' />
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                            <%# Convert.ToDateTime(Eval("ResignationDate")).ToString(Constant.DateFormat) %>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                            <%# Convert.ToDateTime(Eval("LastworkingDate")).ToString(Constant.DateFormat) %>
+                                                            <br />
+                                                        </td>
+
+                                                        <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                            <%# GetWorkflowStepName(Convert.ToInt32(Eval("EmployeeId"))) %>
+                                                            <br />
+                                                        </td>
+
+                                                        <td class="project-actions" style="font-size: 14px; font-weight: 600; text-align: center;">
+
+                                                            <asp:LinkButton ID="btnDelete"
+                                                                runat="server"
+                                                                OnClientClick="return confirm('Are you sure you want to take back resign?')"
+                                                                CssClass="fa fa-pencil text-navy"
+                                                                ForeColor="Red"
+                                                                OnClick="btnEdit_Click"> 
+                                                            </asp:LinkButton>
+
+                                                        </td>
+                                                    </tr>
+
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                            <div class="form-group col-lg-12">
+                                                <div class="pagging">
+                                                    <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                </div>
+                                            </div>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress3" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+
+    <%-- offer Letter PopUp End --%>
+
+    <%-- Create Project Modal start--%>
+    <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog" style="width: 50%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Employee Resignation</h4>
+
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel3" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px;  height: 500px; overflow-y: scroll;">
+                            <input type="hidden" id="hfSlotId" runat="server" class="hfSlotId" />
+                            <div id="div2" runat="server" visible="false" class="alert alert-warning">
+                            </div>
+
+
+                            <div class="form-group">
+                                <div class="col-lg-12">
+
+
+                                    <div class="col-lg-4">
+                                        <label>Department <em>*</em></label>
+
+                                        <asp:DropDownList runat="server" ID="ddlDepartment" class="form-control dllDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged" />
+                                        <asp:RequiredFieldValidator ID="rfvdllDepartment" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                            Display="Dynamic" InitialValue="0" ControlToValidate="ddlDepartment" CssClass="dllDepartment"></asp:RequiredFieldValidator>
+
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label>Employee <em>*</em></label>
+
+                                        <asp:DropDownList runat="server" ID="ddlEmployee" class="form-control dllDepartment" />
+                                        <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                            Display="Dynamic" InitialValue="0" ControlToValidate="ddlDepartment" CssClass="dllDepartment"></asp:RequiredFieldValidator>
+
+                                    </div>
+                                    <div class="col-lg-4">
+                                        <label for="exampleInputEmail2">Last Working Date</label>
+                                        <asp:TextBox ID="txtLastWorkingDate" runat="server" CssClass="form-control DatePicker"></asp:TextBox>
+                                        <asp:RequiredFieldValidator ID="rfvtxtLastWorkingDate" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                            Display="Dynamic" ControlToValidate="txtLastWorkingDate" CssClass="rfvtxtLastWorkingDate"></asp:RequiredFieldValidator>
+
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <label>Reason <em>*</em></label>
+
+                                        <asp:TextBox ID="txtReason" runat="server" TextMode="MultiLine" Rows="20" CssClass="form-control txtReason"></asp:TextBox>
+                                        <asp:RequiredFieldValidator ID="rfvtxtReason" runat="server" ValidationGroup="Add" Text="Required" ForeColor="Red"
+                                            Display="Dynamic" ControlToValidate="txtReason" CssClass="rfvtxtReason "></asp:RequiredFieldValidator>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            <label id="lbl" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" ValidationGroup="Add" OnClick="btnAdd_Click" runat="server" />
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+
+            </div>
+        </div>
+    </div>
+    <%-- Modal End Here --%>
+
+
+    <script type="text/javascript">
+        function pageLoad() {
+
+
+            // $('#ancaddbtn').css("display", "block");
+            $(".btnAdd").click(function () {
+
+                $('.openmodal').click();
+            });
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                startDate: '+0d',
+                autoclose: true
+            });
+        }
+
+        //function OpenDialog(a, b, c) {
+        //    sweetAlert(a, b, c);
+        //}
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+        function ApplyJob() {
+          
+            $('.ApplyJob').click();
+        }
+
+        function HideButton() {
+            
+            $('#ancaddbtn').hide();
+        }
+
+        function CloseModal() {
+            $('.close').click();
+        }
+    </script>
+
+</asp:Content>
+

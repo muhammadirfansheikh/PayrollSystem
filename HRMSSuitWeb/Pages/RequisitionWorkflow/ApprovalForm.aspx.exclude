@@ -1,0 +1,22 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="ApprovalForm.aspx.cs" ValidateRequest="true" Inherits="Pages_RequisitionWorkflow_ApprovalForm" %>
+
+<%@ Register Src="~/Controls/RequisitionWorkflow/RequisitionApprovalHod.ascx" TagName="RequisitionApprovalHod" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/RequisitionWorkflow/RequisitionDetail.ascx" TagName="RequisitionDetail" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/RequisitionWorkflow/RequisitionApproval.ascx" TagName="RequisitionApproval" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/RequisitionWorkflow/RequisitionApprovedHistory.ascx" TagName="RequisitionApprovedHistory" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/RequisitionWorkflow/RequisitionJobPosting.ascx" TagName="RequisitionJobPosting" TagPrefix="uc" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div>
+        <uc:RequisitionDetail ID="ucRequisitionDetail" runat="server" />
+        <uc:RequisitionApprovedHistory ID="ucRequisitionApprovedHistory" runat="server" />
+        <uc:RequisitionApproval ID="ucRequisitionApproval" runat="server" />
+        <uc:RequisitionJobPosting ID="ucRequisitionJobPosting" runat="server" />
+
+    </div>
+
+</asp:Content>
+

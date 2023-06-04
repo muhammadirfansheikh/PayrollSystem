@@ -1,0 +1,171 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_RequisitionWorkflow_RequisitionJobPosting : System.Web.UI.UserControl
+{
+
+    public int? RequisitionId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfRequisitionId.Value == string.Empty ? nullint : Convert.ToInt32(hfRequisitionId.Value);
+        }
+        set { hfRequisitionId.Value = value.ToString(); }
+    }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+
+    private void BindRepeater(int RequisitionId)
+    {
+        var lst = context.HRMS_JobPostingSite.Where(a => a.IsActive == true)
+            .Select(a => new
+            {
+                MediaCategoryId = a.MediaCategoryId,
+                MediaCategory = a.HRMS_SetupDetail.SetupDetailName,
+                JobPostingSiteId = a.JobPostingSiteId,
+                JobPostingSite = a.JobPostingSite,
+                URL = a.SiteURL
+            })
+            .ToList();
+
+        rpt.DataSource = lst;
+        rpt.DataBind();
+        if (RequisitionId != 0)
+        {
+            var list_HRMS_Requisition = context.HRMS_Requisition.Where(a => a.IsActive == true && a.RequisitionId == RequisitionId)
+         .Select(a => new
+         {
+             JobDescription = a.JobDescription,
+         })
+         .ToList();
+            txtJobDesc.Content = list_HRMS_Requisition[0].JobDescription;
+        }
+
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater(Convert.ToInt32(RequisitionId));
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("/Pages/TaskListing.aspx");
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            bool isCheck = false;
+            int WorkflowStepDetailId = (int)Constant.WorkflowStepRequisition.JobPosting;
+
+            for (int i = 0; i < rpt.Items.Count; i++)
+            {
+                CheckBox chkIsSelect = (CheckBox)rpt.Items[i].FindControl("chkIsSelect");
+
+                if (chkIsSelect.Checked)
+                {
+                    System.Web.UI.HtmlControls.HtmlInputHidden hfJobPostingSiteId = (System.Web.UI.HtmlControls.HtmlInputHidden)rpt.Items[i].FindControl("hfJobPostingSiteId");
+                    HRMS_RequisitionPosting objDetail = new HRMS_RequisitionPosting();
+
+                    objDetail.RequisitionId = Convert.ToInt32(RequisitionId);
+                    objDetail.JobPostingSiteId = Convert.ToInt32(hfJobPostingSiteId.Value);
+                    objDetail.IsActive = true;
+                    objDetail.CreatedDate = DateTime.Now;
+                    objDetail.CreatedBy = objbase.UserKey;
+                    objDetail.UserIP = objbase.UserIP;
+
+                    context.HRMS_RequisitionPosting.Add(objDetail);
+                    context.SaveChanges();
+
+                    if (isCheck == false)
+                    {
+                        isCheck = true;
+                    }
+                }
+            }
+
+            if (isCheck)
+            {
+
+                int WorkflowTaskMasterId = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true &&
+                                    a.WorkflowMasterId == (int)Constant.Workflow.RequisitionWorkflow && a.WorkflowItemId == RequisitionId).FirstOrDefault().WorkflowTaskMasterId;
+
+                var lstWorkflowTaskDetail = context.HRMS_WorkflowTaskDetail.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkflowTaskMasterId &&
+                    a.WorkflowStepDetailId == WorkflowStepDetailId).ToList();
+
+                if (lstWorkflowTaskDetail != null && lstWorkflowTaskDetail.Count > 0)
+                {
+                    int WorkflowTaskDetailIdApproved = 0;
+
+                    for (int i = 0; i < lstWorkflowTaskDetail.Count; i++)
+                    {
+                        int WorkflowTaskDetailId = lstWorkflowTaskDetail[i].WorkflowTaskDetailId;
+
+                        HRMS_WorkflowTaskDetail td = context.HRMS_WorkflowTaskDetail.Where(a => a.WorkflowTaskDetailId == WorkflowTaskDetailId).FirstOrDefault();
+
+                        td.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Completed;
+                        td.ModifiedBy = objbase.UserKey;
+                        td.ModifiedDate = DateTime.Now;
+                        td.UserIP = objbase.UserIP;
+
+                        if (td.AssigneeID == objbase.UserKey)
+                        {
+                            td.EndDate = DateTime.Now;
+                            td.Remarks = "";
+
+                            WorkflowTaskDetailIdApproved = WorkflowTaskDetailId;
+                        }
+                        context.SaveChanges();
+                    }
+
+                    if (WorkflowTaskDetailIdApproved > 0)
+                    {
+                        var lstTaskMaster = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true && a.WorkflowItemId == RequisitionId
+                            && a.WorkflowMasterId == (int)Constant.Workflow.RequisitionWorkflow).ToList();
+
+                        lstTaskMaster.ForEach(a => a.WorkflowStatusId = (int)Constant.WorkflowStatus.Completed);
+                        lstTaskMaster.ForEach(a => a.ModifiedBy = objbase.UserKey);
+                        lstTaskMaster.ForEach(a => a.UserIP = objbase.UserIP);
+                        lstTaskMaster.ForEach(a => a.ModifiedDate = DateTime.Now);
+
+                        context.SaveChanges();
+                    }
+                }
+                var lstReq = context.HRMS_Requisition.Where(a => a.IsActive == true && a.RequisitionId == RequisitionId).ToList();
+
+                lstReq.ForEach(a => a.WorkflowStatusId = (int)Constant.WorkflowStatus.Completed);
+
+                lstReq.ForEach(a => a.ModifiedBy = objbase.UserKey);
+                lstReq.ForEach(a => a.UserIP = objbase.UserIP);
+                lstReq.ForEach(a => a.ModifiedDate = DateTime.Now);
+                lstReq.ForEach(a => a.LastApplyDate = Convert.ToDateTime(txtLastApplyDate.Text).Date);
+                lstReq.ForEach(a => a.ModifiedDate = DateTime.Now);
+                lstReq.ForEach(a => a.JobDescription = txtJobDesc.Content);
+
+                context.SaveChanges();
+
+
+                string _Message = "Job Posted Successfully";
+                string PageRedirectUrl = "/Pages/TaskListing.aspx";
+
+                ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+            }
+        }
+        catch (Exception ex)
+        {
+            lblError.InnerText = ex.ToString();
+            divError.Visible = true;
+        }
+    }
+}

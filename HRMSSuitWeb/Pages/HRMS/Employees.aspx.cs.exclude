@@ -1,0 +1,1416 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using HRMS;
+using System.Transactions;
+
+
+public partial class Pages_HRMS_Employees : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseclass = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+            //GetEmployeeCode();
+            CheckingRole();
+
+            if (Request.QueryString["CandidateId"] != null)
+            {
+                int CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+
+                CreateEmployeeForm(CandidateId);
+            }
+
+
+        }
+        PagingHandler();
+    }
+
+    //Create Employee Form Start 
+
+    public void CreateEmployeeForm(int CandidateId)
+    {
+        try
+        {
+
+            var listHRMS_CandidateInfo = context.HRMS_CandidateInfo.Where(a => a.IsActive == true && a.CandidateId == CandidateId)
+                .Select(c => new
+                {
+                    cnic = c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.HRMS_ApplicantGeneralInfo.Where(d => d.IsActive == true)
+                            .Select(e => new
+                            {
+                                CNIC = e.CNIC,
+                                FirstName = e.FirstName,
+                                MiddleName = e.MiddleName,
+                                LastName = e.LastName,
+                                DOB = e.DateOfBirth,
+                                GenderId = e.GenderId,
+                            }).FirstOrDefault(),
+
+                    loginId = c.HRMS_ApplicantApplication.HRMS_Setup_Applicant.LoginId,
+
+                    CompanyId = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Department.CompanyId,
+                    LocationId = c.HRMS_ApplicantApplication.HRMS_Requisition.LocationId,
+                    DepartmentId = c.HRMS_ApplicantApplication.HRMS_Requisition.DepartmentId,
+                    BusinessUnitId = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Department.BusinessUnitId,
+                    DesignationId = c.HRMS_ApplicantApplication.HRMS_Requisition.DesignationId,
+                    JobCategory = c.HRMS_ApplicantApplication.HRMS_Requisition.Setup_Designation.CategoryId,
+
+
+                }).ToList().FirstOrDefault();
+
+
+            bool containsEmail = listHRMS_CandidateInfo.loginId.Contains("@");
+
+            if (containsEmail)
+            {
+                txtPersonalEmailAdd.Text = listHRMS_CandidateInfo.loginId;
+            }
+
+            string dobStr = listHRMS_CandidateInfo.cnic.DOB == null ? "" : Convert.ToString(listHRMS_CandidateInfo.cnic.DOB);
+
+            txtcnicadd.Text = Convert.ToString(listHRMS_CandidateInfo.cnic.CNIC) == null ? "" : Convert.ToString(listHRMS_CandidateInfo.cnic.CNIC);
+            txtFirstNameAdd.Text = Convert.ToString(listHRMS_CandidateInfo.cnic.FirstName) == null ? "" : Convert.ToString(listHRMS_CandidateInfo.cnic.FirstName);
+            txtMiddleNameAdd.Text = Convert.ToString(listHRMS_CandidateInfo.cnic.MiddleName) == null ? "" : Convert.ToString(listHRMS_CandidateInfo.cnic.MiddleName);
+            //txtDOB.Text = Convert.ToString(listHRMS_CandidateInfo.cnic.DOB) == null ? "" : Convert.ToString(Convert.ToDateTime(listHRMS_CandidateInfo.cnic.DOB).ToString(Constant.DateFormat2));
+
+            txtDOB.Text = dobStr == string.Empty ? "" : Convert.ToString(Convert.ToDateTime(listHRMS_CandidateInfo.cnic.DOB).ToString(Constant.DateFormat2));
+
+            ddlGenderAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.cnic.GenderId) == null ? "0" : Convert.ToString(listHRMS_CandidateInfo.cnic.GenderId);
+
+            txtLastNameAdd.Text = Convert.ToString(listHRMS_CandidateInfo.cnic.LastName) == null ? "" : Convert.ToString(listHRMS_CandidateInfo.cnic.LastName);
+
+            //fill upper portion of popup
+
+            ddlGroupAdd.SelectedIndex = 1;
+            ddlGroupAdd_SelectedIndexChanged(null, null);
+
+
+            ddlCompanyAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.CompanyId);
+            ddlCompanyAdd_SelectedIndexChanged(null, null);
+            ddlLocationAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.LocationId);
+            ddlLocationAdd_SelectedIndexChanged(null, null);
+
+
+            ddlBusinessUnitAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.BusinessUnitId);
+            ddlBusinessUnitAdd_SelectedIndexChanged(null, null);
+
+            ddlDepartmentAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.DepartmentId);
+            ddlDepartmentAdd_SelectedIndexChanged(null, null);
+
+            ddlJobCategoryAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.JobCategory);
+            ddlJobCategoryAdd_SelectedIndexChanged(null, null);
+
+            ddlDesignationAdd.SelectedValue = Convert.ToString(listHRMS_CandidateInfo.DesignationId);
+
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "OpenEmployeeCreateModal()", "OpenEmployeeCreateModal();", true);
+        }
+        catch (Exception ex)
+        {
+
+
+        }
+
+    }
+
+    //Create Employee Form End
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        if (ddlCompany.Items.Count > 1)
+        {
+            ddlCompany.SelectedIndex = 1;
+        }
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyId && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(a => a.IsActive == true && a.InchargeId == baseclass.UserKey))).OrderBy(c => c.BusinessUnitName).ToList();
+        CommonHelper.BindDropDown(ddlBusinessUnit, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", listBusinessUnit.Count > 1 ? true : false, false);
+        ddlBusinessUnit_SelectedIndexChanged(null, null);
+
+        if (ddlLocation.Items.Count > 1)
+        {
+            ddlLocation.SelectedIndex = 1;
+        }
+
+
+        var ListDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.Setup_Category.CompanyId == CompanyId).OrderBy(c => c.DesignationName).ToList();
+        //var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+
+
+
+
+        CommonHelper.BindDropDown(ddlDesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        //CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        var LstBusinessUnitCostCenterMapping = context.Setup_CostCenter.Where(a => a.IsActive == true && a.CompanyId == CompanyId).ToList();
+
+
+
+        CommonHelper.BindDropDown(ddlCostCenter, LstBusinessUnitCostCenterMapping, "CostCenterName", "CostCenterId", true, false);
+
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (Convert.ToInt32(ddlLocation.SelectedValue) == (int)Constant.Location.Uae)
+        {
+            lblcnic.InnerText = "Emirates Id";
+        }
+        else
+        {
+            lblcnic.InnerText = "NIC";
+        }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    #region Custom Methods
+    private void BindDropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                        .Select(a => new
+                        {
+                            GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                            GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                        })
+                        .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+        CommonHelper.BindDropDown(ddlGroupAdd, LstGroup, "GroupName", "GroupId", true, false);
+
+        if (ddlGroup.Items.Count > 1)
+        {
+            ddlGroup.SelectedIndex = 1;
+        }
+        var TerminationType = context.HRMS_Setup_TerminationType.Where(c => c.IsActive == true).OrderBy(c => c.TerminationType).ToList();
+        var ListNoticePeriod = context.HRMS_Setup_NoticePeriodType.Where(c => c.IsActive == true).OrderBy(c => c.NoticePeriodType).ToList();
+        CommonHelper.BindDropDown(ddlTerminationType, TerminationType, "TerminationType", "TerminationTypeId", true, false);
+        CommonHelper.BindDropDown(ddlNoticePeriod, ListNoticePeriod, "NoticePeriodType", "NoticePeriodTypeId", true, false);
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        var ListGender = context.HRMS_Setup_Gender.Where(c => c.IsActive == true).OrderBy(c => c.GenderTitle).ToList();
+
+
+        //CommonHelper.BindDropDown(ddldepartment, listdepartmnet, "DepartmentName", "DepartmentId", true, false);
+        //   CommonHelper.BindDropDown(ddldesignation, listdesignation, "DesignationName", "DesignationId", true, false);
+        CommonHelper.BindDropDown(ddlGenderAdd, ListGender, "GenderTitle", "GenderId", true, false);
+        var employeeLocation = context.Setup_Employee.Where(a => a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.Setup_Group.IsActive == true && a.Setup_Location.Setup_Company.IsActive == true && a.Setup_Location.IsActive == true)
+               .Select(a => new
+               {
+                   GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                   CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                   locationid = a.Setup_Location.LocationId
+
+               }).ToList();
+        //ddlGroup.SelectedValue = (employeeLocation[0].locationid).ToString();
+        //ddlGroup_SelectedIndexChanged(null, null);
+        //ddlCompany.SelectedValue = (employeeLocation[0].CompanyId).ToString();
+        //ddlCompany_SelectedIndexChanged(null, null);
+        //ddlLocation.SelectedValue = (employeeLocation[0].locationid).ToString();
+        //ddlLocation_SelectedIndexChanged(null, null);
+    }
+    private void BindRepeaterEmployee()
+    {
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+        DateTime? DateTimeNull = null;
+        int DesignationId = 0;
+        int DepartmentId = 0;
+        string FirstName = txtFirstName.Text.Trim();
+        string LastName = txtLastName.Text.Trim();
+        string CNIC = txtCNIC.Text.Trim();
+        bool IsActive = ChbxIsActive.Checked;
+        string EmployeeCode = txtEmployeeCode.Text;
+        string OffEmail = txtOfficialEmail.Text.Trim();
+
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        int LocationId = Convert.ToInt32(ddlLocation.SelectedValue);
+        int BU = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+        int CostCenter = Convert.ToInt32(ddlCostCenter.SelectedValue);
+
+        DateTime? DateOfBirth = dtpDateOfBirth.Text.Trim() == "" ? DateTimeNull : Convert.ToDateTime(dtpDateOfBirth.Text.Trim());
+        DateTime? DateOfJoin = txtDateOfJoin.Text.Trim() == "" ? DateTimeNull : Convert.ToDateTime(txtDateOfJoin.Text.Trim());
+        if (ddlDesignation.SelectedIndex != -1)
+            DesignationId = Convert.ToInt32(ddlDesignation.SelectedItem.Value);
+
+        if (ddlDepartment.SelectedIndex != -1)
+            DepartmentId = Convert.ToInt32(ddlDepartment.SelectedItem.Value);
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+        DataTable dt = context.TS_EmployeeHirerarchy(UserKey).ToList().ToDataTable();
+
+        List<int> _EmpHirarchy = dt.AsEnumerable().Select(s => s.Field<int>("Employeeid")).ToList();
+
+
+        int?[] ArrLocationId = null;
+        string LocationIdStr = "";
+
+        var Lst = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey).ToList();
+
+        for (int i = 0; i < Lst.Count; i++)
+        {
+            LocationIdStr += Lst[i].LocationId.ToString() + ",";
+        }
+
+        if (LocationIdStr.Length > 1)
+        {
+            LocationIdStr = LocationIdStr.Substring(0, LocationIdStr.Length - 1);
+
+            ArrLocationId = LocationIdStr.Split(',')
+                .Select(x =>
+                {
+                    int value;
+                    return int.TryParse(x, out value) ? value : (int?)null;
+                })
+                .ToArray();
+        }
+
+        var Employees = context.Setup_Employee.Where(c => c.IsActive == IsActive
+            && (c.InchargeId == UserKey || c.EmployeeId == UserKey || IsSuperAdmin == true || IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))
+            && (c.LocationId == LocationId || LocationId == 0)
+            && (c.BusinessUnitID == BU || BU == 0)
+            && (c.CostCenterId == CostCenter || CostCenter == 0)
+            && (c.DesignationId == DesignationId || DesignationId == 0)
+            && (c.DepartmentId == DepartmentId || DepartmentId == 0)
+            && (c.OfficeEmailAddress.Contains(OffEmail) || OffEmail == string.Empty)
+            && (c.FirstName.Contains(FirstName) || FirstName == string.Empty)
+            && (c.LastName.Contains(LastName) || LastName == string.Empty)
+            && (c.CNIC == CNIC || CNIC == string.Empty)
+            && (c.EmployeeCode == EmployeeCode || EmployeeCode == string.Empty)
+            && (c.DateOfDirth == DateOfBirth || DateOfBirth == null)
+            && (c.JoiningDate == DateOfJoin || DateOfJoin == null)
+            
+
+            //&& (c.EmployeeId == UserKey || c.InchargeId == UserKey || IsSuperAdmin == true
+            //|| IsAdmin == true || (RoleCode == roleAdmin && c.CompanyId == CompanyId))                  
+            // && (c.Setup_Location.Setup_Company.GroupId == GroupId || GroupId == 0)
+            //&& (c.Setup_Location.CompanyId == CompanyId || CompanyId == 0)
+
+            ).Select(c => new
+            {
+                EmployeeId = c.EmployeeId,
+                EmployeeCode = c.EmployeeCode,
+                FirstName = c.FirstName,
+                LastName = c.LastName,
+                CNIC = c.CNIC,
+                Designation = c.Setup_Designation.DesignationName,
+                Department = c.Setup_Department.DepartmentName,
+                DateOfBirth = c.DateOfDirth,
+                JoiningDate = c.JoiningDate,
+                PersonalEmail = c.PersonalEmailAddress,
+                OfficalEmail = c.OfficeEmailAddress,
+                Gender = c.HRMS_Setup_Gender.GenderTitle,
+                EmployeeType = c.Setup_EmployeeType.TypeName,
+                IsActive = c.IsActive,
+                Company = c.Setup_Location.Setup_Company.CompanyName,
+                Location = c.Setup_Location.LocationName,
+                LocationId = c.LocationId,
+                EmployeeImage = c.PictureName,
+                Extension = c.Extension
+            }).ToList();
+        if (ArrLocationId != null)
+        {
+            var filterList = (from e in Employees where ArrLocationId.Contains(e.LocationId) select e);
+
+            RptEmployee.DataSource = filterList;
+            RptEmployee.DataBind();
+
+            var List = filterList
+                .OrderBy(a => a.Company).ThenBy(b => b.Location).ThenBy(c => c.FirstName)
+                .Skip(skip).Take(pageSize).ToList();
+            RptEmployee.DataSource = List;
+            RptEmployee.DataBind();
+            PagingAndSorting.setPagingOptions(filterList.Count());
+        }
+        else
+        {
+            RptEmployee.DataSource = Employees;
+            RptEmployee.DataBind();
+        }
+    }
+
+    private void CheckingRole()
+    {
+        Base obj = new Base();
+
+        if (obj.IsEmployee == true)
+        {
+            btnSearch_Click(null, null);
+            divCreateNew.Visible = false;
+            DivSearchPanel.Visible = false;
+            Response.Redirect("/Pages/HRMS/EmployeeDetail.aspx?id=" + obj.UserKey);
+        }
+        else if (obj.IsIncharge == true)
+        {
+            divCreateNew.Visible = false;
+        }
+
+        DeleteAndCreateNew.Visible = false;
+        divCreateNew.Visible = false;
+
+        if (obj.IsAdmin == true)
+        {
+            DeleteAndCreateNew.Visible = true;
+            divCreateNew.Visible = true;
+        }
+
+        if (obj.IsHcmSuperAdmin == true)
+        {
+            DeleteAndCreateNew.Visible = true;
+            divCreateNew.Visible = true;
+        }
+
+    }
+    private void ResetControl()
+    {
+        txtCNIC.Text = string.Empty;
+        txtEmployeeCode.Text = string.Empty;
+        txtFirstName.Text = string.Empty;
+        txtLastName.Text = string.Empty;
+        dtpDateOfBirth.Text = string.Empty;
+        ChbxIsActive.Checked = true;
+        ddlGroup.SelectedValue = "0";
+        ddlGroup_SelectedIndexChanged(null, null);
+        //ddlCompany_SelectedIndexChanged(null, null);
+    }
+    #endregion
+
+    #region PAGING
+    private void PagingHandler()
+    {
+        PagingAndSorting.ImgNext.Click += ImgNext_Click;
+        PagingAndSorting.ImgPrevious.Click += ImgPrevious_Click;
+        PagingAndSorting.DdlPage.SelectedIndexChanged += DdlPage_SelectedIndexChanged;
+        PagingAndSorting.DdlPageSize.SelectedIndexChanged += DdlPageSize_SelectedIndexChanged;
+    }
+
+    void DdlPageSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+    void DdlPage_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+    void ImgNext_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+    void ImgPrevious_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeaterEmployee();
+    }
+    #endregion
+    protected void ddlGroupAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroupAdd.SelectedValue);
+        //var LstCompany = context.Setup_Company.Where(a => a.IsActive == true && a.GroupId == GroupId).OrderBy(a => a.CompanyName).ToList();
+        //CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompanyAdd, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        ddlCompanyAdd_SelectedIndexChanged(null, null);
+
+    }
+    protected void ddlCompanyAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+
+
+
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.BusinessUnitName).ToList();
+        CommonHelper.BindDropDown(ddlBusinessUnitAdd, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", true, false);
+        ddlBusinessUnitAdd_SelectedIndexChanged(null, null);
+
+
+
+
+
+
+        //var LstLocation = context.Setup_Location.Where(a => a.IsActive == true && a.CompanyId == CompanyId).OrderBy(a => a.LocationName).ToList();
+        //CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+
+        CommonHelper.BindDropDown(ddlLocationAdd, LstLocation, "LocationName", "LocationId", true, false);
+
+        var LstDomain = context.Setup_CompanyDomains.Where(a => a.IsActive == true && a.CompanyId == CompanyId).OrderBy(a => a.Domain).ToList();
+        CommonHelper.BindDropDown(ddlCompanyDomainadd, LstDomain, "Domain", "DomainId", true, false);
+
+        ddlLocationAdd_SelectedIndexChanged(null, null);
+
+
+        var LstBusinessUnitCostCenterMapping = context.Setup_CostCenter.Where(a => a.IsActive == true && a.CompanyId == CompanyId).ToList();
+
+
+
+        CommonHelper.BindDropDown(ddlCostCenterAdd, LstBusinessUnitCostCenterMapping, "CostCenterName", "CostCenterId", true, false);
+
+
+        var listInchargeCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.CategoryName).ToList();
+        CommonHelper.BindDropDown(ddlJobCategoryAdd, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+        ddlJobCategoryAdd_SelectedIndexChanged(null, null);
+    }
+    protected void ddlLocationAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        //if (ddlLocationAdd.SelectedValue == "0")
+        //{
+        //    lblcode.Text = "";
+        //}
+        //else
+        //{
+        //    lblcode.Text = GetEmployeeCode();
+        //}
+
+        if (Convert.ToInt32(ddlLocationAdd.SelectedValue) == (int)Constant.Location.Uae)
+        {
+            divCNIC.Visible = false;
+            divEmiratesID.Visible = true;
+            //lblNicEmirates.Text = "Emirates Id:";
+            txtcnicadd.Visible = false;
+            rfvtxtnic.Enabled = false;
+            rfvtxtnic.ValidationGroup = "";
+            // RequiredFieldValidator7.ControlToValidate = null;
+            txtEmiratesIDadd.Visible = true;
+            // txtEmirates.Text = "emiratesid";
+        }
+        else
+        {
+
+            divCNIC.Visible = true;
+            divEmiratesID.Visible = false;
+            //lblNicEmirates.Text = "NIC:";
+            txtcnicadd.Visible = true;
+            rfvtxtnic.Enabled = true;
+            //txtEmirates.Visible = false;
+        }
+    }
+    protected void ddlBusinessUnitAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BUID = Convert.ToInt32(ddlBusinessUnitAdd.SelectedValue);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BUID).OrderBy(c => c.DepartmentName).ToList();
+        //&& c.TS_Setup_BusinessUnitDeptMapping.Any(s => s.BusinessUnitId == BUID)).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartmentAdd, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        //var LstBusinessUnitCostCenterMapping = context.Setup_BusinessUnitCostCenterMapping.Where(a => a.IsActive == true && a.BusinessUnitId == BUID)
+        //    .Select(a => new
+        //{
+        //    CostCenter = a.Setup_CostCenter.Name,
+        //    CostCenterId = a.CostCenterId
+        //})
+        //    .ToList();
+
+        //CommonHelper.BindDropDown(ddlCostCenter, LstBusinessUnitCostCenterMapping, "CostCenter", "CostCenterId", true, false);
+    }
+    protected void ddlDepartmentAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void ddlJobCategoryAdd_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int JobCategoryId = Convert.ToInt32(ddlJobCategoryAdd.SelectedValue);
+        var listdesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == JobCategoryId).OrderBy(c => c.DesignationName).ToList();
+        CommonHelper.BindDropDown(ddlDesignationAdd, listdesignation, "DesignationName", "DesignationId", true, false);
+    }
+    private void Add()
+    {
+        try
+        {
+            UserLoginIdPopup();
+            lbl.Visible = false;
+            int CompanyId = 0;
+            string OfficialEmail = "";
+            string cnic = "";
+            bool IsExist = false;
+            string LoginId = "";
+            string EmployeeID = "";
+            string EmpCode = "";
+            if (txtOfficialEmailOther.Visible == true)
+            {
+                IsExist = IsEmailExist(txtOfficialEmailOther.Text + lblDomain.Text.Trim());
+
+                if (!IsExist)
+                {
+                    OfficialEmail = txtOfficialEmailOther.Text;
+                }
+            }
+            else if (txtOfficialEmailOther.Visible == false)
+            {
+                IsExist = IsEmailExist(lblOfficialEmail.Text);
+
+                if (!IsExist)
+                {
+                    OfficialEmail = lblOfficialEmail.Text;
+                }
+            }
+
+            if (divCNIC.Visible == false)
+            {
+                cnic = txtEmiratesIDadd.Text.Trim().ToString();
+            }
+            else if (divCNIC.Visible == true)
+            {
+                cnic = txtcnicadd.Text.Trim().ToString();
+            }
+
+
+            if (OfficialEmail != "")
+            {
+                string CompanyDomain = ddlCompanyDomainadd.SelectedItem.ToString();
+
+                DateTime dt = DateTime.Now;
+                Setup_Employee emp = null;
+                Setup_EmployeeLog emplog = null;
+                using (TransactionScope scope = new TransactionScope())
+                {
+                    OfficialEmail = GetUserLoginId(txtFirstNameAdd.Text.Replace(" ", "").Trim(), "", txtLastNameAdd.Text.Replace(" ", "").Trim(), CompanyDomain, Convert.ToInt32(ddlLocationAdd.SelectedValue));
+
+                    lblOfficialEmail.Text = OfficialEmail;
+
+                    int? IntNull = null;
+                    string EmployeeCode = GetEmployeeCode();
+                    emp = new Setup_Employee();
+                    emplog = new Setup_EmployeeLog();
+                    emp.FirstName = txtFirstNameAdd.Text.Trim();
+                    emp.MiddleName = txtMiddleNameAdd.Text.Trim();
+                    emp.LastName = txtLastNameAdd.Text.Trim();
+                    emp.EmployeeCode = EmployeeCode;
+                    //emp.CNIC = txtnic.Text.Trim();
+                    emp.CNIC = cnic;
+                    emp.DateOfDirth = Convert.ToDateTime(txtDOB.Text.Trim());
+                    emp.PersonalEmailAddress = txtPersonalEmailAdd.Text.Trim();
+                    emp.Password = EmployeeCode;
+                    emp.CardNumber = Convert.ToInt32(EmployeeCode);
+                    emp.GenderId = ddlGenderAdd.SelectedValue == "0" ? IntNull : Convert.ToInt32(ddlGenderAdd.SelectedValue);
+                    emp.FatherName = txtFatherHusbandNameAdd.Text.Trim();
+                    if (HfEmployeePreviousID.Value != "")
+                    {
+                        emp.HiringTypeId = 2;
+                    }
+                    else
+                    {
+                        emp.HiringTypeId = 1;
+                    }
+
+                    if (ddlCompanyAdd.SelectedValue != "0")
+                    {
+                        CompanyId = Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+                    }
+
+                    if (ddlJobCategoryAdd.SelectedValue != "0")
+                        emp.CategoryId = Convert.ToInt32(ddlJobCategoryAdd.SelectedValue);
+                    if (ddlDepartmentAdd.SelectedValue != "0")
+                        emp.DepartmentId = Convert.ToInt32(ddlDepartmentAdd.SelectedValue);
+                    if (ddlDesignationAdd.SelectedValue != "0")
+                        emp.DesignationId = Convert.ToInt32(ddlDesignationAdd.SelectedValue);
+                    if (ddlBusinessUnitAdd.SelectedValue != "0")
+                        emp.BusinessUnitID = Convert.ToInt32(ddlBusinessUnitAdd.SelectedValue);
+                    if (ddlCostCenterAdd.SelectedValue != "0")
+                        emp.CostCenterId = Convert.ToInt32(ddlCostCenterAdd.SelectedValue);
+                    emp.CreatedBy = UserKey;
+                    emp.CreatedDate = dt;
+                    emp.IsActive = true;
+                    emp.UserIP = UserIP;
+                    //emp.CompanyId = 2000;
+                    emp.CompanyId = CompanyId;
+                    if (HfEmployeePreviousID.Value != "")
+                    {
+                        emp.PreviousEmployeeCode = HfEmployeePreviousID.Value;
+                    }
+                    emp.LocationId = Convert.ToInt32(ddlLocationAdd.SelectedValue);
+                    emp.OfficeEmailAddress = OfficialEmail;
+                    emp.SharepointPortalId = "";
+
+
+
+                    emplog.FirstName = txtFirstNameAdd.Text.Trim();
+                    emplog.MiddleName = txtMiddleNameAdd.Text.Trim();
+                    emplog.LastName = txtLastNameAdd.Text.Trim();
+                    emplog.EmployeeCode = EmployeeCode;
+                    //emp.CNIC = txtnic.Text.Trim();
+                    emplog.CNIC = cnic;
+                    emplog.DateOfDirth = Convert.ToDateTime(txtDOB.Text.Trim());
+                    emplog.PersonalEmailAddress = txtPersonalEmailAdd.Text.Trim();
+
+                    // Random rnd = new Random();
+                    //  string emailrnd = rnd.Next(999999).ToString();
+
+                    //emplog.PersonalEmailAddress = emailrnd + "@sybrid.com";
+                    emplog.Password = EmployeeCode;
+                    emplog.CardNumber = Convert.ToInt32(EmployeeCode);
+                    emplog.GenderId = ddlGenderAdd.SelectedValue == "0" ? IntNull : Convert.ToInt32(ddlGenderAdd.SelectedValue);
+                    emplog.FatherName = txtFatherHusbandNameAdd.Text.Trim();
+                    if (HfEmployeePreviousID.Value != "")
+                    {
+                        emplog.HiringTypeId = 2;
+                    }
+                    else
+                    {
+                        emplog.HiringTypeId = 1;
+                    }
+
+                    if (ddlCompanyAdd.SelectedValue != "0")
+                    {
+                        CompanyId = Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+                    }
+
+                    if (ddlJobCategoryAdd.SelectedValue != "0")
+                        emplog.CategoryId = Convert.ToInt32(ddlJobCategoryAdd.SelectedValue);
+                    if (ddlDepartmentAdd.SelectedValue != "0")
+                        emplog.DepartmentId = Convert.ToInt32(ddlDepartmentAdd.SelectedValue);
+                    if (ddlDesignationAdd.SelectedValue != "0")
+                        emplog.DesignationId = Convert.ToInt32(ddlDesignationAdd.SelectedValue);
+                    if (ddlBusinessUnitAdd.SelectedValue != "0")
+                        emplog.BusinessUnitID = Convert.ToInt32(ddlBusinessUnitAdd.SelectedValue);
+                    if (ddlCostCenterAdd.SelectedValue != "0")
+                        emplog.CostCenterId = Convert.ToInt32(ddlCostCenterAdd.SelectedValue);
+                    emplog.CreatedBy = UserKey;
+                    emplog.CreatedDate = dt;
+                    emplog.IsActive = true;
+                    emplog.UserIP = UserIP;
+                    //emp.CompanyId = 2000;
+                    emplog.CompanyId = CompanyId;
+                    if (HfEmployeePreviousID.Value != "")
+                    {
+                        emplog.PerviousEmployeeCode = HfEmployeePreviousID.Value;
+                    }
+                    emplog.LocationId = Convert.ToInt32(ddlLocationAdd.SelectedValue);
+                    emplog.OfficeEmailAddress = OfficialEmail;
+                    emplog.SharepointPortalId = "";
+                    //int locationid = Convert.ToInt32(ddlLocation.SelectedValue);
+                    //DataTable listLdapAddress = context.Setup_AD_Location.Where(a => a.IsActive == true && (a.LocationId == locationid)).ToList().ToDataTable();
+
+                    //if(locationid == (int)Constant.Location.Khi)
+                    //{
+                    //  string Bakslash = @"\";
+                    //  emp.SharepointPortalId = listLdapAddress.Rows[0]["ADLocationName"].ToString() + Bakslash + SamAccountName; 
+                    //}
+
+                    if (Request.QueryString["CandidateId"] != null)
+                    {
+                        emp.CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+                        emplog.CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+                    }
+
+                    //SendEmailAccessControlAdmin(emp.EmployeeCode, emp.FirstName + " " + emp.MiddleName + " " + emp.LastName, 
+                    //    emp.Setup_Designation == null ? "" : emp.Setup_Designation.DesignationName,
+                    //    emp.Setup_Department == null ? "" : emp.Setup_Department.DepartmentName, emp.LocationId);
+
+                    context.Setup_Employee.Add(emp);
+                    context.SaveChanges();
+
+
+
+                    context.Setup_EmployeeLog.Add(emplog);
+                    context.SaveChanges();
+                    EmployeeID = emp.EmployeeId.ToString();
+                    EmpCode = emp.EmployeeCode;
+                    Setup_User login = new Setup_User();
+
+                    login.Email_Address = OfficialEmail;
+                    login.Full_Name = txtFirstNameAdd.Text + " " + txtLastNameAdd.Text;
+                    login.Password = CommonHelper.GetHash(lblcode.Text);
+                    login.EmployeeId = emp.EmployeeId;
+                    // login.Login_ID = emp.FirstName.Trim().Replace(" ", "") + emp.EmployeeCode + "@sybrid.com"; //GetOfficialEmailAddress
+                    // login.Login_ID = GetOfficialEmailAddress();
+                    login.Login_ID = OfficialEmail;
+                    login.Created_Date = dt;
+                    login.Is_Active = true;
+                    login.User_IP = UserIP;
+                    login.Created_By = UserKey;
+
+                    context.Setup_User.Add(login);
+                    context.SaveChanges();
+
+                    Setup_ApplicationRoleMapping AppRoleMapping = new Setup_ApplicationRoleMapping();
+                    AppRoleMapping.User_Code = login.User_Code;
+                    AppRoleMapping.Role_Code = (int)Constant.Role.Employee;
+                    AppRoleMapping.ApplicationId = (int)Constant.Application.HRMS;
+                    AppRoleMapping.IsActive = true;
+                    AppRoleMapping.CreatedDate = dt;
+                    AppRoleMapping.CreatedBy = UserKey;
+                    context.Setup_ApplicationRoleMapping.Add(AppRoleMapping);
+                    context.SaveChanges();
+                    LoginId = login.User_Code.ToString();
+
+                    //Added After Ummul baji said
+                    TMS_Emp_Shift_Schedule EmpSchedule = new TMS_Emp_Shift_Schedule();
+                    EmpSchedule.EmployeeID = emp.EmployeeId;
+                    EmpSchedule.ShiftID = null;
+                    EmpSchedule.StartDate = dt;
+                    EmpSchedule.IsActive = true;
+                    EmpSchedule.CreatedBy = UserKey;
+                    EmpSchedule.CreatedDate = dt;
+                    context.TMS_Emp_Shift_Schedule.Add(EmpSchedule);
+                    context.SaveChanges();
+
+                    TMS_TM_Employee_Calendar EmpTMSCal = new TMS_TM_Employee_Calendar();
+                    EmpTMSCal.CreatedBy = UserKey;
+                    EmpTMSCal.CreatedDate = dt;
+                    EmpTMSCal.EmployeeID = emp.EmployeeId;
+                    EmpTMSCal.IsActive = true;
+                    EmpTMSCal.Month = dt.Month;
+                    EmpTMSCal.Year = dt.Year;
+                    context.TMS_TM_Employee_Calendar.Add(EmpTMSCal);
+
+
+
+
+                    //var Emp = context.Setup_Application.Where(x=>x.IsActive==true)
+                    //    .Where(x=>x.Setup_Role.Any(y=>y.Role_Name.Contains("Employee")))
+                    //    .ToList();
+
+                    scope.Complete();
+
+                }
+
+                //int EID = emp.EmployeeId;
+                //Setup_Employee setemp = context.Setup_Employee.Where(a => a.EmployeeId == EID);
+
+                //Insert Users into TMS Tables
+                var insertIntoTMS = context.INSERT_INTO_TMS(Convert.ToInt32(emp.EmployeeCode));
+                //Insert User into Application Role Mapping
+                var createUserTS = context.CREATE_USER_TS(Convert.ToInt32(emp.EmployeeCode));
+
+                context.INSERT_INTO_AuditLog(EmployeeID, "Setup_Employee", (int)Constant.OperationType.INSERT, UserKey);
+                context.INSERT_INTO_AuditLog(LoginId, "Setup_User", (int)Constant.OperationType.INSERT, UserKey);
+                Success("Employee has been added successfully.Employee Code: " + EmpCode + "");
+                ClosePopup();
+                string Employeeprofilelink = System.Configuration.ConfigurationManager.AppSettings["ProfileLink"].ToString();
+                SendEmail(emp.EmployeeId);
+
+                //SendEmailAccessControlAdmin(emp.EmployeeCode, emp.FirstName + " " + emp.MiddleName + " " + emp.LastName, emp.Setup_Designation.DesignationName, 
+                //    emp.Setup_Department.DepartmentName,emp.LocationId);
+
+                //OpenDialog();
+
+                //MessageCtrl.showMessageBox("Employee has been created successfully.", MessageType.Success);
+
+                //ResetControls();
+            }
+            else
+            {
+                divError.Visible = true;
+                lblError.Text = "Employee Add Request cannot be fulfilled";
+                lbl.Visible = true;
+
+            }
+
+
+
+            //String domain = "sybridkhi.sybrid.local";
+            //String first = "TestHRMS";
+            //String last = "User";
+            //String description = ".NET Test";
+            //object[] password = { "12345678" };
+            //String[] groups = { "Staff" };
+            //String username = first.ToLower() + last.Substring(0, 1).ToLower();
+            //String homeDrive = "H:";
+            //String homeDir = @"\\gonzo.leeds-art.ac.uk\data3\USERS\" + username;
+
+            //try
+            //{
+            //    if (objAd.CreateUser(domain, first, last, description,
+            //             password, groups, username, homeDrive, homeDir, true) == 0)
+            //    {
+
+            //        Console.WriteLine("Account created!");
+            //        Console.ReadLine();
+            //    }
+
+            //    else
+            //    {
+            //        Console.WriteLine("Problem creating account :(");
+            //        Console.ReadLine();
+            //    }
+            //}
+
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine("Exception caught:\n\n" + e.ToString());
+            //    Console.ReadLine();
+            //}
+        }
+
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+    }
+    private void SendEmail(int employeeid)
+    {
+
+        string subject = "Sybrid : Employee Profile";
+
+        string emailtemplatebody = Email.GetTemplateString(Convert.ToInt32(Constant.EmailTemplates.EmployeeProfileLink));
+        Dictionary<string, string> urlParameter = new Dictionary<string, string>();
+        //urlParameter.Add("Id", employeeid.ToString());
+        //urlParameter.Add("E", "T");
+        string PageURL = "/Pages/Employees.aspx";
+        DataTable DTRequesterInfo = Email.GetRequesterInfo(UserKey);
+        DataTable DTRequestDetailInfo = Email.GetEmployeeInfo(employeeid); ;
+        string RequesterInfoHTML = Email.GetRequesterInfoHtml(DTRequesterInfo);
+        string RequestDetailInfoHTML = Email.GetRequestDetailHtml(DTRequestDetailInfo);
+        string LinkHTML = Email.ComposeEmailLinks(PageURL, urlParameter, false, 0);
+
+        emailtemplatebody = Email.ReplaceEmailBodySection(emailtemplatebody, "HRMS", RequesterInfoHTML, RequestDetailInfoHTML, LinkHTML);
+
+        Email.SendMail(txtPersonalEmailAdd.Text, subject, emailtemplatebody, "");
+
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ConfirmBox(string message)
+    {
+        message = "ConfirmBox('Error!','" + message + "');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void OpenIsActiveEmployee(int EmployeeId, string EmployeeCode, string EmployeeName)
+    {
+
+        lblEmployeeCode.InnerText = EmployeeCode;
+        lblEmployeeName.InnerText = EmployeeName;
+
+
+        hfEmployeeIdisActive.Value = EmployeeId.ToString();
+
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenIsActiveEmployee()", "OpenIsActiveEmployee();", true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    private string GetEmployeeCode()
+    {
+        int? LocationId = Convert.ToInt32(ddlLocationAdd.SelectedValue);
+        int? GroupId = Convert.ToInt32(ddlGroupAdd.SelectedValue);
+        int? CompanyId = Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+        int code = 0;
+
+        //var Lst = context.Setup_Employee.Where(a => a.LocationId == LocationId).OrderByDescending(u => u.EmployeeId).FirstOrDefault();
+        // var Lst = context.Setup_Employee.Where(a => a.Setup_Company.Setup_Group.GroupId == GroupId && a.CompanyId == CompanyId).OrderByDescending(u => u.EmployeeId).FirstOrDefault();
+
+
+        int maxCode = context.Setup_Employee            //Ummul wara and faizan said on 17/7/2017 to change employee code functionality by removing company id and group id at 7:03 pm by ameer ali 
+             .Select(s => new { s.EmployeeCode }).ToList().Max(m => Convert.ToInt32(m.EmployeeCode));
+        //.Max();
+
+        if (maxCode != null)
+        {
+            code = Convert.ToInt32(maxCode) + 1;
+        }
+        else
+        {
+            code = 1;
+        }
+
+        return lblcode.Text = code.ToString();
+    }
+    private void UserLoginIdPopup()
+    {
+        string OfficialEmail = GetUserLoginId(txtFirstNameAdd.Text.Replace(" ", "").Trim(), "", txtLastNameAdd.Text.Replace(" ", "").Trim(), ddlCompanyDomainadd.SelectedItem.ToString(), Convert.ToInt32(ddlLocationAdd.SelectedValue));
+
+        if (OfficialEmail != "")
+        {
+            txtOfficialEmailOther.Visible = false;
+            lblOfficialEmail.Visible = true;
+            lblOfficialEmail.Text = OfficialEmail;
+            lblDomain.Visible = false;
+        }
+        else
+        {
+            txtOfficialEmailOther.Visible = true;
+            lblOfficialEmail.Visible = false;
+            lblDomain.Visible = true;
+            lblDomain.Text = "@" + ddlCompanyDomainadd.SelectedItem.ToString().Trim();
+        }
+
+        // OpenDialog();
+    }
+    private bool IsEmailExist(string Email)
+    {
+        bool IsExist = false;
+
+        var Lst = context.Setup_Employee.Where(a => a.OfficeEmailAddress == Email).ToList();
+
+        //if (Lst != null)
+        //{
+        //    if (Lst.Count > 0)
+        //    {
+        //        IsExist = true;
+        //    }
+        //}
+
+        var lst = context.Setup_User.Where(a => a.Login_ID == Email).ToList();
+
+        if (lst != null || Lst != null)
+        {
+            if (lst.Count > 0 || Lst.Count > 0)
+            {
+                IsExist = true;
+            }
+        }
+
+        return IsExist;
+    }
+
+    private string GetUserLoginId(string FirstName, string MiddleName, string LastName, string CompanyDomain, int locationId)
+    {
+        string Email = "";
+
+        ActiveDirectoryClass ObjacitveDirec = new ActiveDirectoryClass();
+
+
+        //if (locationId == (int)Constant.Location.Khi)
+        //{
+        //     SamAccountName = ObjacitveDirec.GetSamAccountName(FirstName, MiddleName, LastName, locationId);
+        //     Email = SamAccountName + "@" + CompanyDomain;
+        //     return Email;
+        //}
+
+
+        FirstName = FirstName.Trim().ToLower();
+        LastName = LastName.Trim().ToLower();
+        CompanyDomain = CompanyDomain.Trim().ToLower();
+
+        DataTable dtEmail = new DataTable();
+        dtEmail.Columns.Add("Id");
+        dtEmail.Columns.Add("UserLogin");
+
+        string Sugg1 = FirstName + "." + LastName + "@" + CompanyDomain;
+        string Sugg2 = LastName + "." + FirstName + "@" + CompanyDomain;
+        string Sugg3 = FirstName.Substring(0, 1) + "." + LastName + "@" + CompanyDomain;
+        string Sugg4 = FirstName + "." + LastName.Substring(0, 1) + "@" + CompanyDomain;
+
+        string Sugg5 = FirstName + "-" + LastName + "@" + CompanyDomain;
+        string Sugg6 = LastName + "-" + FirstName + "@" + CompanyDomain;
+        string Sugg7 = FirstName.Substring(0, 1) + "-" + LastName + "@" + CompanyDomain;
+        string Sugg8 = FirstName + "-" + LastName.Substring(0, 1) + "@" + CompanyDomain;
+
+        dtEmail.Rows.Add(1, Sugg1);
+        dtEmail.Rows.Add(2, Sugg2);
+        dtEmail.Rows.Add(3, Sugg3);
+        dtEmail.Rows.Add(4, Sugg4);
+
+        dtEmail.Rows.Add(5, Sugg5);
+        dtEmail.Rows.Add(6, Sugg6);
+        dtEmail.Rows.Add(7, Sugg7);
+        dtEmail.Rows.Add(8, Sugg8);
+
+        for (int j = 0; j < dtEmail.Rows.Count; j++)
+        {
+            bool IsExist = IsEmailExist(dtEmail.Rows[j]["UserLogin"].ToString());
+
+            if (!IsExist)
+            {
+                Email = dtEmail.Rows[j]["UserLogin"].ToString();
+                break;
+            }
+        }
+
+        //Email = SamAccountName + "@" + CompanyDomain;
+
+
+        return Email;
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            if (txtFirstNameAdd.Text.ToLower() != txtLastNameAdd.Text.ToLower() && txtMiddleNameAdd.Text.ToLower() != txtFirstNameAdd.Text.ToLower() && txtMiddleNameAdd.Text.ToLower() != txtLastNameAdd.Text.ToLower())
+            {
+                divError.Visible = false;
+                string CNIC = txtcnicadd.Text;
+
+                if (divCNIC.Visible == false)
+                {
+                    CNIC = txtEmiratesIDadd.Text;
+                }
+                else if (divCNIC.Visible == true)
+                {
+                    CNIC = txtcnicadd.Text;
+                }
+                int CompanyId = ddlCompanyAdd.SelectedValue == "" ? 0 : Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+                var Employee = context.Setup_Employee.Where(a => a.CNIC == CNIC && a.CompanyId == CompanyId).FirstOrDefault();
+                if (Employee != null)
+                {
+                    HfEmployeePreviousID.Value = Convert.ToString(Employee.EmployeeCode);
+                    string PreviousEmpID = Employee.EmployeeCode;
+
+                    string Name = Employee.FirstName + "" + Employee.LastName;
+                    string ResignedDate = Convert.ToString(Employee.ReisgnedDate);
+                    lblName.Text = Name;
+                    lblempId.Text = PreviousEmpID.ToString();
+                    lblNic.Text = Convert.ToString(Employee.CNIC);
+                    lbldate.Text = ResignedDate == "" ? "N/A" : ResignedDate;
+                    divsurvey.Visible = true;
+                    //ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup", "openPopupFancy();", true);
+                    //ScriptManager.RegisterStartupScript(this, GetType(), "importingdone", "AddCategoryDialog();", true);
+                    //if (lbldate.Text != "N/A")
+                    //{
+                    //    btnsubmit.Enabled = true;
+                    //}
+                    //else
+                    //{
+                    //    btnsubmit.Enabled = false;
+                    //}
+                    if (Employee.IsActive)
+                    {
+                        //Error("Active Employee is Already Exist with this CNIC ?");
+                        //ConfirmBox("Are you sure");
+                        OpenIsActiveEmployee(Employee.EmployeeId, Employee.EmployeeCode, Employee.FirstName + "  " + Employee.LastName);
+                    }
+                    else
+                    {
+                        UserLoginIdPopup();
+                        Add();
+
+                        //canddidate  data insert 
+                        if (Request.QueryString["CandidateId"] != null)
+                        {
+                            int CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+
+
+                            context.HRMS_INSERT_CANDIDATEDATA(CandidateId);
+
+                            UpdateCandidateStatus(CandidateId);
+
+                            var EMpId = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+                            GenerateHRStarterTask(CandidateId);
+
+
+                        }
+                    }
+
+                }
+                else
+                {
+                    //Add();
+                    //MessageCtrl.showMessageBox("Employee information has been saved successfully.", MessageType.Success);
+
+                    UserLoginIdPopup();
+                    Add();
+
+                    //canddidate  data insert 
+                    if (Request.QueryString["CandidateId"] != null)
+                    {
+                        int CandidateId = Convert.ToInt32(Request.QueryString["CandidateId"]);
+
+
+                        context.HRMS_INSERT_CANDIDATEDATA(CandidateId);
+
+                        UpdateCandidateStatus(CandidateId);
+                        var EMpId = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+                        GenerateHRStarterTask(CandidateId);
+
+                    }
+                }
+
+
+
+            }
+            else
+            {
+                divError.Visible = true;
+                lblError.Text = "First Name,Middle Name should not as Last Name";
+                //ShowMessage("First Name should not as Last Name", MessageType.Success);
+            }
+        }
+        catch (Exception ex)
+        { }
+    }
+    public void UpdateCandidateStatus(int CandidateId)
+    {
+        try
+        {
+            var list = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+
+            HRMS_CandidateInfo obj = new HRMS_CandidateInfo();
+
+            obj.ApplicantApplicationId = list.ApplicantApplicationId;
+            obj.CandidateStatusId = list.CandidateStatusId;
+            obj.CandidateId = list.CandidateId;
+            obj.FileTypeId = list.FileTypeId;
+            obj.FileName = list.FileName;
+            obj.OfferedSalary = list.OfferedSalary;
+            obj.ApprovedSalary = list.ApprovedSalary;
+            obj.Comment = list.Comment;
+            obj.IsActive = false;
+            obj.CreatedDate = list.CreatedDate;
+            obj.CreatedBy = list.CreatedBy;
+            obj.ModifiedBy = UserKey;
+            obj.ModifiedDate = DateTime.Now;
+            obj.UserIP = UserIP;
+
+            context.HRMS_CandidateInfo.Add(obj);
+            context.SaveChanges();
+            list.CandidateStatusId = (int)Constant.CandidateStatus.Hire;
+            list.ModifiedBy = UserKey;
+            list.ModifiedDate = DateTime.Now;
+            list.UserIP = UserIP;
+            context.SaveChanges();
+
+        }
+        catch (Exception ex) { }
+
+
+    }
+
+    // Starter Task HR
+    private void GenerateHRStarterTask(int CandidateId)
+    {
+        //int EmployeeId = Convert.ToInt32(Request.QueryString["EmployeeId"]);
+        bool IsEmailRequired = true;
+        int WorkflowTaskMasterId = 0;
+        //   int WorkflowStepDetailId = (int)Constant.WorkflowStepNewHiring.HRStarter;
+
+        int WorkflowStepDetailId = (int)Constant.WorkflowStepNewHiring.TelephoneReferenceCheck;
+
+        //  int NxtWorkflowStepDetailId = (int)Constant.WorkflowStepRequisition.HODApproval;
+
+        //HRMS_WorkFlowTaskMaster task = new HRMS_WorkFlowTaskMaster();
+
+        //task.WorkflowItemId = EmployeeId;
+        //task.WorkflowStatusId = (int)Constant.WorkflowStatus.InProgress;
+        //task.Remarks = "";
+        //task.IsActive = true;
+        //task.CreatedDate = DateTime.Now;
+        //task.CreatedBy = UserId;
+        //task.UserIP = UserIP;
+        //task.WorkflowMasterId = (int)Constant.Workflow.NewHiringWorkflow;
+
+        //context.HRMS_WorkFlowTaskMaster.Add(task);
+        //WorkflowTaskMasterId = task.WorkflowTaskMasterId;
+
+        WorkflowTaskMasterId = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true &&
+                            a.WorkflowMasterId == (int)Constant.Workflow.NewHiringWorkflow && a.WorkflowItemId == CandidateId).FirstOrDefault().WorkflowTaskMasterId;
+
+        var lst = context.HRMS_WorkflowMemberDetail.Where(a => a.IsActive == true /*&& a.DepartmentId == (int)Constant.Department.HumanResources*/)
+       .Where(a => a.WorkflowStepDetailId == WorkflowStepDetailId)
+       .Where(a => a.MemberCategoryId == (int)Constant.WorkflowMemberCategory.Management).ToList();
+
+        if (lst.Count > 0 && lst != null)
+        {
+            //var lstSetupWorkflowStepDetail = context .HRMS_Setup_WorkflowStepDetail.Where(a => a.IsActive == true && a.WorkflowStepDetailId )
+
+            for (int i = 0; i < lst.Count; i++)
+            {
+                int MemberCategoryId = lst[i].MemberCategoryId;
+                int DeptId = lst[i].DepartmentId;
+
+                var lstAssignee = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true && a.MemberCategoryId == MemberCategoryId &&
+                    a.DepartmentID == DeptId)
+                    .Select(a => new
+                    {
+                        AssigneeId = a.EmployeeID
+                    })
+                    .ToList();
+
+
+                for (int j = 0; j < lstAssignee.Count; j++)
+                {
+                    int AssigneeId = lstAssignee[j].AssigneeId;
+
+                    HRMS_WorkflowTaskDetail taskDetail = new HRMS_WorkflowTaskDetail();
+
+                    taskDetail.WorkflowTaskMasterId = WorkflowTaskMasterId;
+                    taskDetail.AssigneeID = AssigneeId;
+                    taskDetail.IsDelegated = false;
+                    // taskDetail.WorkflowStepDetailId = NxtWorkflowStepDetailId;
+                    taskDetail.WorkflowStepDetailId = WorkflowStepDetailId;
+                    taskDetail.StartDate = DateTime.Now;
+                    taskDetail.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Pending;
+                    taskDetail.Remarks = "";
+                    taskDetail.IsActive = true;
+                    taskDetail.CreatedBy = UserId;
+                    taskDetail.CreatedDate = DateTime.Now;
+                    taskDetail.UserIP = UserIP;
+
+                    context.HRMS_WorkflowTaskDetail.Add(taskDetail);
+                    context.SaveChanges();
+                    if (IsEmailRequired) // send email
+                    {
+                        //NewHiring/HRStarter.aspx?EmployeeId=" + WorkflowItemId
+
+                        string ToEmail = context.Setup_Employee.Where(a => a.EmployeeId == AssigneeId).FirstOrDefault().OfficeEmailAddress;
+
+                        string Msg = "HR Starter Task. \n" +
+                            "<html>  <a href='" + CommonHelper.URL + "Pages/NewHiring/HRStarter.aspx?EmployeeId=" + CandidateId + "'>Click Here</a>  </html>";
+
+
+
+                        CommonHelper.GenerateWorkflowEmail(ToEmail, "", WorkflowStepDetailId, Msg);
+                    }
+                }
+            }
+
+            context.SaveChanges();
+        }
+        else
+        {
+            bool IsAssign = CommonHelper.AssignTaskToHR(WorkflowTaskMasterId, WorkflowStepDetailId, DateTime.Now);
+
+            if (IsAssign)
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "Alert", "alert('No Mapping Exist Against this Workflow Step, The Task is assigned to HRMS Admin');", true);
+            }
+        }
+        //}
+    }
+
+
+    protected void ddlBusinessUnit_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BUID = ddlBusinessUnit.SelectedValue == "" ? 0 : Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BUID && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(x => x.IsActive == true && x.InchargeId == baseclass.UserKey))).OrderBy(c => c.DepartmentName).ToList();
+        //&& c.TS_Setup_BusinessUnitDeptMapping.Any(s => s.BusinessUnitId == BUID)).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", ListDepartment.Count > 1 ? true : false, false);
+    }
+    protected void DeleteAndCreateNew_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+
+        string CNIC = txtcnicadd.Text;
+        var Employee = context.Setup_Employee.Where(a => a.CNIC == CNIC).OrderByDescending(x => x.JoiningDate).FirstOrDefault();
+        Employee.IsActive = false;
+        Employee.ModifiedBy = UserKey;
+        Employee.ModifiedDate = dt;
+
+        Setup_User user = context.Setup_User.FirstOrDefault(u => u.EmployeeId == Employee.EmployeeId && u.Is_Active == true);
+        user.Is_Active = false;
+        user.Modified_By = UserKey;
+        user.Modified_Date = dt;
+        context.SaveChanges();
+
+        UserLoginIdPopup();
+        Add();
+    }
+    protected void btnUpdateActiveEmployee_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+
+        string CNIC = txtcnicadd.Text;
+        int CompanyId = ddlCompanyAdd.SelectedValue == "" ? 0 : Convert.ToInt32(ddlCompanyAdd.SelectedValue);
+        var Employee = context.Setup_Employee.Where(a => a.CNIC == CNIC && a.CompanyId == CompanyId).OrderByDescending(x => x.JoiningDate).FirstOrDefault();
+        Employee.IsActive = false;
+        Employee.ReisgnedDate = Convert.ToDateTime(txtResignDate.Text.Trim());
+        Employee.LastworkingDate = Convert.ToDateTime(txtLastWorkingDay.Text.Trim());
+        Employee.TerminationTypeId = Convert.ToInt32(ddlTerminationType.SelectedValue);
+        Employee.NoticePeriodTypeId = Convert.ToInt32(ddlNoticePeriod.SelectedValue);
+
+        Employee.ModifiedBy = UserKey;
+        Employee.ModifiedDate = dt;
+
+        Setup_User user = context.Setup_User.FirstOrDefault(u => u.EmployeeId == Employee.EmployeeId);
+        user.Is_Active = false;
+        user.Modified_By = UserKey;
+        user.Modified_Date = dt;
+        context.SaveChanges();
+
+        UserLoginIdPopup();
+        Add();
+
+    }
+    protected void btnViewEmployeeProfile_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("EmployeeDetail.aspx?id=" + baseclass.UserKey);
+    }
+
+    //private void SendEmailAccessControlAdmin(string EmployeeCode ,string Name ,string Designation,string Department,int LocationId)
+    //{
+    //    string EmailText = "<br/>Employee Code : " + EmployeeCode + "<br/>Name : " + Name + "<br/>Designation : " + Designation + "<br/>Department : " + Department;
+
+    //    EmailText = "<b><u>New Employee Induction</u></b>" + EmailText;
+
+    //    if (LocationId == (int)Constant.Location.Khi)
+    //    {
+    //        Email.SendEmail("ammar.khan@sybrid.com;", "New Employee Induction for Access Control", EmailText, "");
+    //    }
+    //    else if (LocationId == (int)Constant.Location.Isb)
+    //    {
+    //        //Email.SendMail("ammar.khan@sybrid.com;", "New Employee Induction for Access Control", EmailText, "");
+    //    }
+    //}
+}

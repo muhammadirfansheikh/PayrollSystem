@@ -1,0 +1,133 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucLeaveHistory.ascx.cs" Inherits="Controls_TMSEmployeeDetails_ucLeaveHistory" %>
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-lg-10">
+        <h2>Leave History</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="/Pages/Default.aspx">Dashboard</a>
+            </li>
+            <li>
+                <a href="/Pages/Default.aspx">Employees</a>
+            </li>
+            <li class="active">
+                <strong>Leave History</strong>
+            </li>
+        </ol>
+    </div>
+</div>
+<div class="panel panel-info" style="margin-top: 11px;">
+    <div class="panel-heading">
+        Employee Leave History
+    </div>
+    <div class="panel-body">
+        <asp:UpdatePanel runat="server">
+            <ContentTemplate>
+                <div id="RightContentError" runat="server" visible="false">
+                    <asp:Label ID="LB_Error" runat="server" />
+                </div>
+
+                <div>
+                    <div id="divSummary" runat="server" visible="false">
+                        <asp:Label ID="lblSummary" runat="server"></asp:Label>
+                    </div>
+                </div>
+                <div class="form-group col-lg-4" id="Emp_Detail_Collector" runat="server">
+                    <label for="exampleInputEmail2">Employee</label>
+                    <asp:DropDownList ID="ddlEmployee" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlEmployee_SelectedIndexChanged"
+                        AutoPostBack="True">
+                    </asp:DropDownList>
+                    <span id="MainContent_RequiredFieldValidator8" style="color: Red; display: none;">*</span>
+                </div>
+                <asp:Repeater ID="Repeater_LeaveHistory" runat="server"
+                    OnItemCommand="Repeater_LeaveHistory_ItemCommand">
+                    <HeaderTemplate>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Leave ID
+                                    </th>
+                                    <th>Type
+                                    </th>
+                                    <th>Date Applied
+                                    </th>
+                                    <th>From
+                                    </th>
+                                    <th>To
+                                    </th>
+                                    <th>Status
+                                    </th>
+                                    <th>Modified Date
+                                    </th>
+                                </tr>
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <tr>
+                            <td>
+                                <a onclick='OpenPopup(" <%# "/Pages/TMS/Employee/ViewAppliedLeave.aspx?LeaveID=" + Eval("LeaveAppliedId") %>")'>
+                                    <%# Eval("LeaveAppliedId")%>
+                                </a>
+                            </td>
+                            <td>
+                                <%# (Constant.TMSLeaveTypes)Eval("LeaveTypeId") %>
+                                <br />
+                                (Days =
+                <%# Eval("NoOfDays")%>)
+                            </td>
+                            <td>
+                                <%# !(string.IsNullOrEmpty(Convert.ToString(DataBinder.Eval(Container.DataItem, "CreatedDate")))) ? Convert.ToDateTime(DataBinder.Eval(Container.DataItem, "CreatedDate")).ToString("dd MMM yyyy") : "" %>
+                            </td>
+                            <td>
+                                <%# !(string.IsNullOrEmpty(Convert.ToString(DataBinder.Eval(Container.DataItem, "FromDate")))) ? Convert.ToDateTime(DataBinder.Eval(Container.DataItem, "FromDate")).ToString("dd MMM yyyy") : "" %>
+                            </td>
+                            <td>
+                                <%# !(string.IsNullOrEmpty(Convert.ToString(DataBinder.Eval(Container.DataItem, "ToDate")))) ? Convert.ToDateTime(DataBinder.Eval(Container.DataItem, "ToDate")).ToString("dd MMM yyyy") : "" %>
+                            </td>
+                            <td>
+                                <%# (Constant.TMSStatus)Eval("LeaveStatusId") %>
+                                <br />
+                                <asp:LinkButton ID="lbTakeBack" runat="server" Text="Take Back" Font-Bold="true" Font-Size="12px" CommandArgument='<%# Eval("LeaveAppliedId") %>' CommandName="TakeBack"
+                                    OnClientClick="return confirm('Are you sure you want to Take Back?')"
+                                    Visible='<%# (int)Constant.TMSStatus.Pending == Convert.ToInt32(Eval("LeaveStatusId")) ? true : false %>'></asp:LinkButton>
+
+                            </td>
+                            <td>
+                                <%# !(string.IsNullOrEmpty(Convert.ToString(DataBinder.Eval(Container.DataItem, "ModifiedDate")))) ? Convert.ToDateTime(DataBinder.Eval(Container.DataItem, "ModifiedDate")).ToString("dd MMM yyyy") : "" %>
+                            </td>
+                        </tr>
+                    </ItemTemplate>
+                    <FooterTemplate>
+                        </thead></table>
+                    </FooterTemplate>
+                </asp:Repeater>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+        <asp:UpdateProgress runat="server">
+            <ProgressTemplate>
+                <uc2:InProgress ID="ucInprogress" runat="server" />
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </div>
+</div>
+<script type="text/javascript">
+    function pageLoad() {
+        $(".numeric").numeric();
+        $('.datetime').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true
+        });
+    }
+    function OpenPopup(url) {
+        var w = 500;
+        var h = 500;
+        var left = (screen.width / 2) - (w / 2);
+        var top = (screen.height / 2) - (h / 2);
+        //        return window.open(url, "Time Adjustment Request", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        window.open(url, "Time Adjustment Request", 'toolbar = no, location = no, directories = no, status = no, menubar = no, scrollbars = yes, resizable = no, copyhistory = no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+    }
+</script>

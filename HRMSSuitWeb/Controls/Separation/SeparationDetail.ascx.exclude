@@ -1,0 +1,51 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="SeparationDetail.ascx.cs" Inherits="Controls_Separation_SeparationDetail" %>
+
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        <asp:HiddenField ID="hfEmployeeId" runat="server" />
+        Separation Detail
+    </div>
+
+    <div class="panel-body">
+
+        <div class="col-lg-12 ">
+            <div class="form-group col-lg-3">
+                <label for="exampleInputPassword2 col-lg-12">Department</label>
+                <asp:Label ID="lblDepartment" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group col-lg-3">
+
+                <label for="exampleInputPassword2 col-lg-12">Employee Name</label>
+                <asp:Label ID="lblName" runat="server" CssClass="label label-success col-lg-12" Text="01"></asp:Label>
+            </div>
+            <div class="form-group col-lg-3">
+                <label for="exampleInputEmail2 col-lg-12">Designation</label>
+                <asp:Label ID="lblDesignation" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+
+            <div class="form-group col-lg-3">
+                <label for="exampleInputPassword2 col-lg-12">Resignation Date</label>
+                <asp:Label ID="lblResignationDate" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+        </div>
+
+        <div class="col-lg-12 ">
+
+            <div class="form-group col-lg-3">
+                <label for="exampleInputPassword2 col-lg-12">Last Working Date</label>
+                <asp:Label ID="lblLastWorkingDate" runat="server" CssClass="label label-success col-lg-12" Text=""></asp:Label>
+            </div>
+            <div class="form-group col-lg-9">
+
+                <label for="exampleInputPassword2 col-lg-12">Resignation Detail</label>
+                <div class="forum-content">
+                    <asp:Label ID="lblDetail" runat="server" CssClass="comments-space" Text=""></asp:Label>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>

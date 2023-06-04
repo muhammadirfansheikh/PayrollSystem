@@ -1,0 +1,23 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="Approval.aspx.cs" Inherits="Pages_NewHiring_Approval" %>
+
+<%@ Register Src="~/Controls/NewHiring/Task.ascx" TagName="Task" TagPrefix="uc" %>
+<%@ Register Src="~/Controls/NewHiring/ITStarterReview.ascx" TagName="ITStarterReview" TagPrefix="uc" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div>
+        <div class="panel panel-danger" id="divError" runat="server" visible="false">
+            <div class="panel-heading" id="lblError" runat="server"></div>
+        </div>
+
+        
+        <uc:Task ID="ucTask" runat="server" />
+
+
+        <uc:ITStarterReview ID="ucITStarterReview" runat="server" Visible="false" />
+    </div>
+</asp:Content>
+

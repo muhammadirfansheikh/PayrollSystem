@@ -1,0 +1,267 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="EmpReimbursementRequest.aspx.cs" Inherits="Pages_MedicalReimbursement_EmpReimbursementRequest" %>
+
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Requisition</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Medical Reimbursement Form </a>
+                </li>
+                <%--<li class="active">
+                    <strong>Slot</strong>
+                </li>--%>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <asp:Label class="panel-heading" ID="lblError" runat="server"></asp:Label>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Medical Reimbursement </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Employee Name</label>
+                                <asp:Label ID="lblEmpName" runat="server" CssClass="form-control"></asp:Label>
+
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputPassword2">Claim Type </label>
+                                <asp:DropDownList ID="ddlClaimType" runat="server" CssClass="form-control">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="rfvddlClaimType" runat="server" InitialValue="0"
+                                    Text="*" ErrorMessage="Claim Type " ForeColor="Red" ValidationGroup="info"
+                                    Display="Dynamic" ControlToValidate="ddlClaimType"></asp:RequiredFieldValidator>
+                            </div>
+
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Claim Date </label>
+                                <asp:TextBox ID="txtRequisitionDateSearch" runat="server" Enabled="false" CssClass="form-control "></asp:TextBox>
+
+                            </div>
+
+
+
+                        </div>
+
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Detail</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Bill Or Reciept No</label>
+                                <asp:TextBox ID="txtBillRecieptNo" runat="server" CssClass="form-control"></asp:TextBox>
+                                <asp:RequiredFieldValidator ID="rfvtxtBillRecieptNo" runat="server"
+                                    Text="*" ErrorMessage="Bill Or Reciept No" ForeColor="Red" ValidationGroup="info"
+                                    Display="Dynamic" ControlToValidate="txtBillRecieptNo"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Date</label>
+                                <asp:TextBox ID="txtcheckupDate" runat="server" CssClass="form-control DatePicker"></asp:TextBox>
+
+
+
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Claim For</label>
+                                <asp:DropDownList runat="server" ID="ddlClaimFor" CssClass="ddlClaimFor form-control" />
+                                <asp:RequiredFieldValidator ID="rfvddlClaimFor" runat="server"
+                                    Text="*" ErrorMessage="Claim For" ForeColor="Red" ValidationGroup="info" InitialValue="0"
+                                    Display="Dynamic" ControlToValidate="ddlClaimFor"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Claim Amount</label>
+                                <asp:TextBox ID="txtClaimAmount" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                                <asp:RequiredFieldValidator ID="rfvtxtClaimAmount" runat="server"
+                                    Text="*" ErrorMessage="Claim Amount" ForeColor="Red" ValidationGroup="info"
+                                    Display="Dynamic" ControlToValidate="txtClaimAmount"></asp:RequiredFieldValidator>
+
+                            </div>
+                            <div class="form-group col-lg-4">
+                                <label for="exampleInputEmail2">Name of Laboratory</label>
+                                <asp:TextBox ID="txtLaboratoryName" runat="server" CssClass="form-control"></asp:TextBox>
+                                <asp:RequiredFieldValidator ID="rfvtxtLaboratoryName" runat="server"
+                                    Text="*" ErrorMessage="Name of Laboratory" ForeColor="Red" ValidationGroup="info"
+                                    Display="Dynamic" ControlToValidate="txtLaboratoryName"></asp:RequiredFieldValidator>
+                            </div>
+
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right" OnClick="btnSave_Click" Visible="false" />
+                                <asp:Button ID="btnAdd" runat="server" ValidationGroup="info" Text="Add" CssClass="btn btn-default pull-right" OnClick="btnAdd_Click" />
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wrapper wrapper-content animated fadeInUp">
+
+                <div class="panel panel-info">
+
+                    <div class="panel-heading">
+                        Medical Reimbursement Form 
+                    </div>
+                    <div class="panel-body">
+                        <div class="row m-b-sm m-t-sm">
+                            <div class="col-md-12">
+                                <%--   <a href="#" class="btn btn-primary btnAdd pull-right">Add new </a>--%>
+                                <input type="button" data-toggle="modal" data-target="#ApplyForJob" class="ApplyJob" style="display: none;" />
+                                <%--<input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />--%>
+                            </div>
+                        </div>
+                        <div class="project-list">
+
+                            <table class="table table-hover table-responsive row-fluid " style="overflow-x: scroll;">
+                                <thead>
+                                    <tr>
+                                        <th>Bill Or Reciept No</th>
+                                        <th>Date </th>
+                                        <th>Name of  Laboratory</th>
+                                        <th>Claim For</th>
+                                        <th>Claim Amount</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="rpt" runat="server">
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td class="project-title" style="font-size: 11px; text-align: center; font-weight: 600; padding: 0px 0px;  ">
+                                                    <%# Eval("BillRecieptNo") %>
+                                                    <br />
+                                                    <input type="hidden" runat="server" id="hfRowID" class="hfRowID" value='<%# Eval("RowID") %>' />
+                                                </td>
+                                                <td class="project-title" style="font-size: 11px; text-align: center; font-weight: 600; padding: 0px 0px !important;">
+                                                    <%# Eval("checkupDate") %>
+                                                    <br />
+                                                </td>
+                                                <td class="project-title" style="font-size: 11px; text-align: center; font-weight: 600; padding: 0px 0px !important;">
+                                                    <%# Eval("LaboratoryName") %>
+                                                    <br />
+                                                </td>
+                                                <td class="project-title" style="font-size: 11px; text-align: center; font-weight: 600; padding: 0px 0px !important;">
+                                                    <%# Eval("ClaimForText") %>
+                                                    <input type="hidden" runat="server" id="hfClaimForId" class="hfClaimForId" value='<%# Eval("ClaimForId") %>' />
+                                                    <br />
+                                                </td>
+
+                                                <td class="project-title" style="font-size: 11px; text-align: center; font-weight: 600; padding: 0px 0px !important;">
+                                                    <%# Eval("ClaimAmount") %>
+                                                    <br />
+                                                </td>
+
+
+                                                <td class="project-actions padding: 0px 0px !important;">
+
+                                                    <asp:LinkButton ID="btnDelete"
+                                                        runat="server"
+                                                        CssClass="btn btn-primary"
+                                                        OnClick="btnDelete_Click">
+                                                        <span aria-hidden="true" class="fa fa-remove"></span> 
+                                                    </asp:LinkButton>
+
+                                                    <div style="margin-top: 5px;">
+                                                        <asp:LinkButton ID="btnEdit"
+                                                            runat="server"
+                                                            CssClass="btn btn-warning btnmargin"
+                                                            OnClick="btnEdit_Click">
+                                                                <span aria-hidden="true" class="fa fa-pencil "></span> 
+                                                                
+                                                        </asp:LinkButton>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <%--  </ContentTemplate>
+    </asp:UpdatePanel>--%>
+
+            <%-- Modal Start Here --%>
+            <%-- <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>--%>
+            <%-- Create project Modal Start--%>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress2" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress2" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+    <script type="text/javascript">
+        function pageLoad() {
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                //startDate: '+0d',
+                autoclose: true
+            });
+            $(".numeric").numeric();
+
+            function reset() {
+                $(".txtAdd").val('');
+                $(".hfModalId").val('');
+            }
+        }
+
+        function OpenDialog(a, b, c) {
+            sweetAlert(a, b, c);
+        }
+
+        function OpenRedirectionDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+         
+
+
+        //function ClosePopup() {
+        //    $('.modal').hide();
+        //    $('body').removeClass('modal-open');
+        //    $('.modal-backdrop').remove();
+        //}
+
+
+
+
+    </script>
+</asp:Content>
+

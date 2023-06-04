@@ -1,0 +1,58 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="InOutTiming.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_TMS_Incharge_InOutTiming" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+  <%--  <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>TMS</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li class="active">
+                    <strong>In Out Timing</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="col-lg-12 white-bg" style="margin-top: 11px;">
+        <div class="panel">
+            <div class="panel-body">
+                <div class="form-group col-lg-4">
+
+                    <div class="form-group col-lg-12">
+                        <label for="exampleInputEmail2">First Name</label>
+                        <asp:Label ID="lblFirstName" runat="server" CssClass="Label col-lg-12">asasa</asp:Label>
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <label for="exampleInputEmail2">First Name</label>
+                        <asp:Label ID="Label1" runat="server" CssClass="Label col-lg-12">asasa</asp:Label>
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <label for="exampleInputEmail2">First Name</label>
+                        <asp:Label ID="Label2" runat="server" CssClass="Label col-lg-12">asasa</asp:Label>
+                    </div>
+                </div>
+                <div class="form-group col-lg-6">
+                </div>
+                <div class="form-group col-lg-2">
+                    <div class="form-group col-lg-12">
+                        <asp:Image ID="imgUser" runat="server" CssClass="img img-circle" ImageUrl="/Picture/23072016-234167-15369325.png" Style="width: 270px; max-width: 144px;" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>--%>
+    <%--<div class="col-lg-12 white-bg" style="margin-top: 11px;padding: 0;">
+        <div class="panel panel-info">
+            <div class="panel-heading">
+            TMS
+            </div>
+            <div class="panel-body">--%>
+                <uc:ucInOutTiming ID="ucInoutTiming" IsIncharge="true" runat="server" />
+          <%--  </div>
+        </div>
+    </div>--%>
+</asp:Content>

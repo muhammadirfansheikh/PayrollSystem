@@ -1,0 +1,220 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_HRMS_Setup_EducationStatus : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater();   
+        }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControls();
+        BindRepeater();
+    }
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnDelete = (LinkButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+            int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfstattustitleid")).Value);
+
+            //divError.Visible = false;
+            HRMS_Setup_EducationStatus obj = context.HRMS_Setup_EducationStatus.FirstOrDefault(j => j.EducationStatusId == Id);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+
+            BindRepeater();
+            //MessageCtrl.showMessageBox("Education Status has been deleted successfully.", MessageType.Success);
+            Success("Education Status has been deleted successfully.");
+            ClosePopup();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        LinkButton btnEdit = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+        int statusId = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfstattustitleid")).Value);
+        var edustatus = context.HRMS_Setup_EducationStatus.Where(x => x.EducationStatusId == statusId).FirstOrDefault();
+        if (edustatus != null)
+        {
+            hfstatustitleId.Value = statusId.ToString();
+            txtTitle.Text = edustatus.EducationStatusTitle;
+            OpenPopup();
+
+        }
+    }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+
+        if (hfstatustitleId.Value == string.Empty)
+            Add();
+        else
+            Update();
+    }
+    #region Custom Methods
+    private void Add()
+    {
+        DateTime dt = DateTime.Now;
+        HRMS_Setup_EducationStatus obj = new HRMS_Setup_EducationStatus();
+
+
+        obj.EducationStatusTitle = txtTitle.Text.Trim();
+
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        //obj.UserIP = UserIP;
+        //obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        bool checkIsExist = CheckAlreadyNameExists(txtTitle.Text.Trim());
+
+        if (!checkIsExist)
+        {
+            context.HRMS_Setup_EducationStatus.Add(obj);
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Education Status has been added successfully.", MessageType.Success);
+            Success("Education Status has been added successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //ShowMessage("Education Status Already Exist");
+            //MessageCtrl.showMessageBox("Education Status Already Exist.", MessageType.Validation);
+            Error("Education Status Already Exist.");
+
+        }
+
+
+
+
+        BindRepeater();
+
+        ResetControls();
+    }
+    private void BindRepeater()
+    {
+
+        string statustitle = txtstatustitlesearch.Text.Trim();
+
+
+        var List = context.HRMS_Setup_EducationStatus.Where(c => c.IsActive == true
+                && (c.EducationStatusTitle.Contains(statustitle) || statustitle == string.Empty)
+
+            ).Select(c => new
+            {
+                _Id = c.EducationStatusId,
+                _EducationStatusTitle = c.EducationStatusTitle,
+
+
+
+            }).ToList();
+        rpt.DataSource = List;
+        rpt.DataBind();
+    }
+    public bool CheckAlreadyNameExists(string title)
+    {
+        int statusid = 0;
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+        if (hfstatustitleId.Value != "")
+        {
+            statusid = Convert.ToInt32(hfstatustitleId.Value);
+        }
+        else
+        {
+            statusid = 0;
+        }
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+
+        HRMS_Setup_EducationStatus obj = context.HRMS_Setup_EducationStatus.FirstOrDefault(j => j.EducationStatusTitle == title && j.IsActive == true && j.EducationStatusId != statusid);
+        if (obj != null)
+        {
+            return true;
+        }
+        return false;
+    }
+    private void Update()
+    {
+        DateTime dt = DateTime.Now;
+
+        int Id = Convert.ToInt32(hfstatustitleId.Value);
+        HRMS_Setup_EducationStatus obj = context.HRMS_Setup_EducationStatus.FirstOrDefault(j => j.EducationStatusId == Id);
+        obj.EducationStatusTitle = txtTitle.Text.Trim();
+
+        obj.ModifiedBy = UserKey;
+        obj.ModifiedDate = dt;
+        obj.IsActive = true;
+        bool checkIsExist = CheckAlreadyNameExists(txtTitle.Text.Trim());
+
+        if (!checkIsExist)
+        {
+
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Education Status has been updated successfully.", MessageType.Success);
+            Success("Education Status has been updated successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //MessageCtrl.showMessageBox("Education Status Already Exist.", MessageType.Validation);
+            Error("Education Status Already Exist.");
+
+        }
+
+
+
+        BindRepeater();
+        ResetControls();
+    }
+    private void ResetControls()
+    {
+        txtstatustitlesearch.Text = string.Empty;
+        txtTitle.Text = string.Empty;
+        hfstatustitleId.Value = "";
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    #endregion
+}

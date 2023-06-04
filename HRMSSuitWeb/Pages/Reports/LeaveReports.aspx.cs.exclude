@@ -1,0 +1,208 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.IO;
+
+public partial class Pages_Reports_LeaveReports : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!IsPostBack)
+            {
+
+                string numberOfdays = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month).ToString();
+                txtStartDate.Text = DateTime.Now.Month.ToString() + "/01/" + DateTime.Now.Year;
+                txtEndDate.Text = DateTime.Now.Month.ToString() + "/" + numberOfdays + "/" + DateTime.Now.Year;
+                BindDropDown();
+                // BindRepeater();
+            }
+        }
+        catch (Exception ex) { }
+    }
+    private void BindDropDown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true ).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+        //var department = context.Setup_Department.Where(e => e.IsActive == true)
+        //    .OrderBy(e => e.DepartmentId)
+        //.Select(e => new
+        //{
+        //    DepartmentId = e.DepartmentId,
+        //    DepartmentName = e.DepartmentName
+        //}).OrderBy(a => a.DepartmentName)
+        //.ToList();
+
+        //CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", department.Count > 1 ? true : false, false);
+
+        //var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == UserKey || IsSuperAdmin == true || (RoleCode == roleAdmin && e.CompanyId == CompanyId)))
+        //    .OrderBy(e => e.EmployeeCode)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.EmployeeCode + " - " + e.FirstName
+        //    })
+        //    .ToList();
+
+
+
+        //var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+        //              .Select(a => new
+        //              {
+        //                  GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+        //                  GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+        //              })
+        //              .ToList().Distinct();
+        //CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+
+        //ddlGroup_SelectedIndexChanged(null, null);
+
+        //var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        //CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+        //int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        //var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+        //    .OrderBy(e => e.FirstName)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.FirstName + " - " + e.EmployeeCode
+        //    })
+        //    .ToList();
+        ////.OrderBy("Name").ToList();
+        //CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+        foreach (Constant.TMSLeaveTypes enumValue in Enum.GetValues(typeof(Constant.TMSLeaveTypes)))
+        {
+            ListItem li = new ListItem();
+            li.Text = enumValue.ToString();
+            li.Value = Convert.ToString((int)enumValue);
+            ddlLeaveType.Items.Add(li);
+        }
+
+        foreach (Constant.TMSStatus enumValue in Enum.GetValues(typeof(Constant.TMSStatus)))
+        {
+            ListItem li = new ListItem();
+            li.Text = enumValue.ToString();
+            li.Value = Convert.ToString((int)enumValue);
+            ddlStatus.Items.Add(li);
+        }
+    }
+    //protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+
+    //    int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+    //    var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+    //        .Select(a => new
+    //        {
+    //            CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+    //            CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+    //        })
+    //        .ToList().Distinct();
+
+    //    CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+    //}
+    //protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+    //    var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+    //       .Select(a => new
+    //       {
+    //           LocationId = a.Setup_Location.LocationId,
+    //           LocationName = a.Setup_Location.LocationName,
+
+    //       })
+    //       .ToList();
+    //    CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+    //    //ddlDepartment_SelectedIndexChanged(null, null);
+    //}
+    //protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    //{
+    //    int CompanyID = CompanyId;
+    //    if (ddlCompany.SelectedValue != "0")
+    //    {
+    //        CompanyID = Convert.ToInt32(ddlCompany.SelectedValue);
+    //    }
+    //    var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.DepartmentName).ToList();
+    //    CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+    //}
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+
+    private void BindRepeater()
+    {
+        try
+        {
+            List<TMS_Leave_Report_Result> Leave_Rep = new List<TMS_Leave_Report_Result>();
+            DateTime StartDate = Convert.ToDateTime(txtStartDate.Text);
+            DateTime EndDate = Convert.ToDateTime(txtEndDate.Text);
+            string Dep_ID = null; string LeaveType = null; string LeaveStatus = null;
+
+            if (ddlDepartment.SelectedValue != "0")
+            {
+                Dep_ID = ddlDepartment.SelectedValue;
+            }
+
+            if (ddlLeaveType.SelectedValue != "0")
+            {
+                LeaveType = ddlLeaveType.SelectedValue;
+            }
+            if (ddlStatus.SelectedValue != "0")
+            {
+                LeaveStatus = ddlStatus.SelectedValue;
+            }
+            Leave_Rep = context.TMS_Leave_Report(StartDate, EndDate, Dep_ID, LeaveType, LeaveStatus).ToList();
+            rpt.DataSource = Leave_Rep;
+            rpt.DataBind();
+
+            if (Leave_Rep.Count > 0)
+            {
+                LB_Export_To_Excel.Visible = true;
+            }
+            else
+            {
+                LB_Export_To_Excel.Visible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+            divError.Attributes.Add("class", "validationSummary");
+            divError.Visible = true;
+        }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void LB_Export_To_Excel_Click(object sender, EventArgs e)
+    {
+        Response.ClearContent();
+        Response.Buffer = true;
+        Response.AddHeader("content-disposition", "attachment; filename=Leave_Report.xls");
+        Response.ContentType = "application/vnd.ms-excel";
+        Response.Charset = "";
+        StringWriter sw = new StringWriter();
+        HtmlTextWriter htw = new HtmlTextWriter(sw);
+        rpt.RenderControl(htw);
+        Response.Output.Write(sw.ToString());
+        Response.Flush();
+        Response.End();
+
+    }
+}

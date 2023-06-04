@@ -1,0 +1,117 @@
+﻿using DAL;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Pages_Reports_ResignedEmployeesReport : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindDropdown();
+        }
+    }
+
+    private void BindDropdown()
+    {
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                            .Select(a => new
+                            {
+                                GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                                GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                            })
+                            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+        CommonHelper.BindDropDown(ddlCompany, null, "CompanyName", "CompanyId", true, false);
+        CommonHelper.BindDropDown(ddlLocation, null , "LocationName", "LocationId", true, false);
+        CommonHelper.BindDropDown(ddlBusinessUnit, null, "BusinessUnitName", "BusinessUnitID", true, false);
+        CommonHelper.BindDropDown(ddlDepartment, null, "LocationName", "LocationId", true, false);
+        CommonHelper.BindDropDown(ddlDesignation, null, "BusinessUnitName", "BusinessUnitID", true, false);
+    }
+
+    private void BindRepeater()
+    {
+
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+
+        if (ddlCompany.Items.Count > 1)
+        {
+            ddlCompany.SelectedIndex = 1;
+        }
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyId && (IsAdmin || IsSuperAdmin || c.Setup_Employee.Any(a => a.IsActive == true && a.InchargeId == UserKey))).OrderBy(c => c.BusinessUnitName).ToList();
+        CommonHelper.BindDropDown(ddlBusinessUnit, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", listBusinessUnit.Count > 1 ? true : false, false);
+        ddlBusinessUnit_SelectedIndexChanged(null, null);
+
+        if (ddlLocation.Items.Count > 1)
+        {
+            ddlLocation.SelectedIndex = 1;
+        }
+
+
+        var ListDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.Setup_Category.CompanyId == CompanyId).OrderBy(c => c.DesignationName).ToList();
+        //var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.Setup_Company.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+
+
+
+
+        CommonHelper.BindDropDown(ddlDesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+      
+
+      
+
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void ddlBusinessUnit_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BUID = Convert.ToInt32(ddlBusinessUnit.SelectedValue);
+
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BUID).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+    }
+}

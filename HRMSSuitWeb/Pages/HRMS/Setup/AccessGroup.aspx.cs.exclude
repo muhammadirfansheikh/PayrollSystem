@@ -1,0 +1,221 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_HRMS_Setup_AccessGroup : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater();
+        }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControls();
+        BindRepeater();
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        LinkButton btnEdit = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+        int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfGroupId")).Value);
+        var Group = context.HRMS_Setup_AccessGroup.Where(x => x.AccessGroupId == Id).FirstOrDefault();
+        if (Group != null)
+        {
+            hfGroupId.Value = Id.ToString();
+            txtGroupAdd.Text = Group.AccessGroupTitle;
+            OpenPopup();
+        }
+    }
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnDelete = (LinkButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+            int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfGroupId")).Value);
+
+            divError.Visible = false;
+            HRMS_Setup_AccessGroup obj = context.HRMS_Setup_AccessGroup.FirstOrDefault(j => j.AccessGroupId == Id);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            //MessageCtrl.showMessageBox("Access Group has been deleted successfully.", MessageType.Success);
+            Success("Access Group has been deleted successfully.");
+            BindRepeater();
+            ClosePopup();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        if (hfGroupId.Value == string.Empty)
+            Add();
+        else
+            Update();
+    }
+    #region Custom Methods
+    private void BindRepeater()
+    {
+
+        // string code = txtbancodesearch.Text.Trim();
+        string title = txtGroupSearch.Text.Trim();
+
+
+
+        var List = context.HRMS_Setup_AccessGroup.Where(c => c.IsActive == true
+            // && (c.AccessGroupCode.Contains(code) || code == string.Empty)
+                && (c.AccessGroupTitle.Contains(title) || title == string.Empty)
+
+            ).Select(c => new
+            {
+                _Id = c.AccessGroupId,
+                _accesscode = c.AccessGroupCode,
+                _accesstitle = c.AccessGroupTitle
+
+
+            }).ToList();
+        rpt.DataSource = List;
+        rpt.DataBind();
+    }
+    private void Add()
+    {
+        DateTime dt = DateTime.Now;
+        HRMS_Setup_AccessGroup obj = new HRMS_Setup_AccessGroup();
+
+
+        //obj.AccessGroupCode = txtaccesscode.Text.Trim();
+        obj.AccessGroupTitle = txtGroupAdd.Text.Trim();
+
+        obj.AccessGroupGuidId = "";
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        //obj.UserIP = UserIP;
+        //obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        bool checkIsExist = CheckAlreadyNameExists(txtGroupAdd.Text.Trim());
+
+        if (!checkIsExist)
+        {
+            context.HRMS_Setup_AccessGroup.Add(obj);
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Access Groupy has been added successfully.", MessageType.Success);
+            Success("Access Group has been added successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //ShowMessage("Access Group Already Exist");
+            //MessageCtrl.showMessageBox("Access Group Already Exist.", MessageType.Validation);
+            Error("Access Group Already Exist.");
+            ClosePopup();
+        }
+
+
+
+
+        BindRepeater();
+
+        ResetControls();
+    }
+    private void Update()
+    {
+        DateTime dt = DateTime.Now;
+
+        int Id = Convert.ToInt32(hfGroupId.Value);
+        HRMS_Setup_AccessGroup obj = context.HRMS_Setup_AccessGroup.FirstOrDefault(j => j.AccessGroupId == Id);
+        //obj.AccessGroupCode = txtaccesscode.Text.Trim();
+        obj.AccessGroupTitle = txtGroupAdd.Text.Trim();
+        obj.ModifiedBy = UserKey;
+        obj.ModifiedDate = dt;
+        obj.IsActive = true;
+        bool checkIsExist = CheckAlreadyNameExists(txtGroupAdd.Text.Trim());
+
+        if (!checkIsExist)
+        {
+
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Access Group has been updated successfully.", MessageType.Success);
+            Success("Access Group has been updated successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //MessageCtrl.showMessageBox("Access Group Already Exist.", MessageType.Validation);
+            Error("Access Group Already Exist.");
+
+
+        }
+
+
+
+        BindRepeater();
+        ResetControls();
+    }
+    public bool CheckAlreadyNameExists(string description)
+    {
+        int id = 0;
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+        if (hfGroupId.Value != "")
+        {
+            id = Convert.ToInt32(hfGroupId.Value);
+        }
+        else
+        {
+            id = 0;
+        }
+        List<HRMS_Setup_AccessGroup> obj = context.HRMS_Setup_AccessGroup.Where(j => j.AccessGroupTitle == description && j.IsActive == true && j.AccessGroupId != id).ToList();
+        if (obj.Count != 0)
+        {
+            return true;
+        }
+        return false;
+    }
+    private void ResetControls()
+    {
+        txtGroupSearch.Text = string.Empty;
+        txtGroupAdd.Text = string.Empty;
+        hfGroupId.Value = "";
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+    #endregion
+}

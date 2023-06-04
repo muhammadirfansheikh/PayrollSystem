@@ -1,0 +1,923 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPage/AdminMaster.master" CodeFile="AddShifts.aspx.cs" Inherits="Pages_TMS_Setup_AddShifts" %>
+
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <style>
+        .mendatory
+        {
+            color: red;
+        }
+    </style>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Shift Details</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="/Pages/HRMS/Employees.aspx">Employees</a>
+                </li>
+                <li class="active">
+                    <strong>Shift Details</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <div class="wrapper wrapper-content" runat="server" id="divEmployeeDetails">
+        <div class="col-lg-12 white-bg" style="margin-top: 11px; padding: 0px;">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Shift Details
+                </div>
+                <asp:UpdatePanel runat="server">
+                    <ContentTemplate>
+                        <div class="panel-body">
+                            <div>
+                                <div id="divSummary" runat="server" visible="false">
+                                    <asp:Label ID="lblSummary" runat="server"></asp:Label>
+                                </div>
+                                <asp:ValidationSummary ID="validationSummary" runat="server" EnableClientScript="true"
+                                    Enabled="true" ValidationGroup="AddEditShift" DisplayMode="BulletList" ShowSummary="true"
+                                    HeaderText="Required Fields" CssClass='validationSummary' />
+                            </div>
+                            <div class='searchContainer'>
+                                <div class='lineHeading'>
+                                </div>
+                                <table class="table" width="100%">
+                                    <tr>
+                                        <td style="width: 110px;">Shift Name<span class="mendatory">*</span>
+                                        </td>
+                                        <td>
+                                            <input type="text" id='txtShiftName' runat="server" class="clsTxtCategoryName form-control" /><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtShiftName" runat="server" ValidationGroup="AddEditShift"
+                                                Text="*" ErrorMessage="Shift Name" Display="Dynamic" ControlToValidate="txtShiftName"></asp:RequiredFieldValidator>
+                                            <input type="hidden" id="hfShiftId" runat="server" /><%--class="hfCategoryId"--%>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 110px;">Company<span class="mendatory">*</span>
+                                        </td>
+                                        <td>
+                                            <asp:DropDownList ID="ddlCompany" runat="server" CssClass="ddlCompany" AutoPostBack="true"
+                                                OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged">
+                                            </asp:DropDownList>
+                                            <asp:RequiredFieldValidator ID="rfvddlCompany" runat="server" ValidationGroup="AddEditShift"
+                                                ErrorMessage="Company" Text="*" Display="Dynamic" ControlToValidate="ddlCompany"
+                                                InitialValue="0"></asp:RequiredFieldValidator>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 110px;">Department<span class="mendatory">*</span>
+                                        </td>
+                                        <td>
+                                            <asp:ListBox ID="ListBoxDepartment" Width="50%" runat="server" SelectionMode="Multiple" Height="125px"
+                                                ToolTip="Press ctrl to select multiple department"></asp:ListBox>
+                                            <asp:RequiredFieldValidator ID="valList" ErrorMessage="Department" Text="*" ValidationGroup="AddEditShift"
+                                                ControlToValidate="ListBoxDepartment" InitialValue="" runat="server" />
+                                            <%--<asp:DropDownList ID="ddlDepartment" runat="server" CssClass="ddlCompany">
+                        </asp:DropDownList>
+                        <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddEditShift"
+                        Text="*" ErrorMessage="Department" Display="Dynamic" ControlToValidate="ddlDepartment"
+                        InitialValue="0"></asp:RequiredFieldValidator>--%>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 110px;">Description<span class="mendatory">*</span>
+                                        </td>
+                                        <td>
+                                            <input type="text" id='txtDescription' runat="server" /><%--class="clsTxtCategoryName"--%><%--style="width: 250px;"--%>
+                                            <asp:RequiredFieldValidator ID="rfvtxtDescription" runat="server" ValidationGroup="AddEditShift"
+                                                Text="*" ErrorMessage="Description" Display="Dynamic" ControlToValidate="txtDescription"></asp:RequiredFieldValidator>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div id="tabs">
+                                                <ul class="parent nav nav-pills" id="tabs" style="background-color: rgba(26, 179, 148, 0.08);">
+                                                    <li class="active"><a href="#tabs-1" data-toggle="tab">MON</a></li>
+                                                    <li><a href="#tabs-2" data-toggle="tab">TUE</a></li>
+                                                    <li><a href="#tabs-3" data-toggle="tab">WED</a></li>
+                                                    <li><a href="#tabs-4" data-toggle="tab">THU</a></li>
+                                                    <li><a href="#tabs-5" data-toggle="tab">FRI</a></li>
+                                                    <li><a href="#tabs-6" data-toggle="tab">SAT</a></li>
+                                                    <li><a href="#tabs-7" data-toggle="tab">SUN</a></li>
+                                                </ul>
+                                                <div class="tab-content">
+                                                    <div id="tabs-1" class="tab-pane active">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" disabled="disabled" id="chkMonCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnMonWorking" runat="server" name="MON_DayType"
+                                                                        value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnMonAlternate" runat="server"
+                                                                        name="MON_DayType" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnmonHoliday" type="radio" id="rbtnMonHoliday"
+                                                                        runat="server" name="MON_DayType" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlMonStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlMonStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlMonBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlMonBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlMonShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlMonShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlMonFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlMonFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlMonFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlMonFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-2" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkTueCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnTueWorking" name="TUE_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnTueAlternate" runat="server"
+                                                                        name="TUE_DayType" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtntueHoliday" type="radio" id="rbtnTueHoliday"
+                                                                        name="TUE_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlTueStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlTueStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlTueBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlTueBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlTueShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlTueShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlTueFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlTueFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlTueFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlTueFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-3" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkWedCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnWedWorking" name="Wed_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnWedAlternate" name="Wed_DayType"
+                                                                        runat="server" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnwedHoliday" type="radio" id="rbtnWedHoliday"
+                                                                        name="Wed_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlWedStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlWedStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlWedBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlWedBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlWedShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlWedShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlWedFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlWedFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlWedFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlWedFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-4" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkThrCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnThrWorking" name="Thr_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnThrAlternate" name="Thr_DayType"
+                                                                        runat="server" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnthrHoliday" type="radio" id="rbtnThrHoliday"
+                                                                        name="Thr_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlThrStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlThrStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlThrBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlThrBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlThrShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlThrShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlThrFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlThrFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlThrFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlThrFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-5" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkFriCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnFriWorking" name="Fri_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnFriAlternate" name="Fri_DayType"
+                                                                        runat="server" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnfriHoliday" type="radio" id="rbtnFriHoliday"
+                                                                        name="Fri_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlFriStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlFriStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlFriBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlFriBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlFriShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlFriShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlFriFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlFriFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlFriFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlFriFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-6" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkSatCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnSatWorking" name="Sat_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnSatAlternate" name="Sat_DayType"
+                                                                        runat="server" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnsatHoliday" type="radio" id="rbtnSatHoliday"
+                                                                        name="Sat_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSatStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSatStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSatBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSatBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSatShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSatShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSatFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSatFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSatFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSatFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                    <div id="tabs-7" class="tab-pane">
+                                                        <table class="table" width="100%">
+                                                            <tr>
+                                                                <td>Copy Last
+                                                                </td>
+                                                                <td colspan="3">
+                                                                    <input type="checkbox" id="chkSunCopyLast" class="clschkCopyLast" />
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Day Type
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnWorking" type="radio" id="rbtnSunWorking" name="Sun_DayType"
+                                                                        runat="server" value="1" checked="true" />Working
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnAlternate" type="radio" id="rbtnSunAlternate" name="Sun_DayType"
+                                                                        runat="server" value="2" />Alternate
+                                                                </td>
+                                                                <td>
+                                                                    <input class="clsrbtnHoliday clsrbtnsunHoliday" type="radio" id="rbtnSunHoliday"
+                                                                        name="Sun_DayType" runat="server" value="3" />Holiday
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Start Time
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSunStartTimeHrs" CssClass="clsddlStartTimeHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSunStartTimeMins" CssClass="clsddlStartTimeMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Break Duration
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSunBreakDurHrs" CssClass="clsddlBreakDurHrs" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSunBreakDurMins" CssClass="clsddlBreakDurMins" runat="server">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Shift End
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSunShiftEndHrs" runat="server" CssClass="clsddlShiftEndHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSunShiftEndMins" runat="server" CssClass="clsddlShiftEndMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi In
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSunFlexiInHrs" runat="server" CssClass="clsddlFlexiInHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSunFlexiInMins" runat="server" CssClass="clsddlFlexiInMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Flexi Out
+                                                                </td>
+                                                                <td>Hour
+                                        <asp:DropDownList ID="ddlSunFlexiOutHrs" runat="server" CssClass="clsddlFlexiOutHrs">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td>Min
+                                        <asp:DropDownList ID="ddlSunFlexiOutMins" runat="server" CssClass="clsddlFlexiOutMins">
+                                        </asp:DropDownList>
+                                                                </td>
+                                                                <td></td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <asp:Button ID="btnSave" Text="Save" runat="server" CssClass="btn btn-primary button1 right pull-right" ValidationGroup="AddEditShift"
+                                                OnClick="btnSave_Click" />
+                                        </td>
+                                    </tr>
+                                </table>
+                                <%--<table>
+            <tr>
+                <td class="textRight">Shift Name
+                </td>
+                <td class="textRight">
+                    <asp:TextBox ID="txtShiftName" runat="server" Width="150px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td>Company
+                </td>
+
+                <td>
+                    <asp:DropDownList ID="ddlCompany" runat="server" CssClass="ddlCompanyNameSearch">
+                    </asp:DropDownList>
+
+                </td>
+
+            </tr>
+            <tr>
+                <td class="textRight">Description
+                </td>
+                <td class="textRight">
+                    <asp:TextBox ID="txtDescription" runat="server" Width="150px"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="button1" OnClick="btnSearch_Click" />
+                </td>
+            </tr>
+
+        </table>--%>
+                            </div>
+
+
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function pageLoad() {
+            $('.clschkCopyLast').click(function () {
+               
+                var result = $(this).is(':checked');
+                //alert(result);
+                var currentDiv = $(this).closest('div');
+                var prevDiv = $(this).closest('div').prev('div');
+
+                if (result == true) {
+                    $(currentDiv).find('.clsrbtnWorking').attr('checked', $(prevDiv).find('.clsrbtnWorking').is(':checked'));
+                    $(currentDiv).find('.clsrbtnAlternate').attr('checked', $(prevDiv).find('.clsrbtnAlternate').is(':checked'));
+                    $(currentDiv).find('.clsrbtnHoliday').attr('checked', $(prevDiv).find('.clsrbtnHoliday').is(':checked'));
+
+                    $(currentDiv).find('.clsddlStartTimeHrs').val($(prevDiv).find('.clsddlStartTimeHrs').val());
+                    $(currentDiv).find('.clsddlStartTimeMins').val($(prevDiv).find('.clsddlStartTimeMins').val());
+
+                    $(currentDiv).find('.clsddlBreakDurHrs').val($(prevDiv).find('.clsddlBreakDurHrs').val());
+                    $(currentDiv).find('.clsddlBreakDurMins').val($(prevDiv).find('.clsddlBreakDurMins').val());
+
+                    $(currentDiv).find('.clsddlShiftEndHrs').val($(prevDiv).find('.clsddlShiftEndHrs').val());
+                    $(currentDiv).find('.clsddlShiftEndMins').val($(prevDiv).find('.clsddlShiftEndMins').val());
+
+                    $(currentDiv).find('.clsddlFlexiInHrs').val($(prevDiv).find('.clsddlFlexiInHrs').val());
+                    $(currentDiv).find('.clsddlFlexiInMins').val($(prevDiv).find('.clsddlFlexiInMins').val());
+
+                    $(currentDiv).find('.clsddlFlexiOutHrs').val($(prevDiv).find('.clsddlFlexiOutHrs').val());
+                    $(currentDiv).find('.clsddlFlexiOutMins').val($(prevDiv).find('.clsddlFlexiOutMins').val());
+                }
+                else {
+                    $(currentDiv).find('.clsrbtnWorking, .clsrbtnAlternate, .clsrbtnHoliday').attr('checked', false);
+                    $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').val('0');
+                }
+            });
+
+
+            $('.clsrbtnHoliday').click(function () {
+                var result = $(this).is(':checked');
+                var currentDiv = $(this).closest('div');
+                if (result == true) {
+                    $(currentDiv).find('select').val('0');
+                    $(currentDiv).find('select').attr('disabled', 'disabled');
+
+                }
+
+            });
+
+            $('.clsrbtnAlternate, .clsrbtnWorking').click(function () {
+                var result = $(this).is(':checked');
+                var currentDiv = $(this).closest('div');
+                if (result == true) {
+                    $(currentDiv).find('select').removeAttr('disabled');
+                }
+            });
+        }
+        $(function () {
+            $("#tabs").tabs();
+
+            if ($('.clsrbtnmonHoliday').is(':checked')) {
+                var currentmonDiv = $('.clsrbtnmonHoliday').closest('div');
+                $(currentmonDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+            if ($('.clsrbtntueHoliday').is(':checked')) {
+                var currenttueDiv = $('.clsrbtntueHoliday').closest('div');
+                $(currenttueDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+            if ($('.clsrbtnwedHoliday').is(':checked')) {
+                var currentDiv = $('.clsrbtnwedHoliday').closest('div');
+                $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+            if ($('.clsrbtnthrHoliday').is(':checked')) {
+                var currentDiv = $('.clsrbtnthrHoliday').closest('div');
+                $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+            if ($('.clsrbtnfriHoliday').is(':checked')) {
+
+
+                var currentDiv = $('.clsrbtnfriHoliday').closest('div');
+                $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+
+            if ($('.clsrbtnsatHoliday').is(':checked')) {
+
+                var currentDiv = $('.clsrbtnsatHoliday').closest('div');
+                $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+            if ($('.clsrbtnsunHoliday').is(':checked')) {
+
+                var currentDiv = $('.clsrbtnsunHoliday').closest('div');
+                $(currentDiv).find('.clsddlStartTimeHrs, .clsddlStartTimeMins, .clsddlBreakDurHrs, .clsddlBreakDurMins, .clsddlShiftEndHrs, .clsddlShiftEndMins, .clsddlFlexiInHrs, .clsddlFlexiInMins, .clsddlFlexiOutHrs, .clsddlFlexiOutMins').attr('disabled', 'disabled');
+
+            }
+
+
+
+
+
+
+
+            //$('.clsrbtnAlternate, .clsrbtnWorking').click(function () {
+            //    var result = $(this).is(':checked');
+            //    var currentDiv = $(this).closest('div');
+            //    if (result == true) {
+            //        $(currentDiv).find('select').removeAttr('disabled');
+            //    }
+            //});
+
+        });
+    </script>
+</asp:Content>

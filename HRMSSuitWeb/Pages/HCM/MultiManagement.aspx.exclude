@@ -1,0 +1,520 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="MultiManagement.aspx.cs" Inherits="Pages_HCM_MultiManagement" %>
+
+<%@ Register Src="~/Controls/HCM/EmployeeSearchFilters.ascx" TagPrefix="uc" TagName="EmployeeSearchFilters" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <script src="/js/jquery.tmpl.min.js"></script>
+
+    <style>
+        .Hide {
+            display: none;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <uc:EmployeeSearchFilters runat="server" ID="EmployeeSearchFilters" EmployeeCode="1"/>
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title">Manage</h3>
+        </div>
+        <div class="panel-body">
+            <button class="btn btn-info btnFeature btnInc Hide" type="button" onclick="GetEmployee(this)" value="Inc">Increments</button>
+            <button class="btn btn-info btnFeature btnPF" type="button" onclick="GetEmployee(this)" value="PF">PF Opening</button>
+            <button class="btn btn-info btnFeature btnSal" type="button" onclick="GetEmployee(this)" value="Sal">Salary</button>
+            <button class="btn btn-info btnFeature btnFlex Hide" type="button" onclick="GetEmployee(this)" value="Flex">Absents/Flexis</button>
+            <button class="btn btn-info btnFeature btnLoan Hide" type="button" onclick="GetEmployee(this)" value="Loan">Loan</button>
+            <button class="btn btn-info btnFeature btnHoldPF" type="button" onclick="GetEmployee(this)" value="HoldPF">Hold PF</button>
+            <button class="btn btn-info btnFeature btnInterestIncome" type="button" onclick="GetEmployee(this)" value="InterestInc">Interest Income</button>
+            <button class="btn btn-info btnFeature btnSESSILimit" type="button" onclick="GetEmployee(this)" value="SESSILim">SESSI Settings</button>
+            <button class="btn btn-info btnFeature btnOvertimeHours Hide" type="button" onclick="GetEmployee(this)" value="OvertimeHours">Over Time Hours</button>
+            <button class="btn btn-info btnFeature btnLeaveEncashment" type="button" onclick="GetEmployee(this)" value="LeaveEncashments">Leave Encashment</button>
+            <button class="btn btn-info btnFeature btnInvTaxForcast" type="button" onclick="GetEmployee(this)" value="IncTaxForcast">Tax Forcast Increments</button>
+            <button class="btn btn-info btnFeature btnWppf" type="button" onclick="GetEmployee(this)" value="Wppf">WPPF</button>
+            <button class="btn btn-info btnFeature btnTaxRefund" type="button" onclick="GetEmployee(this)" value="TaxRefund">Tax Refund</button>
+
+        </div>
+    </div>
+
+    <div class="panel panel-info panelProcessOptions">
+        <div class="panel-heading">
+            <h3 class="panel-title">Process Options</h3>
+        </div>
+        <div class="panel-body">
+
+            <div class="divLoan">
+                <div class="col-md-12">
+
+                    <div class="checkbox checkbox-info">
+                        <input id="chk" type="checkbox" onclick="ToggleLoanRecords()" />
+                        <label for="chk">Loan Only</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divFlex">
+                <div class="col-lg-2">
+                    <label style="font-size: 10px;">Month</label>
+                    <input type="text" onchange="CheckPayrollLock()" class="form-control keylock smaller dtMonthOfAbsents DatePicker" />
+                </div>
+
+                <div class="col-lg-1 aligncontrol">
+                    <div class="radio">
+                        <input type="radio" onclick="SetIsAbsent(true)" name="IsAbsent" />
+                        <label>Absent</label>
+                    </div>
+                </div>
+                <div class="col-lg-1 aligncontrol">
+                    <div class="radio">
+                        <input type="radio" onclick="SetIsAbsent(false)" name="IsAbsent" checked="checked" />
+                        <label>Flexi</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divInc">
+                <div class="col-lg-3">
+                    <label style="font-size: 10px;">Increment Start</label>
+                    <%--<input type="text" class="form-control smaller keylock DatePicker" />--%>
+                    <input type="text" class="form-control smaller keylock DatePickerComplete" />
+                </div>
+            </div>
+
+            <div class="divIncTaxForcast">
+            </div>
+
+            <div class="divHoldPF">
+                <input type="button" class="btn btn-info" onclick="HoldAllPF()" value="Hold All Below" />
+                <input type="button" class="btn btn-info" onclick="ResumeAllPF()" value="Resume All Below" />
+            </div>
+            <div class="divInterestInc">
+                <div class="col-lg-3">
+                    <label style="font-size: 10px;">Raise PF Rate(%)</label>
+                    <input type="text" onkeyup="GenerateInterestIncome(this)" class="form-control txtPFIncomeInterestRate smaller numeric" />
+                </div>
+                <div class="col-lg-3 divYear">
+                    <label style="font-size: 10px;">Select Year:</label>
+                    <input type="text" onchange="GetIncomeInterestList(this)" class="form-control DatePickerYear smaller numeric YearOf" />
+                </div>
+                <div class="col-lg-2 aligncontrol" style="display: none;">
+                    <input type="button" class="btn btn-info btn-sm" value="Add To Balance" onclick="methd_GenerateInterestIncome()" />
+                </div>
+            </div>
+
+            <div class="divSESSILimit">
+                <div class="col-lg-3">
+                    <label style="font-size: 10px;">Global Effect:</label>
+                    <input type="text" onkeyup="GetGlobalSESSIEffect(this)" class="form-control smaller numeric txtGlobalEffectSessi" />
+                </div>
+            </div>
+
+            <div class="divOvertime">
+                <div class="col-lg-2">
+                    <label style="font-size: 10px;">Month</label>
+                    <input type="text" onchange="GetOvertimeDetailRecords()" class="form-control keylock smaller dtMonthOfOvertime DatePickerMonthComplete" />
+                </div>
+            </div>
+
+            <div class="divLeaveEncashment">
+                <div class="col-lg-2 divLeaveEncashValidate">
+                    <label style="font-size: 10px;">Year</label>
+                    <input type="text" class="form-control keylock smaller dtYearOfLeaveEncashment DatePickerYear" onchange="GetLeaveEncashmentRecords();" />
+                </div>
+            </div>
+
+            <div class="divWppf">
+                <div class="col-lg-2 divWppfValidate">
+                    <label style="font-size: 10px;">Year</label>
+                    <%-- <input type="text" class="form-control keylock smaller dtYearOfWppf DatePickerYear" onchange="" />--%>
+                    <select class="form-control ddlYearWppf"></select>
+                </div>
+
+                <div class="col-lg-2 ">
+                    <label style="font-size: 10px;">Max Unit Rate</label>
+                    <input type="text" class="form-control  smaller txtMaxUnitRateWppf numeric" onchange="" />
+                </div>
+
+                <div class="col-lg-2 ">
+                    <label style="font-size: 10px;">Max Interest Rate</label>
+                    <input type="text" class="form-control  smaller txtMaxInterestRateWppf numeric" onchange="" />
+                </div>
+
+            </div>
+
+            <div class="divTaxRefund">
+                <div class="col-lg-2 divTaxRefundValidate">
+                    <label style="font-size: 10px;">Year</label>
+                    <select class="form-control ddlYearTaxRefund"></select>
+                </div>
+
+                <div class="col-lg-2 ">
+                    <label style="font-size: 10px;">Month</label>
+                    <input type="text" class="form-control keylock smaller dtMonthTaxRefund DatePickerMonthComplete" />
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+    <div class="panel panel-info">
+        <div class="panel-heading">
+
+
+            <h3 class="mainTitle" style="text-align: center;">Manage</h3>
+            <input type="button" onclick="saveChanges()" value="Save Changes" style="margin-top: -2.5%" class="btn btn-warning pull-right btnSaveChanges" />
+        </div>
+        <div class="panel-body">
+
+            <table class="table table-hover tableEmployee">
+                <thead>
+                    <tr class="info">
+                        <th style="vertical-align: middle;">Company</th>
+                        <th style="vertical-align: middle;">Code</th>
+                        <th style="vertical-align: middle;">Name</th>
+                        <th style="vertical-align: middle;">Department</th>
+                        <th style="vertical-align: middle;">Designation</th>
+                        <th style="vertical-align: middle;">Location</th>
+                        <th style="vertical-align: middle; text-align: center;">
+
+                            <div class="divInc">
+                                <div class="col-lg-4 pull-right">
+                                    <label style="font-size: 10px;">Global Percentage Effect</label>
+                                    <div class="input-group m-b">
+                                        <input value="0" onkeyup="GlobalPercentageEffect(this)" type="text" class="form-control smaller" />
+                                        <span onclick="ClearInput(this)" class="input-group-addon smaller"><i class="fa fa-times"></i></span>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 pull-right">
+                                    <label style="font-size: 10px;">Global Amount Effect</label>
+                                    <div class="input-group m-b">
+                                        <input value="0" onkeyup="GlobalAmountEffect(this)" type="text" class="form-control smaller" />
+                                        <span onclick="ClearInput(this)" class="input-group-addon smaller"><i class="fa fa-times "></i></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="divPFOpening">
+                                Amount
+                            </div>
+
+                            <div class="divFlex">
+                                <div class="col-lg-8 pull-right">
+                                    <label style="font-size: 10px;">Absent/Flexi</label>
+                                    <input type="text" class="smaller form-control globalFlexi" onkeyup="GlobalAbsentFlexis(this)" />
+                                </div>
+                            </div>
+
+                            <div class="divSal">
+                                Salary
+                            </div>
+
+                            <div class="divLoan">
+                                <span>Loan Summary</span>
+                                <span onclick="showAllSummary(this)" class="badge badge-info"><i class="fa fa-plus"></i></span>
+                            </div>
+
+                            <div class="divHoldPF">
+                                <span>Hold Provident Fund</span>
+                            </div>
+
+                            <div class="divInterestInc">
+
+                                <div class="col-lg-12 ">
+                                    <div class="col-lg-3">
+                                        <span>Previous Interest Income</span>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <span>Interest Rate</span>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <span>PF Balance</span>
+                                    </div>
+
+                                    <div class="col-lg-3">
+                                        <span>Interest Income</span>
+                                    </div>
+                                </div>
+                                <%--<div class="checkbox checkbox-primary checkbox-inline">
+                                    <input type="checkbox" id="chkSelectAllInterestIncome" onclick="InterestIncome_SelectAllCheckBoxes(this)" />
+                                    <label></label>
+                                </div>--%>
+                            </div>
+
+                            <div class="divSESSILimit">
+                                <span>SESSI Limit</span>
+                            </div>
+
+                            <div class="divOvertime">
+                                <span>Over Time</span>
+                            </div>
+
+                            <div class="divLeaveEncashment ">
+
+                                <label style="font-size: 10px;">Leave Encashment</label>
+                                <input type="text" class="smaller form-control globalLeaveEncashment " onkeyup="GlobalLeaveEncashment(this)" />
+                            </div>
+
+                            <div class="divIncForcast">
+                                <div class="col-lg-6 pull-right">
+                                    <label style="font-size: 10px;">Global Percentage Effect</label>
+                                    <div class="input-group m-b">
+                                        <input value="0" onkeyup="GlobalPercentageIncTaxForcastEffect(this)" type="text" class="form-control smaller txtGlobalPercentEffect" />
+                                        <span onclick="ClearInput(this)" class="input-group-addon smaller"><i class="fa fa-times"></i></span>
+                                    </div>
+
+                                    <div class="checkbox checkbox-primary checkbox-inline divIncForcastChkAll">
+                                        <input class="resAll" id="chkAll" type="checkbox" value="All"/>
+                                        <label for="chkResAll">All</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="divWppf">
+                                <div class="col-lg-1 ">
+                                    <label style="font-size: 15px;">Salary</label>
+
+                                </div>
+                                <div class="col-lg-1 ">
+                                    <label style="font-size: 15px;">Unit Value</label>
+
+                                </div>
+
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 10px;">Unit Rate</label>
+                                    <div class="input-group m-b">
+                                        <input value="0" onkeyup="" type="text" class="form-control smaller txtUnitRateWppfGlobal" onchange="GlobalUnitRateWppf(this);" />
+                                        <span onclick="ClearInput(this)" class="input-group-addon smaller"><i class="fa fa-times"></i></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 10px;">Total Unit Rate</label>
+
+                                </div>
+
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 10px;">Interest Rate</label>
+                                    <div class="input-group m-b">
+                                        <input value="0" onkeyup="" type="text" class="form-control smaller txtInterestRateWppfGlobal" onchange="GlobalInterestRateWppf(this);" />
+                                        <span onclick="ClearInput(this)" class="input-group-addon smaller"><i class="fa fa-times"></i></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 10px;">Total Interest Rate</label>
+
+                                </div>
+
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 10px;">Total WPPF</label>
+
+                                </div>
+
+                            </div>
+
+                            <div class="divTaxRefund">
+                                <div class="col-lg-2 ">
+                                    <label style="font-size: 15px;">Tax Refund</label>
+
+                                </div>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="tbodyEmployeeListing">
+                </tbody>
+
+                <tfoot></tfoot>
+            </table>
+
+            <input type="button" onclick="saveChanges()" value="Save Changes" class="btn btn-info pull-right btnSaveChanges" />
+        </div>
+
+        <div class="panel-footer">
+        </div>
+    </div>
+
+
+    <script src="../../js/Page_JS/MultiManagement.js"></script>
+
+
+    <script type="text/x-jQuery-tmpl" id="EmployeeListing">
+        <tr class="recordEmp">
+            <input type="hidden" value="${Salary}" class="EmpSalary" />
+            <input type="hidden" value="${EmployeeId}" class="EmployeeId" />
+            <td style="vertical-align: middle;" class="project-title">${Company}</td>
+            <td style="vertical-align: middle;" class="project-title">${EmployeeCode}</td>
+            <td style="vertical-align: middle;" class="project-title tdEmployeeName">${FirstName} ${LastName}</td>
+            <td style="vertical-align: middle;" class="project-title">${Department}</td>
+            <td style="vertical-align: middle;" class="project-title tdDesignation">${Designation}</td>
+            <td style="vertical-align: middle;" class="project-title">${Location}</td>
+            <td>{{if toManage == "Inc"}}
+                <div class="col-md-4 pull-right">
+                    <label>Percentage</label>
+                    <input value="0" onkeyup="PopulateSalaryAmount(this)" type="text" class="form-control smaller numeric txtPercentage" />
+                </div>
+                <div class="col-md-4 pull-right">
+                    <label>Amount</label>
+                    <input value="${Salary}" onkeyup="PopulateSalaryPercent(this)" type="text" class="form-control smaller numeric txtSalary" />
+                </div>
+                {{else toManage == "PF"}}
+                 <div class="col-lg-12 pull-right">
+                     <input value="${OpeningBalance}" type="text" class="form-control smaller numeric txtPFOpening" />
+                 </div>
+                {{else toManage == "Flex"}}
+                 <div class="col-lg-8 pull-right">
+                     <input type="text" value="0" class="form-control smaller numeric txtAbsentFlexi" />
+                 </div>
+                {{else toManage == "Sal"}}
+                 <div class="col-lg-12 pull-right">
+                     <input type="text" value="${Salary==null ? 0 : Salary}" class="form-control smaller numeric txtSalaryOP" />
+                 </div>
+                {{else toManage == 'Loan'}}
+                  <div class="divLoantd">
+                  </div>
+                {{else toManage == 'HoldPF'}}
+                 <div class="col-lg-8 pull-right">
+                     <input type="hidden" class="hdnStatus" />
+                     <input type="hidden" class="hdnPFLogId" />
+                     <label class="label label-warning lblStatusPfHold">N/A</label>
+                     <input type="button" value="Hold" onclick="HoldPF(this)" class="btn btn-info btn-xs btnHoldPf" />
+                 </div>
+                {{else toManage == 'InterestInc'}}
+                 <div class="col-lg-12">
+
+                     <%-- <span>Previous Interest Income</span>
+                                <span>Interest Rate</span>
+                                <span>PF Balance</span>
+                                <span>Interest Income</span>--%>
+
+                     <div class="col-lg-3 ">
+                         <input type="text" class="form-control numeric txtPrevIntIncome" value="${LastInterestIncome}" disabled="disabled" />
+                     </div>
+
+                     <div class="col-lg-3 ">
+                         <input type="text" class="form-control numeric txtIntRate" value="0" disabled="disabled" />
+                     </div>
+
+                     <div class="col-lg-3 ">
+                         <input type="text" class="form-control numeric txtPFBalance" value="${Balance}" disabled="disabled" />
+                     </div>
+
+                     <div class="col-lg-3 ">
+                         <input type="text" class="form-control numeric txtIntIncome" value="0" disabled="disabled" />
+                     </div>
+
+                     <%--                     <table class="table table-responsive table-hover">
+                         <tr class="info">
+                             <th style="font-size: 10px;">Applicable
+                             </th>
+                             <th style="font-size: 10px;">Status
+                             </th>
+                             <th style="font-size: 10px;">Balance
+                             </th>
+                             <th style="font-size: 10px;">Interest Income
+                             </th>
+                             <th style="font-size: 10px;">Action
+                             </th>
+                         </tr>
+                         <tr style="text-align: center">
+                             <td>
+                                 <input type="hidden" class="hdnOpening" value="${OpeningBalance}" />
+                                 <input type="hidden" class="hdnGenereatedIncome" value="0" />
+                                 <input type="hidden" class="hdnAllowInterest" value="${IsAllowInterest}" />
+                                 <input type="hidden" class="hdnIsProvided" />
+                                 <label class="label label-info ">${IsAllowInterest==true? 'Yes':'No'}</label>
+                             </td>
+                             <td>
+                                 <label class="label label-info lblIsProvided"></label>
+                             </td>
+                             <td>
+                                 <label class="label label-info ">${OpeningBalance}</label>
+                             </td>
+                             <td>
+                                 <label class="label label-info lblGeneratedIncome">0</label>
+                             </td>
+                             <td>
+                                 <div class="checkbox checkbox-primary checkbox-inline">
+                                     <input type="checkbox" id="singleCheckbox2" value="${EmployeeId}" class="chkInterestIncomeEmp" />
+                                     <label></label>
+                                 </div>
+                             </td>
+                         </tr>
+                     </table>--%>
+                 </div>
+                {{else toManage == 'SESSILim'}}
+                 <div class="col-lg-8 pull-right">
+                     <input type="text" class="form-control numeric txtSessiLim" value="${SESSILimit}" />
+                 </div>
+                {{else toManage == 'OvertimeHours'}}
+                 <div class="col-lg-8 pull-right">
+                     <input type="text" class="form-control numeric txtOverTimeHours" />
+                 </div>
+                {{else toManage == 'LeaveEncashments'}}
+                 <div class="col-lg-8 pull-right">
+                     <input type="text" class="form-control numeric txtLeaveEncashments" />
+                 </div>
+                {{else toManage == 'IncTaxForcast'}}
+                  <div class="col-md-6 pull-right">
+
+                      <input value="0" type="text" class="form-control smaller numeric txtIncTaxForcastPercentage" />
+                  </div>
+                {{else toManage == 'Wppf'}}
+                <div class="col-md-1 ">
+                    ${Salary}
+                </div>
+                <div class="col-md-1 dvUnitValueWppf">
+                    <input type="hidden" class="hfSlabIdWppf" value="${SlabId}" />
+                    <input type="text" class="form-control smaller numeric txtUnitValueWppf" disabled="disabled" value="${UnitValue}" />
+                </div>
+                <div class="col-md-2 ">
+
+                    <input value="0" type="text" class="form-control smaller numeric txtUnitRateWppf" onchange="onChangeUnitRate(this);" />
+                </div>
+
+                <div class="col-md-2 ">
+
+                    <input value="0" type="text" class="form-control smaller numeric txtTotalUnitRateWppf" disabled="disabled" />
+                </div>
+
+                <div class="col-md-2 ">
+
+                    <input value="0" type="text" class="form-control smaller numeric txtInterestRateWppf" onchange="onChangeInterestRate(this);" />
+                </div>
+
+                <div class="col-md-2 ">
+
+                    <input value="0" type="text" class="form-control smaller numeric txtTotalInterestRateWppf" disabled="disabled" />
+                </div>
+
+                <div class="col-md-2 ">
+
+                    <input value="0" type="text" class="form-control smaller numeric txtTotalWppf" disabled="disabled" />
+                </div>
+
+                {{else toManage == 'TaxRefund'}}
+                  <div class="col-md-6 pull-right">
+
+                      <input value="0" type="text" class="form-control smaller numeric txtTaxRefund" />
+                  </div>
+                {{/if}}
+
+
+            </td>
+        </tr>
+    </script>
+
+
+
+</asp:Content>
+

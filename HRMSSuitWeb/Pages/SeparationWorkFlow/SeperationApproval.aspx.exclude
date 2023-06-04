@@ -1,0 +1,103 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="SeperationApproval.aspx.cs" Inherits="Pages_SeparationWorkFlow_SeperationApproval" %>
+
+<%@ Register Src="~/Controls/Separation/TaskSeparation.ascx" TagPrefix="uc" TagName="TaskSeparation" %>
+<%@ Register Src="~/Controls/Separation/SeparationDetail.ascx" TagPrefix="uc" TagName="SeparationDetail" %>
+<%@ Register Src="~/Controls/Separation/ITLeaverReview.ascx" TagPrefix="uc" TagName="ITLeaverReview" %>
+<%@ Register Src="~/Controls/Separation/SeparationHistory.ascx" TagPrefix="uc" TagName="SeparationHistory" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+
+    <style type="text/css">
+        .forum-content {
+            width: 500px;
+            height: auto;
+            padding: 5px 10px;
+        }
+
+        .comments-space {
+            width: 90%;
+            min-height: 50px;
+            height: auto;
+            border-radius: 5px;
+     
+            margin-bottom: 5px;
+        
+        }
+
+        .remaining-content span {
+            display: none;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div>
+        <uc:SeparationDetail runat="server" ID="SeparationDetail" />
+        <uc:SeparationHistory runat="server" ID="SeparationHistory" />
+        <uc:ITLeaverReview runat="server" ID="ITLeaverReview" Visible="false" />
+        <uc:TaskSeparation runat="server" ID="TaskSeparation" />
+    </div>
+
+    <script type="text/javascript">
+        function pageLoad() {
+
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                startDate: '+0d',
+                autoclose: true
+            });
+
+
+
+            //see more javascript
+           
+            var showChar = 256;
+            var ellipsestext = "...";
+            var moretext = "See More";
+            var lesstext = "See Less";
+            $('.comments-space').each(function () {
+                var content = $(this).html();
+                if (content.length > showChar) {
+                    var show_content = content.substr(0, showChar);
+                    var hide_content = content.substr(showChar, content.length - showChar);
+                    var html = show_content + '<span class="moreelipses">' + ellipsestext + '</span><span class="remaining-content"><span>' + hide_content + '</span>&nbsp;&nbsp;<a href="" class="morelink">' + moretext + '</a></span>';
+                    $(this).html(html);
+                }
+            });
+
+            $(".morelink").click(function () {
+                if ($(this).hasClass("less")) {
+                    $(this).removeClass("less");
+                    $(this).html(moretext);
+                } else {
+                    $(this).addClass("less");
+                    $(this).html(lesstext);
+                }
+                $(this).parent().prev().toggle();
+                $(this).prev().toggle();
+                return false;
+            });
+
+        }
+
+        function OpenDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+    </script>
+</asp:Content>
+

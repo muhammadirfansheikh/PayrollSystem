@@ -1,0 +1,716 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Employees.aspx.cs" Inherits="Pages_HRMS_Employees" EnableEventValidation="false" MasterPageFile="~/MasterPage/AdminMaster.master" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <style>
+        h2:first-letter
+        {
+            font-size: 20pt;
+        }
+
+        h2
+        {
+            font-size: 16pt;
+            font-variant: small-caps;
+        }
+
+        tr:nth-child(even)
+        {
+            background-color: rgba(20, 134, 136, 0.07);
+        }
+    </style>
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10" style="height: 65px;">
+            <h2>EMPLOYEES</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li class="active">
+                    <strong>Employees</strong>
+                </li>
+            </ol>
+        </div>
+        <div class="col-lg-2">
+            <asp:Button ID="btnViewEmployeeProfile" Text="Profile" runat="server" CssClass="btn btn-success" OnClick="btnViewEmployeeProfile_Click" style="margin-top:30px;" />
+        </div>
+    </div>
+    <asp:UpdatePanel runat="server">
+        <ContentTemplate>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-lg-12">
+                                <div class="form-group col-lg-2" style="padding-left: 0px; padding-right: 25px;">
+                                    <label for="exampleInputPassword2">Employee Code</label>
+                                    <asp:TextBox ID="txtEmployeeCode" runat="server" CssClass="form-control numeric"></asp:TextBox>
+                                </div>
+                                <div class="form-group col-lg-2" style="padding-left: 0px; padding-right: 25px;">
+                                    <label for="exampleInputPassword2">Official Email</label>
+                                    <asp:TextBox ID="txtOfficialEmail" TextMode="Email" runat="server" CssClass="form-control"></asp:TextBox>
+                                </div>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputEmail2">Group</label>
+                                <asp:DropDownList ID="ddlGroup" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Group" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlGroup" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Company</label>
+                                <asp:DropDownList ID="ddlCompany" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Company" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlCompany" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Location</label>
+                                <asp:DropDownList ID="ddlLocation" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlLocation" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Business Unit</label>
+                                <asp:DropDownList ID="ddlBusinessUnit" OnSelectedIndexChanged="ddlBusinessUnit_SelectedIndexChanged" AutoPostBack="true" runat="server" CssClass="form-control"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Department</label>
+                                <asp:DropDownList ID="ddlDepartment" runat="server" CssClass="form-control"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Cost Center</label>
+                                <asp:DropDownList ID="ddlCostCenter" runat="server" CssClass="form-control"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Designation</label>
+                                <asp:DropDownList ID="ddlDesignation" runat="server" CssClass="form-control"></asp:DropDownList></td>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">First Name</label>
+                                <asp:TextBox ID="txtFirstName" runat="server" pattern="[A-Za-z]{1,32}" CssClass="form-control Alpha"></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Last Name</label>
+                                <asp:TextBox ID="txtLastName" runat="server" pattern="[A-Za-z]{1,32}" CssClass="form-control Alpha"></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Joining Date</label>
+                                <asp:TextBox ID="txtDateOfJoin" runat="server" CssClass="form-control datetime"></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-2" style="display: none;">
+                                <%--<asp:Label ID="lblcnic" runat="server" for="exampleInputPassword2" Text="NIC"></asp:Label>--%>
+                                <label for="exampleInputPassword2" runat="server" id="lblcnic">NIC</label>
+                                <asp:TextBox ID="txtCNIC" runat="server" CssClass="form-control numeric" MaxLength="15" Text=""></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Date Of Birth</label>
+                                <asp:TextBox ID="dtpDateOfBirth" runat="server" CssClass="form-control datetimedob"></asp:TextBox>
+                            </div>
+                            <div class="form-group col-lg-2">
+                                <label for="exampleInputPassword2">Is Active</label>
+                                <asp:CheckBox ID="ChbxIsActive" runat="server" Checked="true" CssClass="form-control i-checks" />
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right btnSearch" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+                        <div class="ibox">
+                            <div class="ibox-title panel-info">
+                                <div class="ibox-tools">
+                                    <div runat="server" id="divCreateNew">
+                                        <asp:Button Text="Add Confirm" Style="display: none;" CssClass="DeleteAndCreateNew" ID="DeleteAndCreateNew" OnClick="DeleteAndCreateNew_Click" runat="server" />
+                                        <input type="button" class="btn btn-primary btnAdd" data-toggle="modal" data-target="#CreateProjectModal"  value="Create new Employee"></input>
+                                       
+                                             <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="OpenEmployeeCreateModal" style="display: none;" />
+
+                                        <%--<input type="button" class="btn btn-primary btnTest" data-toggle="modal" data-target="#DivTest" value="Create new Employee"></input>--%>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ibox-content">
+                                <div class="row m-b-sm m-t-sm" style="margin: 0px;">
+                                    <div class="col-md-12 panel-default">
+                                        <div class="panel-heading" style="padding-top: 0px; padding-bottom: 0px;">
+                                            <h2 class="panel-title" style="font-size: x-large; text-align: center;">Employee Detail
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="project-list">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr class="info">
+                                                <th>Status</th>
+                                                <%--<th>Company</th>--%>
+                                                <th>Image</th>
+                                                <th>Code</th>
+                                                <th>Name</th>
+                                                <th>Department</th>
+                                                <th>Designation</th>
+                                                <th>Location</th>
+                                                <th>Extension</th>
+                                                <th>Official Email</th>
+                                                <th>Joining Date</th>
+                                                <th>Edit</th>
+                                                <th style="display: none;">Gender</th>
+                                                <th style="display: none;">CNIC</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="RptEmployee" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td class="project-status">
+                                                            <span class='label label-<%# Convert.ToBoolean(Eval("IsActive"))?"primary":"default" %>'><%# Convert.ToBoolean(Eval("IsActive"))?"Active":"InActive" %></span>
+                                                        </td>
+                                                        <td class="project-people">
+                                                            <a href="#">
+                                                                <img alt="image" class="img-circle" src='<%# Eval("EmployeeImage")==null?"/Picture/noprofilepic.png":"/Picture/"+Eval("EmployeeImage") %>' /></a>
+                                                        </td>
+                                                        <td class="project-title">
+                                                            <a href="#"><%# Eval("EmployeeCode") %></a>
+                                                        </td>
+                                                        <%-- project-completion --%>
+
+
+                                                        <td class="project-title">
+                                                            <a href="#"><%# Eval("FirstName")+" "+Eval("LastName") %></a>
+                                                            <br />
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("Department") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("Designation") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("Location") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("Extension") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("OfficalEmail") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px;">
+                                                            <%# Eval("JoiningDate")==null ? "":  Convert.ToDateTime(Eval("JoiningDate")).ToString(Constant.DateFormat) %>
+                                                        </td>
+                                                        <%--<td class="project-title" >
+                                                            <%# Eval("FirstName")+" "+Eval("LastName") %>
+                                                        </td>--%>
+                                                        <td class="project-actions">
+                                                            <a href="EmployeeDetail.aspx?id=<%# Eval("EmployeeId") %>" class="btn btn-white btn-sm"><i class="fa fa-pencil"></i>Edit</a>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px; display: none;">
+                                                            <%# Eval("Gender") %>
+                                                        </td>
+                                                        <td class="project-title" style="font-size: 10px; display: none;">
+                                                            <%# Eval("CNIC") %>
+                                                        </td>
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                            <div class="form-group col-lg-12">
+                                                <div class="pagging">
+                                                    <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                                </div>
+                                            </div>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="divsurvey" runat="server" class="table managePopupGeneral" visible="false" style="background-color: buttonhighlight; display: none;">
+                <div class="two_panel">
+                    <div class="sub_heading_bar">
+                        <h3>Employee Official Email Address</h3>
+                    </div>
+                    <table class="table">
+                        <tr>
+                            <td>Email</td>
+                            <td>
+                                <b>
+                                    <asp:Label ID="lblOfficialEmail" runat="server" Visible="true"></asp:Label></b>
+                                <asp:TextBox ID="txtOfficialEmailOther" runat="server" Visible="false"></asp:TextBox>
+                                <asp:Label ID="lblDomain" runat="server" Visible="false"></asp:Label>
+                            </td>
+                        </tr>
+
+                    </table>
+                </div>
+
+                <div>
+                    <asp:Label ID="Label1" runat="server" Visible="false" Text="Already Exist"></asp:Label>
+                </div>
+                <table class="table">
+                    <tr>
+                        <td>Name</td>
+                        <td>
+                            <asp:Label ID="lblName" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Employee Code</td>
+                        <td>
+                            <asp:Label ID="lblempId" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>NIC</td>
+                        <td>
+                            <asp:Label ID="lblNic" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Resigned Date</td>
+                        <td>
+                            <asp:Label ID="lbldate" runat="server"></asp:Label>
+                        </td>
+                    </tr>
+
+                </table>
+                <div class="button_panel">
+                    <%--<asp:Button ID="btnOk" Style="float: right;" runat="server" CssClass="btnOk clsCancelButton clear_small_btn" Text="OK" OnClick="btnOk_Click" />--%>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="InProgress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+
+    <div class="modal inmodal" id="DivTest" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 80%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Employee Information</h4>
+
+                    <input type="hidden" id="Hidden1" runat="server" class="hfCompanyId" />
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px;">
+                            <div class="panel" style="margin-bottom: 0px;">
+                            </div>
+                            <label id="Label2" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <asp:Button Text="Save" class="btn btn-primary" ID="Button1" ValidationGroup="AddEmployee" OnClick="btnSave_Click" runat="server" />
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+                <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="ucInprogress1" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>
+            </div>
+        </div>
+    </div>
+
+
+
+    <%-- Create Project Modal End--%>
+
+
+    <%-- Modal End Here --%>
+    <%-- Modal Start Here --%>
+
+    <%-- Create project Modal Start--%>
+    <div class="modal inmodal" id="CreateProjectModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 80%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px;">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Employee Information</h4>
+
+                    <input type="hidden" id="HfEmployeePreviousID" runat="server" class="hfCompanyId" />
+                    <%--<small class="font-bold">Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>--%>
+                </div>
+                <asp:UpdatePanel runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px;">
+                            <div class="panel" style="margin-bottom: 0px;">
+                                <div id="divError" runat="server" visible="false" class="alert alert-warning">
+                                    <asp:Label ID="lblError" runat="server"></asp:Label>
+                                </div>
+                                <asp:Label ID="lblcode" runat="server"></asp:Label>
+                                <div class="panel-body">
+                                    <fieldset>
+                                        <legend>Company Information </legend>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputEmail2">Group</label><asp:RequiredFieldValidator ID="RequiredFieldValidator8" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Group" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlGroupAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlGroupAdd" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlGroupAdd_SelectedIndexChanged" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Company</label><asp:RequiredFieldValidator ID="RequiredFieldValidator9" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Company" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlCompanyAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlCompanyAdd" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlCompanyAdd_SelectedIndexChanged" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Location</label><asp:RequiredFieldValidator ID="RequiredFieldValidator10" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlLocationAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlLocationAdd" runat="server" CssClass="form-control ddlAdd" AutoPostBack="true" OnSelectedIndexChanged="ddlLocationAdd_SelectedIndexChanged">
+                                            </asp:DropDownList>
+
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Company Domain</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator14" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlCompanyDomainadd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlCompanyDomainadd" runat="server" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Business Unit</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator15" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlBusinessUnitAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlBusinessUnitAdd" runat="server" CssClass="form-control ddlAdd" AutoPostBack="true" OnSelectedIndexChanged="ddlBusinessUnitAdd_SelectedIndexChanged">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Department</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlDepartmentAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlDepartmentAdd" runat="server" CssClass="form-control ddlAdd" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartmentAdd_SelectedIndexChanged">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Job Category </label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator18" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlJobCategoryAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlJobCategoryAdd" runat="server" CssClass="form-control ddlAdd" AutoPostBack="true" OnSelectedIndexChanged="ddlJobCategoryAdd_SelectedIndexChanged">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Designation</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator19" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlDesignationAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlDesignationAdd" runat="server" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Cost Center</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator17" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlCostCenterAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlCostCenterAdd" runat="server" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+                                        </div>
+
+                                    </fieldset>
+                                    <fieldset>
+                                        <legend>Personal Information </legend>
+                                        <div class="form-group col-lg-3" id="divCNIC" runat="server">
+                                            <label for="exampleInputPassword2">CNIC</label>
+                                            <asp:RequiredFieldValidator ID="rfvtxtnic" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtcnicadd" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox ID="txtcnicadd" runat="server" placeholder="CNIC" CssClass="form-control txtAdd numeric" MaxLength="13" />
+
+                                        </div>
+
+                                        <div class="form-group col-lg-3" id="divEmiratesID" runat="server" visible="false">
+                                            <label for="exampleInputPassword2">Emirated ID</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator11" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtEmiratesIDadd" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox ID="txtEmiratesIDadd" runat="server" placeholder="Emirates ID" CssClass="form-control" MaxLength="15" />
+                                        </div>
+
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputEmail2">First Name</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtFirstNameAdd" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox ID="txtFirstNameAdd" placeholder="First Name" pattern="[A-Za-z]{1,32}" runat="server" CssClass="form-control txtAdd">
+                                            </asp:TextBox>
+
+
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Middle Name</label>
+                                            <asp:TextBox ID="txtMiddleNameAdd" placeholder="Middle Name" pattern="[A-Za-z]{1,32}" runat="server" CssClass="form-control txtAdd">
+                                            </asp:TextBox>
+
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Last Name</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator5" pattern="[A-Za-z]{1,32}" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtLastNameAdd" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox ID="txtLastNameAdd" placeholder="Last Name" runat="server" CssClass="form-control txtAdd">
+                                            </asp:TextBox>
+
+                                        </div>
+
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Date Of Birth</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtDOB" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox runat="server" ID="txtDOB" CssClass="form-control txtAdd datetimedob" />
+
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Gender</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator13" runat="server" ValidationGroup="AddEmployee" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="ddlGenderAdd" InitialValue="0"></asp:RequiredFieldValidator>
+                                            <asp:DropDownList ID="ddlGenderAdd" runat="server" CssClass="form-control ddlAdd">
+                                            </asp:DropDownList>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Personal Email:</label>
+                                            <asp:RequiredFieldValidator ID="RequiredFieldValidator12" runat="server" ValidationGroup="AddEmployee" Text="*"
+                                                ErrorMessage="*" ForeColor="Red"
+                                                Display="Dynamic" ControlToValidate="txtPersonalEmailAdd" CssClass="rfv"></asp:RequiredFieldValidator>
+                                            <asp:TextBox ID="txtPersonalEmailAdd" placeholder="Personal Email"   runat="server" CssClass="form-control txtAdd" />
+                                            <%-- <asp:TextBox ID="txtemail" placeholder="Personal Email"   runat="server" CssClass="form-control " />--%>
+                                        </div>
+                                        <div class="form-group col-lg-3">
+                                            <label for="exampleInputPassword2">Father/Husband Name</label>
+                                            <asp:TextBox ID="txtFatherHusbandNameAdd" placeholder="Father/Husband Name" pattern="[A-Za-z ]{1,32}" runat="server" CssClass="form-control txtAdd">
+                                            </asp:TextBox>
+                                        </div>
+
+
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <label id="lbl" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                            <%--<asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" OnClick="btnAdd_Click" runat="server" />--%>
+                            <%--<asp:Button ID="btnSave" runat="server" Text="Save" OnClick="btnSave_Click" UseSubmitBehavior="false" ValidationGroup="AddEmployee" CssClass="btn btn-success pull-right" />--%>
+                            <asp:Button Text="Save" class="btn btn-primary" ID="btnAdd" ValidationGroup="AddEmployee" OnClick="btnSave_Click" runat="server" />
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+              <%--  <asp:UpdateProgress runat="server">
+                    <ProgressTemplate>
+                        <uc2:InProgress ID="ucInprogress" runat="server" />
+                    </ProgressTemplate>
+                </asp:UpdateProgress>--%>
+            </div>
+        </div>
+    </div>
+    <%-- Create Project Modal End--%>
+     <input type="button" class="OpenModal" data-toggle="modal" data-target="#divDeleteEmployee" style="display: none;" />
+        <div class="modal inmodal" id="divDeleteEmployee" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" style="width: 80%;">
+            <div class="modal-content animated flipInY">
+                <div class="modal-header" style="padding-bottom: 9px; padding-top: 9px; background-color: #851718;
+    border-color: #851718;
+    color: #ffffff;" >
+                    
+                    <h4 class="modal-title">Employee Exist</h4>
+                    
+                    <input type="hidden" id="hfEmployeeIdisActive" runat="server" class="hfEmployeeId" />
+                  
+                </div>
+                <asp:UpdatePanel ID="UpdatePanel2" runat="server">
+                    <ContentTemplate>
+                        <div class="modal-body" style="padding-bottom: 10px; border-bottom-width: 10px; padding-top: 10px;">
+                           <label class="label label-danger" style="font-size:16px;">An Active Employee Already Exist Against This CNIC, Update Sepearation Details or Cancel it</label>
+                          <br /><br />
+                              <div class="panel" >
+                                  
+                           <div class="row">
+                               <div class="col-lg-6">
+                                   <label class="control-label col-lg-3">
+                                       Employee Code
+                                   </label>
+                                   <div class="col-lg-9">
+                                        <label id="lblEmployeeCode" class="label label-info" runat="server">
+
+                                   </label>
+                                   </div>
+                                  
+                               </div>
+                                 <div class="col-lg-6">
+                                   <label class="control-label col-lg-3">
+                                       Employee Name
+                                   </label>
+                                   <div class="col-lg-9">
+                                        <label id="lblEmployeeName" class="label label-info" runat="server">
+
+                                   </label>
+                                   </div>
+                                  
+                               </div>
+                               <div class="col-lg-4">
+
+                               </div>
+                           </div>
+
+                                <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide Separation details.</strong>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Resigned Date : </label>
+            <asp:TextBox ID="txtResignDate" runat="server" CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Last Working Date : </label>
+            <asp:TextBox ID="txtLastWorkingDay" runat="server" AutoPostBack="true"  CssClass="form-control datetime">
+            </asp:TextBox>
+        </div>
+     
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Notice Period :</label>
+            <asp:DropDownList ID="ddlNoticePeriod" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-3">
+            <label for="exampleInputEmail2">Termination Type :</label>
+            <asp:DropDownList ID="ddlTerminationType" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+                            </div>
+                            <label id="lblErrorIsActive" runat="server" class="label label-danger" visible="false"></label>
+                        </div>
+                        <div class="modal-footer">
+                        
+                           <div class="col-lg-12">
+                               <div class="pull-right">
+
+                                   <asp:Button ID="btnUpdateActiveEmployee" runat="server" CssClass="btn btn-success" Text="Save" OnClick="btnUpdateActiveEmployee_Click" />
+                                   <button type="button" class="btn btn-default" data-dismiss="modal" >Close</button>
+                               </div>
+                           </div>
+                        </div>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
+
+            </div>
+        </div>
+    </div>
+
+    <%-- Modal End Here --%>
+
+    <script type="text/javascript">
+        function pageLoad() {
+           
+            var dt = new Date();
+            dt.setFullYear(new Date().getFullYear() - 18);
+            $('.datetimedob').datepicker({
+               
+                viewMode: "years",
+                endDate : dt,
+                format: 'mm/dd/yyyy'
+
+
+
+            });
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true
+            });
+            $(document).keypress(function (e) {
+                if (e.which == 13) {
+                    $('.btnSearch').trigger("click");
+                }
+            });
+
+            $('.i-checks').iCheck({
+                checkboxClass: 'icheckbox_square-green',
+                radioClass: 'iradio_square-green'
+            });
+            $(".confirm").click(function () {
+                if ($(this).parent(".sa-button-container").find(".cancel").is(":visible"))
+                {
+                    $(".DeleteAndCreateNew").click();
+                }
+                //$(".showSweetAlert").hide();
+            });
+            $(".numeric").numeric();
+            $(".btnAdd").click(function () {
+                
+                reset();
+                //alert('add click');
+            });
+         
+        
+            function reset() {
+                $(".txtAdd").val('');
+                //$(".ddlAdd").prop('selectedIndex', 1);
+                $(".ddlAdd").val("0");
+                $("#MainContent_lblError").text('');
+            }
+        }
+        function ConfirmBox(title, Message) {
+            swal({
+                title: "Are you sure?",
+                text: "Active Employee is Already Exist with this CNIC.!",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Delete and Create New!",
+                closeOnConfirm: false
+            },
+            function () {
+                //swal("Deleted!", "Employee has been .", "success");
+            });
+        }
+        function AlertBox(title, Message, type) {
+            swal(title, Message, type);
+        }
+        function ClosePopup() {
+            $('.modal').hide();
+            $('body').removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+        function OpenPopup() {
+            $('.openmodal').click();
+        }
+        function OpenIsActiveEmployee() {
+            $('.OpenModal').click();
+        }
+
+        //open Modal Create Employee when candidate id in query string
+
+        function OpenEmployeeCreateModal() {
+          
+            $('.OpenEmployeeCreateModal').click();
+
+
+        }
+    </script>
+</asp:Content>

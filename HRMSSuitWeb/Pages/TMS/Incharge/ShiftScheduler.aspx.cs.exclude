@@ -1,0 +1,906 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Reflection;
+using System.Data;
+
+public partial class Pages_TMS_Incharge_ShiftScheduler : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    private const string VIEWSTATEKEY = "ContactCount";
+    public bool ShowSave = false;
+
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+
+        try
+        {
+            if (!IsPostBack)
+            {
+
+                BindDropdown();
+
+                //Set the number of default controls
+                ViewState[VIEWSTATEKEY] = ViewState[VIEWSTATEKEY] == null ? 0 : ViewState[VIEWSTATEKEY];
+
+                // Load the contact control based on Vewstate key
+                // LoadContactControls();
+
+            }
+            else
+            {
+                // LoadRecords();
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    private void BindDropdown()
+    {
+        try
+        {
+            var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+            CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+
+            int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+            Base UserInfo = new Base();
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+            var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+                .OrderBy(e => e.FirstName)
+                .Select(e => new
+                {
+                    EmployeeId = e.EmployeeId,
+                    Name = e.FirstName + " " + e.LastName + " - " + e.EmployeeCode
+                })
+                .ToList();
+            //.OrderBy("Name").ToList();
+
+            ListBoxEmp.DataSource = listEmplyee;
+            ListBoxEmp.DataTextField = "Name";
+            ListBoxEmp.DataValueField = "EmployeeId";
+            ListBoxEmp.DataBind();
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    private void LoadContactControls()
+    {
+        try
+        {
+
+            for (int i = 0; i < int.Parse(ViewState[VIEWSTATEKEY].ToString()); i++)
+            {
+                phContactDetails.Controls.Add(LoadControl("~/Controls/Shift/ucAddNewShift.ascx"));
+                ButtonSaveRec.Enabled = true;
+                ButtonSaveRec.Visible = true;
+
+                Remove_Shift.Enabled = true;
+                Remove_Shift.Visible = true;
+            }
+
+            if (int.Parse(ViewState[VIEWSTATEKEY].ToString()) == 0)
+            {
+                ButtonSaveRec.Enabled = false;
+                ButtonSaveRec.Visible = false;
+                Remove_Shift.Enabled = false;
+                Remove_Shift.Visible = false;
+            }
+
+            if (RepeaterShiftSch.Items.Count > 0)
+            {
+                ButtonSaveRec.Enabled = true;
+                ButtonSaveRec.Visible = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+
+    }
+    protected void btnAddMore_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            ViewState[VIEWSTATEKEY] = int.Parse(ViewState[VIEWSTATEKEY].ToString()) + 1;
+            //  LoadContactControls();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+
+    public void UpdateEmployeeShift(int empID, int shiftID, DateTime FromDate)
+    {
+        //var ctx = new SybridTimeManagmentSystemEntities1();
+        DateTime nowdate = DateTime.Now;
+
+        int month = FromDate.Month;
+        int year = FromDate.Year;
+        int date = FromDate.Day;
+
+        DateTime currentDate = nowdate.Date;
+        int numberofdaysInMonth = DateTime.DaysInMonth(year, month);
+        var shiftDetail = context.TMS_Setup_ShiftDetail.Where(p => p.ShiftId == shiftID).ToList();
+
+        for (int i = date; i <= numberofdaysInMonth; i++)
+        {
+            string dayName = currentDate.ToString("dddd");
+            EmployeeShiftDetail preCalender = new EmployeeShiftDetail();
+            try
+            {
+                preCalender = context.EmployeeShiftDetails.First(p => p.EmployeeId == empID && p.Date == i && p.Month == month && p.Year == year);
+            }
+            catch { }
+            if (preCalender.EmployeeShiftDetailId != 0)
+            {
+
+                foreach (var item in shiftDetail)
+                {
+                    if (item.Day.Contains(dayName))
+                    {
+                        var splittime = item.StartTimeSt.Split(':');
+                        //TimeSpan time = new TimeSpan(Convert.ToInt32(splittime[0]),Convert.ToInt32(splittime[1]),0);
+                        DateTime setStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0);
+                        setStartTime = setStartTime.AddHours(Convert.ToInt32(splittime[0]));
+                        setStartTime = setStartTime.AddMinutes(Convert.ToInt32(splittime[1]));
+                        splittime = item.EndTimeSt.Split(':');
+                        // time = new TimeSpan(Convert.ToInt32(splittime[0]), Convert.ToInt32(splittime[1]), 0);
+                        DateTime setEndTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0);
+                        setEndTime = setEndTime.AddHours(Convert.ToInt32(splittime[0]));
+                        setEndTime = setEndTime.AddMinutes(Convert.ToInt32(splittime[1]));
+                        preCalender.ShiftStart = setStartTime;
+                        preCalender.ShiftEnd = setEndTime;
+                        preCalender.ScheduledShiftID = shiftID;
+                        preCalender.ScheduledDayType = Convert.ToInt32(item.ShiftDayTypeId);
+
+
+                        context.Entry(preCalender).State = EntityState.Modified;
+                        context.SaveChanges();
+                        // return RedirectToAction("Index");
+                    }
+
+
+
+                }
+
+
+
+            }
+
+            else
+            {
+
+                /* EmployeeShiftDetail shiftDayDetail = new EmployeeShiftDetail();
+
+                 foreach (var item in shiftDetail)
+                 {
+                     if (item.Day.Contains(dayName))
+                     {
+                         shiftDayDetail.EmployeeId = empID;
+                         shiftDayDetail.Year = year;
+                         shiftDayDetail.Month = month;
+                         shiftDayDetail.Date = i;
+                         shiftDayDetail.DayOfWeek = dayName;
+
+                         var splittime = item.StartTimeSt.Split(':');
+                         //TimeSpan time = new TimeSpan(Convert.ToInt32(splittime[0]),Convert.ToInt32(splittime[1]),0);
+                         DateTime setStartTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0);
+                         setStartTime = setStartTime.AddHours(Convert.ToInt32(splittime[0]));
+                         setStartTime = setStartTime.AddMinutes(Convert.ToInt32(splittime[1]));
+                         splittime = item.EndTimeSt.Split(':');
+                         // time = new TimeSpan(Convert.ToInt32(splittime[0]), Convert.ToInt32(splittime[1]), 0);
+                         DateTime setEndTime = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0);
+                         setEndTime = setEndTime.AddHours(Convert.ToInt32(splittime[0]));
+                         setEndTime = setEndTime.AddMinutes(Convert.ToInt32(splittime[1]));
+                         shiftDayDetail.ShiftStart = setStartTime;
+                         shiftDayDetail.ShiftEnd = setEndTime;
+                         shiftDayDetail.ScheduledShiftID = shiftID;
+
+                         shiftDayDetail.ScheduledDayType = item.ShiftDayTypeId;
+
+                         context.EmployeeShiftDetails.Add(shiftDayDetail);
+                         context.SaveChanges();
+
+
+
+                     }
+
+
+
+                 }*/
+
+            }
+            currentDate = currentDate.AddDays(1);
+        } // end for
+
+
+        Setup_Employee GetEmp = new Setup_Employee();
+
+        try
+        {
+            GetEmp = context.Setup_Employee.First(p => p.EmployeeId == empID);
+            GetEmp.TMSShiftId = shiftID;
+            context.Entry(GetEmp).State = EntityState.Modified;
+            context.SaveChanges();
+
+            ShowCurrentShift.Text = "Shift Scheduled Sucessfully ";
+            ShowCurrentShift.Style.Add("color", "Green");
+        }
+        catch { }
+
+
+    }
+
+    protected void AddNewRow_Click(object sender, EventArgs e)
+    {
+        var textboxValues = new List<string>();
+        var ddlvalue = new List<string>();
+        Request.Form.AllKeys.Where(i => i.Contains("tbFrom_")).ToList().ForEach(i =>
+        {
+            textboxValues.Add(Request.Form[i]);
+        });
+
+        int rowCount = textboxValues.Count;
+
+        //initialize a session.
+        rowCount = Convert.ToInt32(Session["clicks"]);
+
+
+        if (rowCount != 0)
+        {
+            Request.Form.AllKeys.Where(i => i.Contains("tb_From")).ToList().ForEach(i =>
+            {
+                textboxValues.Add(Request.Form[i]);
+            });
+
+            Request.Form.AllKeys.Where(i => i.Contains("tbFrom_")).ToList().ForEach(i =>
+            {
+                textboxValues.Add(Request.Form[i]);
+            });
+
+            Request.Form.AllKeys.Where(i => i.Contains("ddl_Shift")).ToList().ForEach(i =>
+            {
+                ddlvalue.Add(Request.Form[i]);
+            });
+
+            Request.Form.AllKeys.Where(i => i.Contains("ddlShift_")).ToList().ForEach(i =>
+            {
+                ddlvalue.Add(Request.Form[i]);
+            });
+        }
+
+
+
+        for (int i = 0; i < rowCount + 1; i++)
+        {
+
+            var row = new TableRow();
+            var cell = new TableCell();
+
+            Label lblEmp = new Label();
+            Label lblShift = new Label();
+            Label lblFrom = new Label();
+
+            // DropDownList ddlEmp = new DropDownList();
+            DropDownList ddlShift = new DropDownList();
+            TextBox tbFrom = new TextBox();
+
+
+            //   lblEmp.ID = "lblEmp" + i.ToString();
+            lblShift.ID = "lbl_Shift" + i.ToString();
+            lblFrom.ID = "lbl_From" + i.ToString();
+
+
+            //  ddlEmp.ID = "ddlEmp" + i.ToString();
+            ddlShift.ID = "ddl_Shift" + i.ToString();
+            tbFrom.ID = "tb_From" + i.ToString();
+            tbFrom.CssClass = "DatePicker";
+
+
+
+            Base UserInfo = new Base();
+
+
+
+            var listEmplyee = context.Setup_Employee.Where(c => c.IsActive == true && c.InchargeId == UserInfo.UserKey).OrderBy(c => c.FirstName).ToList();
+
+            var shifts = context.TMS_Setup_Shift.Where(p => p.IsActive == true).OrderBy(s => s.ShiftName).ToList();
+
+            //      CommonHelper.BindDropDown(ddlEmp, listEmplyee, "Name", "EmployeeId", true, false);
+
+            CommonHelper.BindDropDown(ddlShift, shifts, "ShiftName", "ShiftId", true, false);
+
+
+            if (rowCount != 0 && i < rowCount)
+            {
+                tbFrom.Text = textboxValues[i];
+                ddlShift.SelectedValue = ddlvalue[i];
+            }
+
+            // cell.Controls.Add(lblEmp);
+            // cell.Controls.Add(ddlEmp);
+            cell.Controls.Add(lblShift);
+            cell.Controls.Add(ddlShift);
+            cell.Controls.Add(lblFrom);
+            cell.Controls.Add(tbFrom);
+
+            row.Cells.Add(cell);
+
+            PHTable.Rows.Add(row);
+
+            /*  PlaceHolder1.Controls.Add(lblShift);
+              PlaceHolder1.Controls.Add(ddlShift);
+              PlaceHolder1.Controls.Add(lblFrom);
+              PlaceHolder1.Controls.Add(tbFrom);
+              */
+        }
+
+
+        rowCount++;
+
+        //In each button clic save the numbers into the session.
+        Session["clicks"] = rowCount;
+
+
+    }
+    protected void Submit_Click(object sender, EventArgs e)
+    {
+
+
+    }
+    protected void RB_Shift_Status_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            LoadRecords();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void ListBoxEmp_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+
+            AddNewShift.Enabled = true;
+            AddNewShift.Visible = true;
+            //ViewState[VIEWSTATEKEY] = 0;
+
+            Remove_Shift.Enabled = false;
+            Remove_Shift.Visible = false;
+
+            LoadRecords();
+            LoadContactControls();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+
+
+    }
+    protected void RepeaterShiftSch_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            if (e.Item.ItemIndex != -1)
+            {
+                DropDownList ddlShift = (DropDownList)e.Item.FindControl("DropDownForShift");
+                TextBox TB_Date = (TextBox)e.Item.FindControl("TextBoxFromDate");
+                HiddenField CurShiftID = (HiddenField)e.Item.FindControl("HFShiftID");
+                HiddenField HF_Status = (HiddenField)e.Item.FindControl("HFStatus");
+
+                CheckBox CB_Status = (CheckBox)e.Item.FindControl("CheckBoxIsActive");
+                var shifts = context.TMS_Setup_Shift.Where(p => p.IsActive == true).OrderBy(s => s.ShiftName).ToList();
+
+                CommonHelper.BindDropDown(ddlShift, shifts, "ShiftName", "ShiftId", true, false);
+
+                ddlShift.SelectedValue = CurShiftID.Value;
+
+                if (HF_Status.Value == "True")
+                {
+                    CB_Status.Checked = true;
+                }
+
+                DateTime ShiftDate = Convert.ToDateTime(TB_Date.Text);
+
+                //if (DateTime.Now.Date == ShiftDate)
+                //{
+                //    int ShiftID = Convert.ToInt32(CurShiftID.Value);
+                //    int day = Convert.ToInt32(DateTime.Now.DayOfWeek);
+                //    ShiftDetail SD = context.ShiftDetails.First(p => p.ShiftId == ShiftID && p.DayInt == day);
+                //    int hour = Convert.ToInt32(SD.StartTimeSt.Split(':')[0]);
+                //    int min = Convert.ToInt32(SD.StartTimeSt.Split(':')[1]);
+
+                //    DateTime ShiftStartTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, hour, min, 0);
+
+
+                //    if (DateTime.Now > ShiftStartTime)
+                //    {
+                //        ddlShift.Enabled = false;
+                //        TB_Date.Enabled = false;
+                //        CB_Status.Enabled = false;
+                //    }
+                //}
+                if (DateTime.Now.Date > ShiftDate)
+                {
+
+                    ddlShift.Enabled = false;
+                    TB_Date.Enabled = false;
+                    CB_Status.Enabled = false;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    protected void AddNewShift_Click(object sender, EventArgs e)
+    {
+
+
+
+    }
+    protected void AddNewShift_Click1(object sender, EventArgs e)
+    {
+        try
+        {
+            ViewState[VIEWSTATEKEY] = int.Parse(ViewState[VIEWSTATEKEY].ToString()) + 1;
+            LoadContactControls();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    protected void Remove_Shift_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            ViewState[VIEWSTATEKEY] = int.Parse(ViewState[VIEWSTATEKEY].ToString()) - 1;
+            LoadContactControls();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+
+
+    public void LoadRecords()
+    {
+        try
+        {
+            int EmployeeId = 0;
+            List<int> Empid = new List<int>();
+            foreach (ListItem item in ListBoxEmp.Items)
+            {
+                if (item.Selected == true)
+                {
+                    int temp = (int.Parse(item.Value));
+                    Empid.Add(temp);
+                }
+            }
+
+            //bool Active = (RB_Shift_Status.SelectedValue == "1" ? true : false);
+            DateTime GetDateForRec = DateTime.Now.Date; //new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            List<showResult> Emp_All_Shift = new List<showResult>();
+            for (int i = 0; i < Empid.Count; i++)
+            {
+                EmployeeId = Empid[i];
+
+                var GetEmployeeShift = (from sch_Shift in context.TMS_Emp_Shift_Schedule
+                                        join shift in context.TMS_Setup_Shift on sch_Shift.ShiftID equals shift.ShiftId
+                                        join EmpTbl in context.Setup_Employee on sch_Shift.EmployeeID equals EmpTbl.EmployeeId
+                                        where (sch_Shift.EmployeeID == EmployeeId) //&& (sch_Shift.IsActive == Active)
+                                            && (sch_Shift.StartDate >= GetDateForRec)
+                                        orderby sch_Shift.StartDate
+                                        select new { sch_Shift, EmpTbl.FirstName });
+
+
+                //if (GetEmployeeShift.Count() == 0)
+                //{
+                var GetLastDisabledEmployeeShift = (from sch_Shift in context.TMS_Emp_Shift_Schedule
+                                                    join shift in context.TMS_Setup_Shift on sch_Shift.ShiftID equals shift.ShiftId
+                                                    join EmpTbl in context.Setup_Employee on sch_Shift.EmployeeID equals EmpTbl.EmployeeId
+                                                    where sch_Shift.EmployeeID == EmployeeId && sch_Shift.IsActive == true //Active
+                                                        && (sch_Shift.StartDate < GetDateForRec)
+                                                    orderby sch_Shift.StartDate descending, sch_Shift.CreatedDate descending
+                                                    select new { sch_Shift, EmpTbl.FirstName }).Take(1);
+
+                foreach (var item in GetLastDisabledEmployeeShift)
+                {
+                    showResult temp = new showResult();
+                    DateTime temp_date = Convert.ToDateTime(item.sch_Shift.StartDate);
+                    temp.object1 = item.sch_Shift.RecID.ToString();
+                    temp.object3 = temp_date.ToString("MM/dd/yyyy");
+                    temp.object2 = item.FirstName;
+                    temp.object4 = item.sch_Shift.ShiftID.ToString();
+                    temp.object5 = item.sch_Shift.IsActive.ToString();
+                    temp.object6 = item.sch_Shift.EmployeeID.ToString();
+                    Emp_All_Shift.Add(temp);
+                }
+                //}
+
+                foreach (var item in GetEmployeeShift)
+                {
+                    showResult temp = new showResult();
+                    DateTime temp_date = Convert.ToDateTime(item.sch_Shift.StartDate);
+                    temp.object1 = item.sch_Shift.RecID.ToString();
+                    temp.object3 = temp_date.ToString("MM/dd/yyyy");
+                    temp.object2 = item.FirstName;
+                    temp.object4 = item.sch_Shift.ShiftID.ToString();
+                    temp.object5 = item.sch_Shift.IsActive.ToString();
+                    temp.object6 = item.sch_Shift.EmployeeID.ToString();
+                    Emp_All_Shift.Add(temp);
+                }
+            }
+            RepeaterShiftSch.DataSource = Emp_All_Shift;
+            RepeaterShiftSch.DataBind();
+
+            if (Emp_All_Shift.Count > 0)
+            {
+                ButtonSaveRec.Enabled = true;
+                ButtonSaveRec.Visible = true;
+                RepeaterShiftSch.Visible = true;
+
+                ShowSave = true;
+            }
+            else
+            {
+                ButtonSaveRec.Enabled = false;
+                ButtonSaveRec.Visible = false;
+                RepeaterShiftSch.Visible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+        }
+    }
+
+    protected void ButtonSaveRec_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            string error = "";
+            var AddNew_FromValues = new List<string>();
+            var AddNew_ShiftValues = new List<string>();
+            var AddNew_StatusValues = new List<string>();
+
+            if (Request.Form.HasKeys())
+            {
+                Request.Form.AllKeys.Where(i => i.Contains("tb_From")).ToList().ForEach(i =>
+                {
+                    AddNew_FromValues.Add(Request.Form[i]);
+                });
+            }
+
+            if (Request.Form.HasKeys())
+            {
+                Request.Form.AllKeys.Where(i => i.Contains("ddl_Shift")).ToList().ForEach(i =>
+                {
+                    AddNew_ShiftValues.Add(Request.Form[i]);
+                });
+            }
+
+            if (Request.Form.HasKeys())
+            {
+                Request.Form.AllKeys.Where(i => i.Contains("HF_CB_Shift_Status")).ToList().ForEach(i =>
+                {
+                    AddNew_StatusValues.Add(Request.Form[i]);
+                });
+            }
+
+            List<int> Empid = new List<int>();
+            foreach (ListItem item in ListBoxEmp.Items)
+            {
+                if (item.Selected == true)
+                {
+                    int temp = (int.Parse(item.Value));
+                    Empid.Add(temp);
+                }
+            }
+
+            //foreach (int E_id in Empid)
+            //{
+            //    int index = 0;
+            //    foreach (var item in AddNew_ShiftValues)
+            //    {
+
+            //        DateTime dtStartTime = Convert.ToDateTime(AddNew_FromValues[index]);
+            //        bool dailyActivityCheck = context.DailyActivities.Any(da => da.EmployeeId == E_id && da.CreatedDate >= dtStartTime);
+            //        if (dailyActivityCheck)
+            //        {
+            //            Employee emp = context.Employees.FirstOrDefault(em => em.EmployeeId == E_id);
+            //            if (emp != null)
+            //            {
+            //                error += "Cannot update today's attendance of " + emp.Name + " due to he/she has marked today's attendance <br />";
+            //            }
+            //        }
+            //        index++;
+            //    }
+            //}
+
+            //if (error.Length > 0)
+            //{
+            //    LB_Error.Visible = true;
+            //    LB_Error.Text = error;
+            //    RightContentError.Attributes.Add("class", "validationSummary");
+            //    RightContentError.Visible = true;
+
+            //    return;
+            //}
+
+            List<TMS_Emp_Shift_Schedule> AllShift_Sch = new List<TMS_Emp_Shift_Schedule>();
+
+            foreach (int E_id in Empid)
+            {
+                int index = 0;
+                foreach (var item in AddNew_ShiftValues)
+                {
+
+                    DateTime dtStartTime = Convert.ToDateTime(AddNew_FromValues[index]);
+                    //bool dailyActivityCheck = context.DailyActivities.Any(da => da.EmployeeId == E_id && da.CreatedDate == dtStartTime);
+                    //if (dailyActivityCheck == false)
+                    //{
+                    TMS_Emp_Shift_Schedule Add_Emp_Shift = new TMS_Emp_Shift_Schedule();
+
+                    Add_Emp_Shift.EmployeeID = E_id;
+                    try
+                    {
+                        Add_Emp_Shift.IsActive = AddNew_StatusValues[index] == "on" ? true : false;
+                    }
+                    catch
+                    {
+                        Add_Emp_Shift.IsActive = false;
+                    }
+                    Add_Emp_Shift.ShiftID = Convert.ToInt32(AddNew_ShiftValues[index]);
+                    Add_Emp_Shift.StartDate = dtStartTime;
+                    Add_Emp_Shift.CreatedBy = new Base().UserKey;
+                    Add_Emp_Shift.CreatedDate = DateTime.Now;
+
+                    context.TMS_Emp_Shift_Schedule.Add(Add_Emp_Shift);
+                    context.SaveChanges();
+
+                    AllShift_Sch.Add(Add_Emp_Shift);
+                    //}
+                    //else
+                    //{
+                    //    Employee emp = context.Employees.FirstOrDefault(em => em.EmployeeId == E_id);
+                    //    if (emp != null)
+                    //    {
+                    //        error += emp.Name + "";
+                    //    }
+                    //}
+                    index++;
+                }
+            }
+
+            foreach (RepeaterItem ri in RepeaterShiftSch.Items)
+            {
+                if (ri.ItemIndex != -1)
+                {
+                    HiddenField rec_Id = (HiddenField)ri.FindControl("HF_Rec_ID");
+                    int Rec_ID = Convert.ToInt32(rec_Id.Value);
+                    DropDownList ddlShift = (DropDownList)ri.FindControl("DropDownForShift");
+                    TextBox FromDate = (TextBox)ri.FindControl("TextBoxFromDate");
+                    CheckBox Status = (CheckBox)ri.FindControl("CheckBoxIsActive");
+                    TMS_Emp_Shift_Schedule Edit_Emp_Shift = new TMS_Emp_Shift_Schedule();
+
+                    //if (ddlShift.Enabled)
+                    //{
+                    Edit_Emp_Shift = context.TMS_Emp_Shift_Schedule.FirstOrDefault(p => p.RecID == Rec_ID);
+
+                    if (Edit_Emp_Shift != null)
+                    {
+                        //bool dailyActivityCheck = context.DailyActivities.Any(da => da.EmployeeId == Edit_Emp_Shift.EmployeeID && da.CreatedDate == Edit_Emp_Shift.StartDate);
+                        //if (dailyActivityCheck == false)
+                        //{
+                        if (Status.Checked == true)
+                        {
+                            Edit_Emp_Shift.IsActive = true;
+                        }
+                        else
+                        {
+                            Edit_Emp_Shift.IsActive = false;
+                        }
+                        Edit_Emp_Shift.ShiftID = Convert.ToInt32(ddlShift.SelectedValue);
+                        Edit_Emp_Shift.StartDate = Convert.ToDateTime(FromDate.Text);
+                        Edit_Emp_Shift.ModifyBy = new Base().UserKey;
+                        Edit_Emp_Shift.ModifyDate = DateTime.Now;
+
+                        context.Entry(Edit_Emp_Shift).State = System.Data.EntityState.Modified;
+                        context.SaveChanges();
+
+                        AllShift_Sch.Add(Edit_Emp_Shift);
+
+
+                        //if (!ddlShift.Enabled) // Calendar must update from today because anyone can inactive the first shift
+                        //{
+                        //    AllShift_Sch[AllShift_Sch.Count - 1].StartDate = DateTime.Now.Date;
+                        //}
+                        //}
+                    }
+                    //}
+                }
+            }
+
+            Update_Emp_Calender(AllShift_Sch);
+            ViewState[VIEWSTATEKEY] = "0";
+            LoadRecords();
+
+            LB_Error.Visible = true;
+            RightContentError.Attributes.Add("class", "okMessage");
+            LB_Error.Text = "Shift Scheduled Successfully";
+            RightContentError.Visible = true;
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+
+            LoadContactControls();
+        }
+    }
+
+    public void Update_Emp_Calender(List<TMS_Emp_Shift_Schedule> Shift_Sch)
+    {
+        try
+        {
+            var Shift_Sch_Orderd = Shift_Sch.Where(s => s.IsActive == true).OrderBy(p => p.StartDate).ToList();
+            //int index = 1;            
+
+            foreach (var item in Shift_Sch_Orderd)
+            {
+                //DateTime? dtNext = null;
+                //if (Shift_Sch_Orderd.Count > index)
+                //{
+                //    //
+                //    dtNext = Shift_Sch_Orderd[index].StartDate;
+                //    index++;
+                //}
+
+                DateTime Start_Date = Convert.ToDateTime(item.StartDate) < DateTime.Now.Date ? DateTime.Now.Date : Convert.ToDateTime(item.StartDate);
+                int Emp_ID = Convert.ToInt32(item.EmployeeID);
+                int Shift_ID = Convert.ToInt32(item.ShiftID);
+                List<TMS_TM_Employee_Calendar> GetEmpCalender = context.TMS_TM_Employee_Calendar.Where(p => p.EmployeeID == Emp_ID && p.Year >= Start_Date.Year && p.Month >= Start_Date.Month).ToList();
+
+                int cur_day = Start_Date.Day;
+                var AppliedShift = context.TMS_Setup_ShiftDetail.Where(p => p.ShiftId == Shift_ID);
+                int index1 = 0;
+                foreach (var item1 in GetEmpCalender)
+                {
+                    foreach (PropertyInfo prop1 in typeof(TMS_TM_Employee_Calendar).GetProperties())
+                    {
+                        if (prop1.Name.Contains("DAY"))
+                        {
+                            if (prop1.Name.Contains("DAY" + cur_day.ToString()))
+                            {
+                                DateTime dateValue = DateTime.Now;
+                                string strDT = Convert.ToString(item1.Year) + "/" + Convert.ToString(item1.Month) + "/" + cur_day;
+                                if (DateTime.TryParse(strDT, out dateValue))
+                                {
+                                    //DateTime dateValue = new DateTime(Convert.ToInt16(item1.Year), Convert.ToInt16(item1.Month), cur_day);//(Start_Date.Year, Start_Date.Month, cur_day);
+
+                                    int dayOfWeek = (int)dateValue.DayOfWeek;
+
+                                    foreach (var item2 in AppliedShift)
+                                    {
+                                        if (item2.DayInt == dayOfWeek)
+                                        {
+                                            prop1.SetValue(GetEmpCalender[index1], item2.ShiftDayTypeId, null);
+                                            cur_day++;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //DateTime dtCurrent = new DateTime(Convert.ToInt16(item1.Year), Convert.ToInt16(item1.Month), cur_day);//(Start_Date.Year, Start_Date.Month, cur_day);
+
+                        //if (dtNext != null && dtNext < dtCurrent) // dtCurrent is the one day add date
+                        //{ 
+                        //    break; 
+                        //}
+                    }
+                    index1++;
+                    cur_day = 1;
+                }
+
+                foreach (var item2 in GetEmpCalender)
+                {
+                    item2.ModifyBy = new Base().UserKey;
+                    item2.ModifyDate = DateTime.Now;
+                    context.Entry(item2).State = System.Data.EntityState.Modified;
+                    context.SaveChanges();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+
+    }
+
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        var listEmplyee = context.Setup_Employee.Where(emp => emp.IsActive == true && emp.DepartmentId == departmentId && (emp.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && emp.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(emp => emp.FirstName)
+            .Select(emp => new
+            {
+                EmployeeId = emp.EmployeeId,
+                Name = emp.FirstName+" "+emp.LastName + " - " + emp.EmployeeCode
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+
+        ListBoxEmp.DataSource = listEmplyee;
+        ListBoxEmp.DataTextField = "Name";
+        ListBoxEmp.DataValueField = "EmployeeId";
+        ListBoxEmp.DataBind();
+
+        ViewState[VIEWSTATEKEY] = 0;
+        Session["ShiftDepartmentId"] = ddlDepartment.SelectedValue;
+        LoadRecords();
+    }
+}

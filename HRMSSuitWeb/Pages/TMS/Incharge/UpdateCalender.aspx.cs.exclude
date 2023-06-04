@@ -1,0 +1,937 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+using System.Data;
+
+public partial class Pages_TMS_Incharge_UpdateCalender : System.Web.UI.Page
+{
+
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    List<TMS_Setup_ShiftDayTypes> shiftDay_Type = new List<TMS_Setup_ShiftDayTypes>();
+
+    List<TMS_Setup_Shift> Allshifts = new List<TMS_Setup_Shift>();
+
+    List<TMS_Setup_ShiftDayTypes> OnlyLeave = new List<TMS_Setup_ShiftDayTypes>();
+
+    Base baseClass = new Base();
+    DateTime Allowdays = DateTime.Now;
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+
+
+
+        //DateTime curr_date_Time = new DateTime(Convert.ToInt32(temp.object4), Convert.ToInt32(temp.object3), Convert.ToInt32(temp.object1));
+        int tat = Convert.ToInt32(new Base().RoleTats);
+        int offHours = CommonHelper.GetTotalOffHours(DateTime.Now, DateTime.Now, new Base().UserKey);
+
+        double totalNumOfDays = ((tat + offHours) / 24);
+
+        totalNumOfDays = Math.Ceiling(totalNumOfDays);
+
+
+        Allowdays = Allowdays.AddDays(-totalNumOfDays);
+
+
+
+
+
+        try
+        {
+            if (!IsPostBack)
+            {
+                BindDropdown();
+            }
+            shiftDay_Type = context.TMS_Setup_ShiftDayTypes.Where(p => p.IsActive == true && p.ShiftDayTypeId == (int)Constant.TMSDayTypes.Off || p.ShiftDayTypeId == (int)Constant.TMSDayTypes.Working).ToList(); //|| p.ShiftDayTypeId == (int)Constant.TMSDayTypes.Leave || p.ShiftDayTypeId == (int)Constant.TMSDayTypes.Holiday
+
+            OnlyLeave = context.TMS_Setup_ShiftDayTypes.Where(p => p.IsActive == true && p.ShiftDayTypeId == (int)Constant.TMSDayTypes.Leave).ToList();
+            Allshifts = context.TMS_Setup_Shift.Where(p => p.IsActive == true).ToList();
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    private void LoadData()
+    {
+        if (ddlDepartment.SelectedValue != "0")
+        {
+            int Dept = Convert.ToInt32(ddlDepartment.SelectedValue);
+            ucMultipleListBox.SourceDatasource = context.Setup_Employee.Where(i => i.IsActive == true && i.DepartmentId == Dept && i.InchargeId==baseClass.UserKey).Select(c => new
+           {
+               EmployeeId = c.EmployeeId,
+               Name = c.FirstName + " " + c.LastName
+           }).OrderBy(i => i.Name).ToList().ToDataTable();
+        }
+    }
+
+    private void BindDropdown()
+    {
+        try
+        {
+            Base UserInfo = new Base();
+            var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey)
+                     .Select(a => new
+                     {
+                         GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                         GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                     })
+                     .ToList().Distinct();
+            CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", LstGroup.Count() > 1 ? true : false, false);
+            int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+
+            var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+                .Select(a => new
+                {
+                    CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                    CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+                })
+                .Distinct()
+                .ToList();
+
+            CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", LstCompany.Count>1?true:false, false);
+            if (ddlCompany.SelectedValue != "0")
+            {
+                ddlCompany_SelectedIndexChanged(null, null);
+                if (ddlCompany.SelectedValue != "0")
+                {
+                    ddlDepartment_SelectedIndexChanged(null, null);
+                }
+            }
+
+            //int userId =context.Users.First(p =>p.Full_Name == b.FullName).User_Code;
+            //var listEmplyee = context.Employees.Where(c => c.IsActive == true && c.InchargeId == UserInfo.UserKey).OrderBy(c => c.Name).ToList();
+            // var listCity = context.Cities.Where(c => c.IsActive == true).OrderBy(c => c.CityName).ToList();
+
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+            var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin && e.CompanyId == baseClass.CompanyId)))
+                .OrderBy(e => e.EmployeeCode)
+                .Select(e => new
+                {
+                    EmployeeId = e.EmployeeId,
+                    Name = e.EmployeeCode + " - " + e.FirstName
+                })
+                .ToList();
+
+
+            //CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+
+
+
+            for (int i = 2014; i <= DateTime.Now.Year + 1; i++)
+            {
+                ListItem Li = new ListItem(i.ToString(), i.ToString());
+                ddlYear.Items.Add(Li);
+            }
+            ddlYear.SelectedValue = DateTime.Now.Year.ToString();
+
+            string[] MonthNames = DateTimeFormatInfo.CurrentInfo.MonthNames;
+            //  CommonHelper.BindDropDown(ddlYear, yearList, "yearVal", "yearID", true, false);
+            int j = 1;
+            foreach (var item in MonthNames)
+            {
+                if (item.Length > 2)
+                {
+                    ListItem Li = new ListItem(item, j.ToString());
+                    ddlMonth.Items.Add(Li);
+                }
+                j++;
+            }
+            ddlMonth.SelectedValue = DateTime.Now.Month.ToString();
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void GetEmpShift_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int year = Convert.ToInt32(ddlYear.SelectedValue);
+            int month = Convert.ToInt32(ddlMonth.SelectedValue);
+
+            DataTable dt = ucMultipleListBox.DestinationDatasource;
+            if (dt.Rows.Count == 1)
+            {
+                int EmpId = Convert.ToInt32(dt.Rows[0]["EmployeeId"]);
+                var employeeCalender = context.TMS_TM_Employee_Calendar.Where(p => p.EmployeeID == EmpId && p.Year == year && p.Month == month).ToList();
+
+
+                List<showResult> SetEmpCalender = new List<showResult>();
+
+                // var allShift = context.Shifts.Where(p => p.IsActive == true).ToList();
+
+                if (employeeCalender.Count > 0)
+                {
+                    SaveButton.Visible = true;
+
+                    DateTime dateValue = new DateTime(year, month, 1);
+                    int NumOfemptyItem = (int)dateValue.DayOfWeek;
+                    int numberOfDaysInMounth = DateTime.DaysInMonth(year, month);
+                    for (int i = 1; i <= numberOfDaysInMounth; i++)
+                    {
+                        showResult temp = new showResult();
+                        temp.object1 = employeeCalender[0].Record_ID.ToString();
+
+                        if (i == 1) { temp.object2 = "1"; temp.object3 = employeeCalender[0].DAY1.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp); }
+                        if (i == 2) { temp.object2 = "2"; temp.object3 = employeeCalender[0].DAY2.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp); }
+                        if (i == 3)
+                        {
+                            temp.object2 = "3";
+                            temp.object3 = employeeCalender[0].DAY3.ToString();
+                            temp.object4 = month.ToString(); temp.object5 = year.ToString();
+                            SetEmpCalender.Add(temp);
+                        }
+                        if (i == 4)
+                        {
+                            temp.object2 = "4";
+                            temp.object3 = employeeCalender[0].DAY4.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 5)
+                        {
+                            temp.object2 = "5";
+                            temp.object3 = employeeCalender[0].DAY5.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 6)
+                        {
+                            temp.object2 = "6";
+                            temp.object3 = employeeCalender[0].DAY6.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 7)
+                        {
+                            temp.object2 = "7";
+                            temp.object3 = employeeCalender[0].DAY7.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 8)
+                        {
+                            temp.object2 = "8";
+                            temp.object3 = employeeCalender[0].DAY8.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+
+                        if (i == 9)
+                        {
+                            temp.object2 = "9";
+                            temp.object3 = employeeCalender[0].DAY9.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+
+                        if (i == 10)
+                        {
+                            temp.object2 = "10";
+                            temp.object3 = employeeCalender[0].DAY10.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 11)
+                        {
+                            temp.object2 = "11";
+                            temp.object3 = employeeCalender[0].DAY11.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+
+                        if (i == 12)
+                        {
+                            temp.object2 = "12";
+                            temp.object3 = employeeCalender[0].DAY12.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 13)
+                        {
+                            temp.object2 = "13";
+                            temp.object3 = employeeCalender[0].DAY13.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 14)
+                        {
+                            temp.object2 = "14";
+                            temp.object3 = employeeCalender[0].DAY14.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 15)
+                        {
+                            temp.object2 = "15";
+                            temp.object3 = employeeCalender[0].DAY15.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 16)
+                        {
+                            temp.object2 = "16";
+                            temp.object3 = employeeCalender[0].DAY16.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 17)
+                        {
+                            temp.object2 = "17";
+                            temp.object3 = employeeCalender[0].DAY17.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 18)
+                        {
+                            temp.object2 = "18";
+                            temp.object3 = employeeCalender[0].DAY18.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 19)
+                        {
+                            temp.object2 = "19";
+                            temp.object3 = employeeCalender[0].DAY19.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 20)
+                        {
+                            temp.object2 = "20";
+                            temp.object3 = employeeCalender[0].DAY20.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 21)
+                        {
+                            temp.object2 = "21";
+                            temp.object3 = employeeCalender[0].DAY21.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 22)
+                        {
+                            temp.object2 = "22";
+                            temp.object3 = employeeCalender[0].DAY22.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 23)
+                        {
+                            temp.object2 = "23";
+                            temp.object3 = employeeCalender[0].DAY23.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 24)
+                        {
+                            temp.object2 = "24";
+                            temp.object3 = employeeCalender[0].DAY24.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 25)
+                        {
+                            temp.object2 = "25";
+                            temp.object3 = employeeCalender[0].DAY25.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 26)
+                        {
+                            temp.object2 = "26";
+                            temp.object3 = employeeCalender[0].DAY26.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 27)
+                        {
+                            temp.object2 = "27";
+                            temp.object3 = employeeCalender[0].DAY27.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 28)
+                        {
+                            temp.object2 = "28";
+                            temp.object3 = employeeCalender[0].DAY28.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 29 && employeeCalender[0].DAY29 != 0)
+                        {
+                            temp.object2 = "29";
+                            temp.object3 = employeeCalender[0].DAY29.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 30 && employeeCalender[0].DAY30 != 0)
+                        {
+                            temp.object2 = "30";
+                            temp.object3 = employeeCalender[0].DAY30.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                        if (i == 31 && employeeCalender[0].DAY31 != 0)
+                        {
+                            temp.object2 = "31";
+                            temp.object3 = employeeCalender[0].DAY31.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                        }
+                    }
+                    // int NumOfemptyItem = Convert.ToInt32( employeeCalender[0].DayOfWeekInt);
+                    showResult temp1 = new showResult();
+                    for (int i = 0; i < NumOfemptyItem; i++)
+                    {
+                        temp1.object1 = "0";
+                        SetEmpCalender.Insert(0, temp1);
+                    }
+                }
+                else
+                {
+                    SaveButton.Visible = false;
+                }
+                DataList_Shift.DataSource = SetEmpCalender;
+                DataList_Shift.DataBind();
+            }
+            else if (dt.Rows.Count > 1)
+            {
+                for (int j = 0; j < dt.Rows.Count; j++)
+                {
+
+
+                    int EmpId = Convert.ToInt32(dt.Rows[j]["EmployeeId"]);
+                    var employeeCalender = context.TMS_TM_Employee_Calendar.Where(p => p.EmployeeID == EmpId && p.Year == year && p.Month == month).ToList();
+
+
+                    List<showResult> SetEmpCalender = new List<showResult>();
+
+                    // var allShift = context.Shifts.Where(p => p.IsActive == true).ToList();
+
+                    if (employeeCalender.Count > 0)
+                    {
+                        SaveButton.Visible = true;
+
+                        DateTime dateValue = new DateTime(year, month, 1);
+                        int NumOfemptyItem = (int)dateValue.DayOfWeek;
+                        int numberOfDaysInMounth = DateTime.DaysInMonth(year, month);
+                        for (int i = 1; i <= numberOfDaysInMounth; i++)
+                        {
+                            showResult temp = new showResult();
+                            temp.object1 = employeeCalender[0].Record_ID.ToString();
+
+                            if (i == 1) { temp.object2 = "1"; temp.object3 = employeeCalender[0].DAY1.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp); }
+                            else if (i == 2) { temp.object2 = "2"; temp.object3 = employeeCalender[0].DAY2.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp); }
+                            else if (i == 3)
+                            {
+                                temp.object2 = "3";
+                                temp.object3 = employeeCalender[0].DAY3.ToString();
+                                temp.object4 = month.ToString(); temp.object5 = year.ToString();
+                                SetEmpCalender.Add(temp);
+                            }
+                            else if (i == 4)
+                            {
+                                temp.object2 = "4";
+                                temp.object3 = employeeCalender[0].DAY4.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 5)
+                            {
+                                temp.object2 = "5";
+                                temp.object3 = employeeCalender[0].DAY5.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 6)
+                            {
+                                temp.object2 = "6";
+                                temp.object3 = employeeCalender[0].DAY6.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 7)
+                            {
+                                temp.object2 = "7";
+                                temp.object3 = employeeCalender[0].DAY7.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 8)
+                            {
+                                temp.object2 = "8";
+                                temp.object3 = employeeCalender[0].DAY8.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+
+                            else if (i == 9)
+                            {
+                                temp.object2 = "9";
+                                temp.object3 = employeeCalender[0].DAY9.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+
+                            else if (i == 10)
+                            {
+                                temp.object2 = "10";
+                                temp.object3 = employeeCalender[0].DAY10.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 11)
+                            {
+                                temp.object2 = "11";
+                                temp.object3 = employeeCalender[0].DAY11.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+
+                            else if (i == 12)
+                            {
+                                temp.object2 = "12";
+                                temp.object3 = employeeCalender[0].DAY12.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 13)
+                            {
+                                temp.object2 = "13";
+                                temp.object3 = employeeCalender[0].DAY13.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 14)
+                            {
+                                temp.object2 = "14";
+                                temp.object3 = employeeCalender[0].DAY14.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 15)
+                            {
+                                temp.object2 = "15";
+                                temp.object3 = employeeCalender[0].DAY15.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 16)
+                            {
+                                temp.object2 = "16";
+                                temp.object3 = employeeCalender[0].DAY16.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 17)
+                            {
+                                temp.object2 = "17";
+                                temp.object3 = employeeCalender[0].DAY17.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 18)
+                            {
+                                temp.object2 = "18";
+                                temp.object3 = employeeCalender[0].DAY18.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 19)
+                            {
+                                temp.object2 = "19";
+                                temp.object3 = employeeCalender[0].DAY19.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 20)
+                            {
+                                temp.object2 = "20";
+                                temp.object3 = employeeCalender[0].DAY20.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 21)
+                            {
+                                temp.object2 = "21";
+                                temp.object3 = employeeCalender[0].DAY21.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 22)
+                            {
+                                temp.object2 = "22";
+                                temp.object3 = employeeCalender[0].DAY22.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 23)
+                            {
+                                temp.object2 = "23";
+                                temp.object3 = employeeCalender[0].DAY23.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 24)
+                            {
+                                temp.object2 = "24";
+                                temp.object3 = employeeCalender[0].DAY24.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 25)
+                            {
+                                temp.object2 = "25";
+                                temp.object3 = employeeCalender[0].DAY25.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 26)
+                            {
+                                temp.object2 = "26";
+                                temp.object3 = employeeCalender[0].DAY26.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 27)
+                            {
+                                temp.object2 = "27";
+                                temp.object3 = employeeCalender[0].DAY27.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 28)
+                            {
+                                temp.object2 = "28";
+                                temp.object3 = employeeCalender[0].DAY28.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 29 && employeeCalender[0].DAY29 != 0)
+                            {
+                                temp.object2 = "29";
+                                temp.object3 = employeeCalender[0].DAY29.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 30 && employeeCalender[0].DAY30 != 0)
+                            {
+                                temp.object2 = "30";
+                                temp.object3 = employeeCalender[0].DAY30.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                            else if (i == 31 && employeeCalender[0].DAY31 != 0)
+                            {
+                                temp.object2 = "31";
+                                temp.object3 = employeeCalender[0].DAY31.ToString(); temp.object4 = month.ToString(); temp.object5 = year.ToString(); SetEmpCalender.Add(temp);
+
+                            }
+                        }
+                        // int NumOfemptyItem = Convert.ToInt32( employeeCalender[0].DayOfWeekInt);
+                        showResult temp1 = new showResult();
+                        for (int i = 0; i < NumOfemptyItem; i++)
+                        {
+                            temp1.object1 = "0";
+                            SetEmpCalender.Insert(0, temp1);
+                        }
+
+                        DataList_Shift.DataSource = SetEmpCalender;
+                        DataList_Shift.DataBind();
+                        break;
+                    }
+                    else
+                    {
+                        SaveButton.Visible = false;
+                    }
+                }
+            }
+            else
+            {
+                DataList_Shift.DataSource = null;
+                DataList_Shift.DataBind();
+                SaveButton.Visible = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void DataList_Shift_ItemDataBound(object sender, DataListItemEventArgs e)
+    {
+        try
+        {
+            if (e.Item.ItemIndex != -1)
+            {
+                DataTable dt = ucMultipleListBox.DestinationDatasource;
+                if (dt.Rows.Count == 1)
+                {
+
+                    HiddenField hf_daytye = (HiddenField)e.Item.FindControl("HfDayType");
+                    DropDownList ddlday = (DropDownList)e.Item.FindControl("ddlDayType");
+
+
+                    if (hf_daytye.Value == ((int)Constant.TMSDayTypes.Leave).ToString())
+                    {
+
+                        //  ddlday.Enabled = false;
+                        CommonHelper.BindDropDown(ddlday, OnlyLeave, "ShiftDayTypeName", "ShiftDayTypeId", true, false);
+                    }
+                    else
+                    {
+                        CommonHelper.BindDropDown(ddlday, shiftDay_Type, "ShiftDayTypeName", "ShiftDayTypeId", true, false);
+                        ddlday.SelectedValue = (hf_daytye.Value == Convert.ToString((int)Constant.TMSDayTypes.Holiday) ? Convert.ToString((int)Constant.TMSDayTypes.Off) : hf_daytye.Value);
+                    }
+
+                    // int year = Convert.ToInt32(ddlYear.SelectedValue);
+                    // int month = Convert.ToInt32(ddlMonth.SelectedValue);
+
+                    showResult temp = new showResult();
+                    temp = (showResult)e.Item.DataItem;
+                    if (temp.object1 == "0")
+                    {
+                        ddlday.Enabled = false;
+                        ddlday.Visible = false;
+
+                    }
+                    else
+                    {
+                        TMS_MonthEndParameter monthEndParameter = context.TMS_MonthEndParameter.FirstOrDefault(p => p.CompanyId == baseClass.CompanyId);
+                        if (monthEndParameter != null)
+                        {
+                            DateTime runDate = new DateTime(Convert.ToInt32(temp.object5), Convert.ToInt32(temp.object4), Convert.ToInt32(temp.object2));
+                            Allowdays = new DateTime(monthEndParameter.CurrentYear, monthEndParameter.CurrentMonth, monthEndParameter.MonthEnd_StartDate);
+                            int result = DateTime.Compare(runDate, Allowdays.Date.AddMonths(-1));
+                            //int result = DateTime.Compare(runDate, Allowdays.Date);
+                            if (result < 0)
+                            {
+                                ddlday.Enabled = false;
+
+                            }
+                        }
+                    }
+
+                }
+                else if (dt.Rows.Count > 1)
+                {
+
+                    DropDownList ddlday = (DropDownList)e.Item.FindControl("ddlDayType");
+                    BindDropDown(ddlday, shiftDay_Type, "ShiftDayTypeName", "ShiftDayTypeId", true, false);
+                }
+            }
+            else { }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void SaveButton_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            DataTable dt = ucMultipleListBox.DestinationDatasource;
+            if (dt.Rows.Count == 1)
+            {
+                foreach (DataListItem Dli in DataList_Shift.Items)
+                {
+                    DropDownList ddlday = (DropDownList)Dli.FindControl("ddlDayType");
+
+                    // DropDownList ddlshift = (DropDownList)Dli.FindControl("ddlEditShift");
+
+                    HiddenField EmplyeeShiftDetailId = (HiddenField)Dli.FindControl("HFShiftDetail_ID");
+
+                    HiddenField HFDAY = (HiddenField)Dli.FindControl("HFDAY");
+
+                    TMS_TM_Employee_Calendar EmpShiftDet = new TMS_TM_Employee_Calendar();
+
+                    int Rec_Id = Convert.ToInt32(EmplyeeShiftDetailId.Value);
+
+                    if (Rec_Id != 0)
+                    {
+                        EmpShiftDet = context.TMS_TM_Employee_Calendar.First(p => p.Record_ID == Rec_Id);
+
+                        if (HFDAY.Value == "1")
+                        {
+                            if (EmpShiftDet.DAY1 != Convert.ToInt32(ddlday.SelectedValue))
+                            {
+                                EmpShiftDet.DAY1 = Convert.ToInt32(ddlday.SelectedValue);
+                                context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified;
+                                context.SaveChanges();
+                            }
+                        }
+                        if (HFDAY.Value == "2") { if (EmpShiftDet.DAY2 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY2 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "3") { if (EmpShiftDet.DAY3 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY3 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "4") { if (EmpShiftDet.DAY4 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY4 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "5") { if (EmpShiftDet.DAY5 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY5 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "6") { if (EmpShiftDet.DAY6 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY6 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "7") { if (EmpShiftDet.DAY7 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY7 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "8") { if (EmpShiftDet.DAY8 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY8 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "9") { if (EmpShiftDet.DAY9 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY9 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "10") { if (EmpShiftDet.DAY10 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY10 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "11") { if (EmpShiftDet.DAY11 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY11 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "12") { if (EmpShiftDet.DAY12 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY12 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "13") { if (EmpShiftDet.DAY13 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY13 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "14") { if (EmpShiftDet.DAY14 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY14 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "15") { if (EmpShiftDet.DAY15 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY15 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "16") { if (EmpShiftDet.DAY16 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY16 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "17") { if (EmpShiftDet.DAY17 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY17 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "18") { if (EmpShiftDet.DAY18 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY18 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "19") { if (EmpShiftDet.DAY19 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY19 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "20") { if (EmpShiftDet.DAY20 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY20 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "21") { if (EmpShiftDet.DAY21 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY21 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "22") { if (EmpShiftDet.DAY22 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY22 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "23") { if (EmpShiftDet.DAY23 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY23 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "24") { if (EmpShiftDet.DAY24 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY24 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "25") { if (EmpShiftDet.DAY25 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY25 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "26") { if (EmpShiftDet.DAY26 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY26 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "27") { if (EmpShiftDet.DAY27 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY27 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "28") { if (EmpShiftDet.DAY28 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY28 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "29") { if (EmpShiftDet.DAY29 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY29 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "30") { if (EmpShiftDet.DAY30 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY30 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "31") { if (EmpShiftDet.DAY31 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY31 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+
+                        EmpShiftDet.ModifyBy = baseClass.UserKey;
+                        EmpShiftDet.ModifyDate = DateTime.Now;
+                        context.SaveChanges();
+                        context.INSERT_INTO_AuditLog(EmpShiftDet.Record_ID.ToString(), "TMS_TM_Employee_Calendar", (int)Constant.OperationType.UPDATE, baseClass.UserKey);
+                    }
+                }
+            }
+            else if (dt.Rows.Count > 1)
+            {
+                int? year = Convert.ToInt32(ddlYear.SelectedValue);
+                int? month = Convert.ToInt32(ddlMonth.SelectedValue);
+                for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    int EmpID = Convert.ToInt32(dt.Rows[i]["EmployeeId"]);
+                    foreach (DataListItem Dli in DataList_Shift.Items)
+                    {
+                        DropDownList ddlday = (DropDownList)Dli.FindControl("ddlDayType");
+
+                        // DropDownList ddlshift = (DropDownList)Dli.FindControl("ddlEditShift");
+
+                        HiddenField EmplyeeShiftDetailId = (HiddenField)Dli.FindControl("HFShiftDetail_ID");
+
+                        HiddenField HFDAY = (HiddenField)Dli.FindControl("HFDAY");
+
+                        TMS_TM_Employee_Calendar EmpShiftDet = new TMS_TM_Employee_Calendar();
+
+                        int Rec_Id = Convert.ToInt32(EmplyeeShiftDetailId.Value);
+
+                        //if (Rec_Id != 0)
+                        //{
+                        EmpShiftDet = context.TMS_TM_Employee_Calendar.First(p => p.Year == year && p.Month == month && p.EmployeeID == EmpID);
+
+                        if (HFDAY.Value == "1" && ddlday.SelectedValue != "0")
+                        {
+                            if (EmpShiftDet.DAY1 != Convert.ToInt32(ddlday.SelectedValue))
+                            {
+                                EmpShiftDet.DAY1 = Convert.ToInt32(ddlday.SelectedValue);
+                                context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified;
+                                context.SaveChanges();
+                            }
+                        }
+                        if (HFDAY.Value == "2" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY2 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY2 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "3" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY3 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY3 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "4" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY4 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY4 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "5" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY5 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY5 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "6" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY6 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY6 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "7" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY7 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY7 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "8" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY8 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY8 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "9" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY9 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY9 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "10" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY10 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY10 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "11" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY11 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY11 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "12" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY12 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY12 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "13" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY13 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY13 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "14" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY14 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY14 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "15" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY15 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY15 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "16" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY16 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY16 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "17" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY17 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY17 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "18" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY18 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY18 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "19" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY19 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY19 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "20" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY20 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY20 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "21" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY21 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY21 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "22" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY22 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY22 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "23" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY23 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY23 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "24" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY24 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY24 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "25" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY25 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY25 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "26" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY26 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY26 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "27" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY27 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY27 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "28" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY28 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY28 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "29" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY29 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY29 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "30" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY30 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY30 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+                        if (HFDAY.Value == "31" && ddlday.SelectedValue != "0") { if (EmpShiftDet.DAY31 != Convert.ToInt32(ddlday.SelectedValue)) { EmpShiftDet.DAY31 = Convert.ToInt32(ddlday.SelectedValue); context.Entry(EmpShiftDet).State = System.Data.EntityState.Modified; context.SaveChanges(); } }
+
+                        EmpShiftDet.ModifyBy = baseClass.UserKey;
+                        EmpShiftDet.ModifyDate = DateTime.Now;
+                        context.SaveChanges();
+                        context.INSERT_INTO_AuditLog(EmpShiftDet.Record_ID.ToString(), "TMS_TM_Employee_Calendar", (int)Constant.OperationType.UPDATE, baseClass.UserKey);
+                        //}
+                    }
+                }
+            }
+            LB_Error.Visible = true;
+            RightContentError.Attributes.Add("class", "okMessage");
+            //LB_Error.Text = "Calender Updated Successfully";
+            Success("Calender Updated Successfully");
+            RightContentError.Visible = true;
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+
+        }
+    }
+    public void BindDropDown(DropDownList ddlGeneral, Object dataSource, string dataTextField, string dataValueField, bool hasSelectItem, bool hasOtherItem)
+    {
+        ddlGeneral.DataSource = dataSource;
+        ddlGeneral.DataTextField = dataTextField;
+        ddlGeneral.DataValueField = dataValueField;
+        ddlGeneral.DataBind();
+
+        if (hasSelectItem == true)
+        {
+            ddlGeneral.Items.Insert(0, new ListItem("No Change", "0"));
+        }
+
+        if (hasOtherItem == true)
+        {
+            ddlGeneral.Items.Add(new ListItem("-OTHER-", "-100"));
+        }
+    }
+
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyID = Convert.ToInt32(ddlCompany.SelectedValue);
+        if (CompanyID != 0)
+        {
+            var ListDepartments = context.Setup_Department
+                  .Where(x => x.IsActive == true && x.CompanyId == CompanyID && x.Setup_Employee.Any(a=>a.InchargeId==baseClass.UserKey && a.IsActive==true))
+                  .ToList().Select(x => new
+                  {
+                      ID = x.DepartmentId,
+                      Value = x.DepartmentName
+                  }).ToList();
+            CommonHelper.BindDropDown(ddlDepartment, ListDepartments, "Value", "ID", ListDepartments.Count > 1 ? true : false, false);
+            ddlDepartment_SelectedIndexChanged(null, null);
+        }
+    }
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        ucMultipleListBox.DestinationDatasource = null;
+        int DepartmentID = Convert.ToInt32(ddlDepartment.SelectedValue);
+        if (DepartmentID != 0)
+        {
+            //var ListEmployee = context.Setup_Employee
+            //      .Where(x => x.IsActive == true && x.DepartmentId == DepartmentID && x.InchargeId==baseClass.UserKey)
+            //      .ToList().Select(x => new
+            //      {
+            //          ID = x.EmployeeId,
+            //          Value = x.FirstName
+            //      }).ToList();
+            ////CommonHelper.BindDropDown(ddlEmployee, ListEmployee, "Value", "ID", ListEmployee.Count > 1 ? true : false, false);
+
+            //CommonHelper.BindCheckBoxList(chkEmployees, ListEmployee, "Value", "ID", ListEmployee.Count > 1 ? true : false, false);
+            LoadData();
+        }
+    }
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == baseClass.UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .Distinct()
+            .ToList();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", LstCompany.Count > 1 ? true:false, false);
+        ddlCompany_SelectedIndexChanged(null, null);
+    }
+}

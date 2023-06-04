@@ -1,0 +1,453 @@
+<style> TD.exceltext { mso-number-format:\@; } </style> 
+                                <table align="center" class="datagrid" cellspacing="0" cellpadding="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Company
+                                            </th>
+                                            <th>Department
+                                            </th>
+                                            <th>Job Category
+                                            </th>
+                                            <th>Designation
+                                            </th>
+                                            <th>Employee Code
+                                            </th>
+                                            <th>Employee Name
+                                            </th>
+                                            <th>Access Card Number
+                                            </th>
+                                            <th>Access On
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Back Office - MD
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl01$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_0" class="hfEmployeeIdRpt" value="12676866" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl01$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_0" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl01$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_0" class="hfAccessCardIdRpt" value="0" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Eligibility Executive
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            31613
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Nabeel Ahemd Khan
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_0"></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            International Sales
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl02$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_1" class="hfEmployeeIdRpt" value="15369012" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl02$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_1" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl02$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_1" class="hfAccessCardIdRpt" value="334" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Telesales Representative
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            33619
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            nabeel Malik
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            5693342
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_1"><li>6th Floor Main Door <b></b></li><li>6th Floor MD <b></b></li><li>6th Floor Waiting Area <b></b></li><li>8th Floor Main Door <b></b></li><li>10th Floor Main Door <b></b></li></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            International Sales
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl03$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_2" class="hfEmployeeIdRpt" value="15369016" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl03$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_2" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl03$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_2" class="hfAccessCardIdRpt" value="333" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Telesales Representative
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            33623
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Nabeel Akbar
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            5804451
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_2"><li>6th Floor Main Door <b></b></li><li>6th Floor MD <b></b></li><li>6th Floor Waiting Area <b></b></li><li>8th Floor Main Door <b></b></li><li>10th Floor Main Door <b></b></li></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            International Sales
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl04$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_3" class="hfEmployeeIdRpt" value="15369224" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl04$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_3" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl04$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_3" class="hfAccessCardIdRpt" value="431" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Telesales Representative
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            33831
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Nabeel Akhter Shaikh
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            9075776
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_3"><li>6th Floor Main Door <b></b></li><li>6th Floor MD <b></b></li><li>6th Floor Waiting Area <b></b></li><li>8th Floor Main Door <b></b></li><li>10th Floor Main Door <b></b></li></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            McDonalds
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl05$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_4" class="hfEmployeeIdRpt" value="15369099" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl05$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_4" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl05$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_4" class="hfAccessCardIdRpt" value="369" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Customer Service Executive
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            33706
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Muhammad Nabeel Khan
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            1647330
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_4"><li>6th Floor Main Door <b></b></li><li>6th Floor Waiting Area <b></b></li><li>8th Floor Main Door <b></b></li><li>8th Floor Main Floor Area <b></b></li><li>10th Floor Main Door <b></b></li></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            SDG
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl06$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_5" class="hfEmployeeIdRpt" value="15369325" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl06$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_5" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl06$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_5" class="hfAccessCardIdRpt" value="1365" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Software Engineer
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            33932
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Muhammad Nabeel Siddiqui
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            6840736
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_5"><li>6th Floor Main Door <b></b></li><li>6th Floor MD <b></b></li><li>6th Floor Waiting Area <b></b></li><li>8th Floor Main Door <b></b></li><li>8th Floor Main Floor Area <b></b></li><li>10th Floor Main Door <b></b></li><li>10th Floor Glass Door <b></b></li></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                <tr class="searchItem" style="text-align: center;">
+                                    <td>
+                                        <span>
+                                            Sybrid
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            TCS - CS
+                                        </span>
+                                        <input name="ctl00$MainContent$rptExport$ctl07$hfEmployeeIdRpt" type="hidden" id="MainContent_rptExport_hfEmployeeIdRpt_6" class="hfEmployeeIdRpt" value="15368238" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl07$hfCompanyIdRpt" type="hidden" id="MainContent_rptExport_hfCompanyIdRpt_6" class="hfCompanyIdRpt" value="2000" />
+
+                                        <input name="ctl00$MainContent$rptExport$ctl07$hfAccessCardIdRpt" type="hidden" id="MainContent_rptExport_hfAccessCardIdRpt_6" class="hfAccessCardIdRpt" value="0" />
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Officer / Executive
+
+                                        </span>
+
+                                    </td>
+                                    <td>
+                                        <span>
+                                            Customer Support Executive
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            32855
+
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        <span>
+                                            Nabeel Abbasi
+
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span>
+                                            
+
+                                        </span>
+                                    </td>
+
+                                    <td style="text-align: left">
+                                        <span>
+                                            <span id="MainContent_rptExport_lblAccessOn_6"></span>
+                                            
+                                        </span>
+                                    </td>
+                                </tr>
+                            
+                                </tbody> </table>
+                            

@@ -1,0 +1,72 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_Separation_SeparationHistory : System.Web.UI.UserControl
+{
+    public int? WorkflowItemId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfWorkflowItemId.Value == string.Empty ? nullint : Convert.ToInt32(hfWorkflowItemId.Value);
+        }
+        set { hfWorkflowItemId.Value = value.ToString(); }
+    }
+
+   
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base objbase = new Base();
+
+    private void BindRepeater(int WorkflowItemId)
+    {
+        /*var lst = context.HRMS_RequisitionDetail.Where(a => a.IsActive == true && a.RequisitionId == RequisitionId)
+            .Select(a => new
+            {
+                RequisitionDetailId = a.RequisitionDetailId,
+                ApprovedVacancy = a.ApprovedVacancy,
+                WorkflowStep = a.HRMS_WorkflowTaskDetail.HRMS_Setup_WorkflowStepDetail.StepName,
+                IsApproved = a.IsApproved == null ? false : a.IsApproved,
+                DecisionId = a.DecisionId,
+                Decision = a.HRMS_SetupDetail.SetupDetailName,
+                Comments = a.Comment
+            })
+            .ToList().OrderByDescending(a => a.RequisitionDetailId);*/
+
+        int WorkflowTaskMasterId = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true &&
+                           a.WorkflowMasterId == (int)Constant.Workflow.Separation && a.WorkflowItemId == WorkflowItemId).OrderByDescending(a => a.WorkflowTaskMasterId).FirstOrDefault().WorkflowTaskMasterId;
+
+        var lst = context.HRMS_WorkflowTaskDetail.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkflowTaskMasterId && a.WorkflowTaskStatusId == (int)Constant.WorkflowTaskStatus.Completed && a.EndDate != null
+            && (a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.HRReviewSeparation || a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.HRApprovalSeparation ||
+            a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.HRRCA || a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.HRClearenceTask || 
+            a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.HODClearenceTask || a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.ManagerApprovalSeparation ||
+            a.WorkflowStepDetailId == (int)Constant .WorkflowStepSeperation.ManagerRCA )
+            )
+            .Select(a => new
+            {
+                TaskDetailId = a.WorkflowTaskDetailId,
+
+                WorkflowStep = a.HRMS_Setup_WorkflowStepDetail.StepName,
+
+                DecisionId = a.DecisionId,
+                Decision = a.HRMS_SetupDetail.SetupDetailName,
+                Comments = a.Remarks
+            }).ToList();
+
+        rpt.DataSource = lst;
+        rpt.DataBind();
+    }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater(Convert.ToInt32(WorkflowItemId));
+        }
+    }
+}

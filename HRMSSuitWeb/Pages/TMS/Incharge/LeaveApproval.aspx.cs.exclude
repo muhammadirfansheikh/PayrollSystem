@@ -1,0 +1,575 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Transactions;
+
+public partial class Pages_TMS_Incharge_LeaveApproval : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+        //RightContentError.Attributes.Remove("class");
+        try
+        {
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+
+            if (IsSuperAdmin || (RoleCode == roleAdmin))
+            {
+                //tdDepartmentCaption.Visible = true;
+                divDept.Visible = true;
+                //tdDepartmentControl.Visible = true;
+                //tdEmployeeCaption.Visible = true;
+                divEmployee.Visible = true;
+                //tdEmployeeControl.Visible = true;
+                divSearch.Visible = true;
+                //   rfvddlDepartment.Enabled = false;
+
+            }
+            else
+            {
+
+
+                divSearch.Visible = false;
+
+                RequiredFieldValidator16.Enabled = false;
+
+            }
+
+
+            if (!IsPostBack)
+            {
+                BindDropdown();
+                BindRepeater();
+                //lblTats.Text = string.IsNullOrEmpty(RoleTats) ? "0" : (Convert.ToInt32(baseClass.RoleTats) / 24).ToString();
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void ddlEmployee_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+
+    #region Custom Methods
+    public void BindRepeater()
+    {
+        try
+        {
+             Base userInfo = new Base();
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+            string roleIncharge = Convert.ToString((int)Constant.Role.Incharge);
+
+            //var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == userInfo.UserKey || userInfo.IsSuperAdmin == true || (userInfo.RoleCode == roleAdmin && e.CompanyId == userInfo.CompanyId))).OrderBy("Name").ToList();
+            DateTime NowDateIs = DateTime.Now;
+            var Employee = context.Setup_Employee.Where(x => x.IsActive == true)
+                .Where(x => (x.InchargeId == userInfo.UserKey && x.CompanyId == userInfo.CompanyId) || userInfo.IsSuperAdmin == true || userInfo.RoleCode == roleAdmin).ToList();
+            //DateTime CreatedDateIs = new DateTime();
+
+            //if (NowDateIs.Day > 22)
+            //{
+            //    CreatedDateIs = new DateTime(NowDateIs.Year, NowDateIs.Month, 22);
+
+            //}
+            //else
+            //{
+            //    CreatedDateIs = new DateTime(NowDateIs.Year, NowDateIs.Month - 1, 23);
+
+            //}
+            DateTime CreatedDateIs = DateTime.Now.AddDays(-30);
+
+
+            int departmentId = 0;
+            int EmployeeId = 0;
+            if ((RoleCode == roleAdmin))
+            {
+                departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+                EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+
+            }
+
+
+
+            var GeAllLeave = (from LevApp in context.TMS_LeaveApplied
+                              join Emp in context.Setup_Employee on LevApp.EmployeeId equals Emp.EmployeeId
+                              join LevType in context.TMS_Setup_LeaveTypes on LevApp.LeaveTypeId equals LevType.LeaveTypeID
+                              where (userInfo.RoleCode == roleIncharge && Emp.InchargeId == userInfo.UserKey
+
+                              || (userInfo.IsSuperAdmin == true && (Emp.EmployeeId == EmployeeId || (EmployeeId == 0)) &&
+                                        Emp.DepartmentId == departmentId)
+
+                              || (userInfo.RoleCode == roleAdmin && Emp.CompanyId == userInfo.CompanyId && (Emp.EmployeeId == EmployeeId || (EmployeeId == 0)) &&
+                                        Emp.DepartmentId == departmentId)
+
+
+                              ) && (LevApp.LeaveStatusId == 1 && LevApp.IsActive == true) && LevApp.CreatedDate >= CreatedDateIs
+                              orderby LevApp.CreatedDate descending
+                              select new { LevApp, Emp.FirstName, LevType.LeaveName });
+
+            // List<LeaveApplied> AllLeaveApplied = new List<LeaveApplied>();
+            List<showResult> AllLeaveApplied = new List<showResult>();
+            List<showResult> Old_LeaveApplied = new List<showResult>();
+
+            foreach (var item in GeAllLeave)
+            {
+                showResult sr = new showResult();
+
+                sr.object1 = item.FirstName;
+                sr.object2 = item.LevApp.EmployeeReason;
+                sr.object3 = item.LeaveName;
+                sr.object4 = item.LevApp.FromDate != null ? Convert.ToDateTime(item.LevApp.FromDate).ToString(Constant.DateFormat1) : "";
+                sr.object5 = item.LevApp.ToDate != null ? Convert.ToDateTime(item.LevApp.ToDate).ToString(Constant.DateFormat1) : "";
+                sr.object6 = item.LevApp.NoOfDays.ToString();
+                sr.object7 = item.LevApp.InchargeReason;
+                sr.object8 = item.LevApp.LeaveStatusId.ToString();
+                sr.object9 = item.LevApp.LeaveAppliedId.ToString();
+                sr.object10 = item.LevApp.LeaveTypeId.ToString();
+
+                DateTime AppliedDate = Convert.ToDateTime(item.LevApp.CreatedDate);
+                int tat = Convert.ToInt32(new Base().RoleTats);
+                int offHours = CommonHelper.GetTotalOffHours(AppliedDate, DateTime.Now, new Base().UserKey);
+                int h = Convert.ToInt32((DateTime.Now - AppliedDate).TotalHours);
+
+                if (h < (tat + offHours) && (item.LevApp.Processed == null || item.LevApp.Processed == false))
+                {
+                    AllLeaveApplied.Add(sr);
+                }
+                else
+                {
+                    Old_LeaveApplied.Add(sr);
+                }
+            }
+
+            RepeaterLeaveApprove.DataSource = AllLeaveApplied;
+            RepeaterLeaveApprove.DataBind();
+
+            Repeater_Odd_Leave.DataSource = Old_LeaveApplied;
+            Repeater_Odd_Leave.DataBind();
+
+            if (AllLeaveApplied.Count > 0)
+            {
+                SaveAllStat.Visible = true;
+            }
+            else
+            {
+                SaveAllStat.Visible = false;
+            }
+
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    private void BindDropdown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", true, false);
+
+        //var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == UserKey || IsSuperAdmin == true || (RoleCode == roleAdmin && e.CompanyId == CompanyId)))
+        //    .OrderBy(e => e.EmployeeCode)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.EmployeeCode + " - " + e.FirstName
+        //    })
+        //    .ToList();
+
+
+
+        var LstGroup = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey)
+                      .Select(a => new
+                      {
+                          GroupId = a.Setup_Location.Setup_Company.Setup_Group.GroupId,
+                          GroupName = a.Setup_Location.Setup_Company.Setup_Group.GroupName,
+                      })
+                      .ToList().Distinct();
+        CommonHelper.BindDropDown(ddlGroup, LstGroup, "GroupName", "GroupId", true, false);
+
+        ddlGroup_SelectedIndexChanged(null, null);
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(e => e.FirstName)
+            .Select(e => new
+            {
+                EmployeeId = e.EmployeeId,
+                Name = e.FirstName + " - " + e.EmployeeCode
+            })
+            .ToList();
+        //.OrderBy("Name").ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+    #endregion
+    protected void ddlGroup_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int GroupId = Convert.ToInt32(ddlGroup.SelectedValue);
+        var LstCompany = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.Setup_Company.GroupId == GroupId)
+            .Select(a => new
+            {
+                CompanyId = a.Setup_Location.Setup_Company.CompanyId,
+                CompanyName = a.Setup_Location.Setup_Company.CompanyName,
+
+            })
+            .ToList().Distinct();
+
+        CommonHelper.BindDropDown(ddlCompany, LstCompany, "CompanyName", "CompanyId", true, false);
+    }
+    protected void ddlCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int CompanyId = Convert.ToInt32(ddlCompany.SelectedValue);
+        var LstLocation = context.Setup_UserAccessLocation.Where(a => a.IsActive == true && a.EmployeeId == UserKey && a.Setup_Location.CompanyId == CompanyId)
+           .Select(a => new
+           {
+               LocationId = a.Setup_Location.LocationId,
+               LocationName = a.Setup_Location.LocationName,
+
+           })
+           .ToList();
+        CommonHelper.BindDropDown(ddlLocation, LstLocation, "LocationName", "LocationId", true, false);
+        ddlDepartment_SelectedIndexChanged(null, null);
+    }
+    protected void ddlLocation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+        var listEmplyee = context.Setup_Employee.Where(emp => emp.IsActive == true && emp.DepartmentId == departmentId && (emp.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && emp.CompanyId == UserInfo.CompanyId)))
+            .OrderBy(emp => emp.FirstName)
+            .Select(emp => new
+            {
+                EmployeeId = emp.EmployeeId,
+                Name = emp.FirstName + " " + emp.LastName + " - " + emp.EmployeeCode
+            })
+            .ToList();
+        CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void SaveAllStat_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            string EmailSubject = "";
+            string error = "";
+            List<UserEmail> ListUsers = new List<UserEmail>();
+            DateTime dtNow = DateTime.Now;
+            using (TransactionScope scope = new TransactionScope())
+            {
+                foreach (RepeaterItem repeated in RepeaterLeaveApprove.Items)
+                {
+                    Base UserInfo = new Base();
+                    TextBox ApproverComment = (TextBox)repeated.FindControl("Remarks");
+                    RadioButtonList radioStatus = (RadioButtonList)repeated.FindControl("LeaveStatus");
+                    HiddenField LaeaveID = (HiddenField)repeated.FindControl("HFLaeaveID");
+                    HiddenField HFLeaveType = (HiddenField)repeated.FindControl("HFLeaveType");
+
+                    int LaeaveID_Int = Convert.ToInt32(LaeaveID.Value);
+                    TMS_LeaveApplied GetLevRec = new TMS_LeaveApplied();
+                    if (radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved) || radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Rejected))
+                    {
+                        GetLevRec = context.TMS_LeaveApplied.First(p => p.LeaveAppliedId == LaeaveID_Int);
+
+                        GetLevRec.LeaveStatusId = Convert.ToInt32(radioStatus.SelectedValue);
+                        GetLevRec.InchargeReason = ApproverComment.Text;
+                        GetLevRec.ModifiedDate = dtNow;
+                        GetLevRec.ModifiedBy = UserInfo.UserKey;
+                        GetLevRec.UserIP = UserInfo.UserIP;
+
+                        if (GetLevRec.LeaveTypeId != (int)Constant.TMSLeaveTypes.WithoutPay && radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved))
+                        {
+                            GetLevRec.WithoutPay = 0;
+                        }
+
+                        context.Entry(GetLevRec).State = System.Data.EntityState.Modified;
+                        context.SaveChanges();
+
+                        //string Emp_Email = context.Users.First(p => p.EmployeeId == GetLevRec.EmployeeId).Email_Address;
+                        //string incharge_Email = UserInfo.EmailAddress;
+                        //Email.SendMail(Emp_Email, "Leave Approve", "Requested Leave Is Approve by " + UserInfo.FullName, incharge_Email);            
+                    }
+
+                    if (radioStatus.SelectedValue == Convert.ToString((int)Constant.TMSStatus.Approved))
+                    {
+                        UserEmail useremail = new UserEmail();
+                        DateTime CurrentDate = Convert.ToDateTime(GetLevRec.FromDate);
+                        DateTime ToDate = Convert.ToDateTime(GetLevRec.ToDate);
+                        TimeSpan ts = ToDate.Subtract(CurrentDate);
+                        int totalDays = Convert.ToInt16(ts.TotalDays) + 1;
+
+                        for (int d = 1; d <= totalDays; d++)//GetLevRec.NoOfDays
+                        {
+                            // DateTime To = Convert.ToDateTime(GetLevRec.ToDate);
+                            // DateTime From = Convert.ToDateTime(GetLevRec.FromDate);
+
+                            TMS_TM_Employee_Calendar Emp_Calender = context.TMS_TM_Employee_Calendar.FirstOrDefault(p => p.EmployeeID == GetLevRec.EmployeeId && p.Year == CurrentDate.Year && p.Month == CurrentDate.Month);
+
+                            if (Emp_Calender != null)
+                            {
+                                if (CurrentDate.Day == 1 && Emp_Calender.DAY1 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY1 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY1 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 2 && Emp_Calender.DAY2 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY2 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY2 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 3 && Emp_Calender.DAY3 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY3 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY3 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 4 && Emp_Calender.DAY4 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY4 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY4 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 5 && Emp_Calender.DAY5 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY5 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY5 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 6 && Emp_Calender.DAY6 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY6 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY6 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 7 && Emp_Calender.DAY7 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY7 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY7 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 8 && Emp_Calender.DAY8 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY8 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY8 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 9 && Emp_Calender.DAY9 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY9 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY9 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 10 && Emp_Calender.DAY10 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY10 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY10 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 11 && Emp_Calender.DAY11 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY11 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY11 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 12 && Emp_Calender.DAY12 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY12 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY12 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 13 && Emp_Calender.DAY13 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY13 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY13 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 14 && Emp_Calender.DAY14 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY14 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY14 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 15 && Emp_Calender.DAY15 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY15 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY15 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 16 && Emp_Calender.DAY16 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY16 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY16 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 17 && Emp_Calender.DAY17 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY17 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY17 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 18 && Emp_Calender.DAY18 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY18 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY18 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 19 && Emp_Calender.DAY19 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY19 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY19 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 20 && Emp_Calender.DAY20 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY20 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY20 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 21 && Emp_Calender.DAY21 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY21 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY21 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 22 && Emp_Calender.DAY22 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY22 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY22 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 23 && Emp_Calender.DAY23 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY23 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY23 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 24 && Emp_Calender.DAY24 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY24 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY24 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 25 && Emp_Calender.DAY25 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY25 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY25 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 26 && Emp_Calender.DAY26 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY26 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY26 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 27 && Emp_Calender.DAY27 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY27 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY27 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 28 && Emp_Calender.DAY28 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY28 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY28 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 29 && Emp_Calender.DAY29 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY29 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY29 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 30 && Emp_Calender.DAY30 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY30 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY30 = (int)Constant.TMSDayTypes.Leave; }
+                                if (CurrentDate.Day == 31 && Emp_Calender.DAY31 != (int)Constant.TMSDayTypes.Off && Emp_Calender.DAY31 != (int)Constant.TMSDayTypes.Holiday) { Emp_Calender.DAY31 = (int)Constant.TMSDayTypes.Leave; }
+
+                                Emp_Calender.ModifyDate = dtNow;
+                                Emp_Calender.ModifyBy = UserInfo.UserKey;
+                                //Emp_Calender.UserIP = UserInfo.UserIP;
+                                context.Entry(Emp_Calender).State = System.Data.EntityState.Modified;
+                                context.SaveChanges();
+                            }
+                            CurrentDate = CurrentDate.AddDays(1);
+                        }
+
+                        //EmployeeLeave GetEmpLeave = new EmployeeLeave();
+                        TMS_EmployeeLeave GetEmpLeave = context.TMS_EmployeeLeave.FirstOrDefault(p => p.EmployeeID == GetLevRec.EmployeeId && p.IsActive == true && p.Code_ID == (int)Constant.LeaveChangesCode.CR);
+                        GetEmpLeave.IsActive = false;
+                        GetEmpLeave.ModifiedDate = dtNow;
+                        GetEmpLeave.ModifiedBy = UserInfo.UserKey;
+                        GetEmpLeave.UserIP = UserInfo.UserIP;
+                        context.Entry(GetEmpLeave).State = System.Data.EntityState.Modified;
+                        context.SaveChanges();
+                        TMS_EmployeeLeave GetEmpLeaveNew = new TMS_EmployeeLeave();
+
+                        GetEmpLeaveNew.AnualLeaves = GetEmpLeave.AnualLeaves;
+                        GetEmpLeaveNew.AnualLeavesRemain = GetEmpLeave.AnualLeavesRemain;
+                        GetEmpLeaveNew.CasualLeaves = GetEmpLeave.CasualLeaves;
+                        GetEmpLeaveNew.CasualLeavesRemain = GetEmpLeave.CasualLeavesRemain;
+                        GetEmpLeaveNew.DefaultLeaves = GetEmpLeave.DefaultLeaves;
+                        GetEmpLeaveNew.DefaultLeavesRemain = GetEmpLeave.DefaultLeavesRemain;
+                        GetEmpLeaveNew.MaternityLeaves = GetEmpLeave.MaternityLeaves;
+                        GetEmpLeaveNew.MaternityLeavesRemain = GetEmpLeave.MaternityLeavesRemain;
+                        GetEmpLeaveNew.SickLeaves = GetEmpLeave.SickLeaves;
+                        GetEmpLeaveNew.SickLeavesRemin = GetEmpLeave.SickLeavesRemin;
+
+                        GetEmpLeaveNew.Code_ID = GetEmpLeave.Code_ID;
+                        GetEmpLeaveNew.EmployeeID = GetEmpLeave.EmployeeID;
+                        GetEmpLeaveNew.LeaveID = GetEmpLeave.LeaveID;
+                        GetEmpLeaveNew.Remarks = GetEmpLeave.Remarks;
+
+                        if (GetLevRec.LeaveTypeId == (int)Constant.TMSLeaveTypes.Sick)
+                        {
+                            GetEmpLeaveNew.SickLeavesRemin = GetEmpLeaveNew.SickLeavesRemin - GetLevRec.NoOfDays;
+                            //Users.Add(GetEmpLeaveNew.Setup_Employee.FirstName + " " + GetEmpLeaveNew.Setup_Employee.LastName);
+                            EmailSubject = "Employee Sick Leave Approved";
+                            //if ((GetEmpLeaveNew.SickLeavesRemin - GetLevRec.NoOfDays) >= 0)
+                            //    GetEmpLeaveNew.SickLeavesRemin = GetEmpLeaveNew.SickLeavesRemin - GetLevRec.NoOfDays;
+                            //else
+                            //    error += "Not enough balance of " + GetEmpLeaveNew.Employee.Name + "'s Sick Leave <br />";
+                        }
+                        if (GetLevRec.LeaveTypeId == (int)Constant.TMSLeaveTypes.Annual)
+                        {
+                            EmailSubject = "Employee Annual Leave Approved";
+                            //Users.Add(GetEmpLeaveNew.Setup_Employee.FirstName + " " + GetEmpLeaveNew.Setup_Employee.LastName);
+                            GetEmpLeaveNew.AnualLeavesRemain = GetEmpLeaveNew.AnualLeavesRemain - GetLevRec.NoOfDays;
+                            //if ((GetEmpLeaveNew.AnualLeavesRemain - GetLevRec.NoOfDays) >= 0)
+                            //    GetEmpLeaveNew.AnualLeavesRemain = GetEmpLeaveNew.AnualLeavesRemain - GetLevRec.NoOfDays;
+                            //else
+                            //    error += "Not enough balance of " + GetEmpLeaveNew.Employee.Name + "'s Annual Leave <br />";
+                        }
+                        if (GetLevRec.LeaveTypeId == (int)Constant.TMSLeaveTypes.Casual)
+                        {
+                            EmailSubject = "Employee Casual Leave Approved";
+                            GetEmpLeaveNew.CasualLeavesRemain = GetEmpLeaveNew.CasualLeavesRemain - GetLevRec.NoOfDays;
+                            //if ((GetEmpLeaveNew.CasualLeavesRemain - GetLevRec.NoOfDays) >= 0)
+                            //    GetEmpLeaveNew.CasualLeavesRemain = GetEmpLeaveNew.CasualLeavesRemain - GetLevRec.NoOfDays;
+                            //else
+                            //    error += "Not enough balance of " + GetEmpLeaveNew.Employee.Name + "'s Casual Leave <br />";
+                        }
+                        if (GetLevRec.LeaveTypeId == (int)Constant.TMSLeaveTypes.Maternity)
+                        {
+                            EmailSubject = "Employee Maternity Leave Approved";
+                            GetEmpLeaveNew.MaternityLeavesRemain = GetEmpLeaveNew.MaternityLeavesRemain - GetLevRec.NoOfDays;
+                            //if ((GetEmpLeaveNew.MaternityLeavesRemain - GetLevRec.NoOfDays) >= 0)
+                            //    GetEmpLeaveNew.MaternityLeavesRemain = GetEmpLeaveNew.MaternityLeavesRemain - GetLevRec.NoOfDays;
+                            //else
+                            //    error += "Not enough balance of " + GetEmpLeaveNew.Employee.Name + "'s Maternity Leave <br />";
+                        }
+                        if (GetLevRec.LeaveTypeId == (int)Constant.TMSLeaveTypes.Default)
+                        {
+                            EmailSubject = "Employee Maternity Leave Approved";
+                            GetEmpLeaveNew.DefaultLeavesRemain = GetEmpLeaveNew.DefaultLeavesRemain - GetLevRec.NoOfDays;
+                            //if ((GetEmpLeaveNew.DefaultLeavesRemain - GetLevRec.NoOfDays) >= 0)
+                            //    GetEmpLeaveNew.DefaultLeavesRemain = GetEmpLeaveNew.DefaultLeavesRemain - GetLevRec.NoOfDays;
+                            //else
+                            //    error += "Not enough balance of " + GetEmpLeaveNew.Employee.Name + "'s Default Leave <br />";
+                        }
+                        GetEmpLeaveNew.IsActive = true;
+                        GetEmpLeaveNew.CreatedDate = dtNow;
+                        GetEmpLeaveNew.CreatedBy = UserInfo.UserKey;
+                        GetEmpLeaveNew.ModifiedDate = dtNow;
+                        GetEmpLeaveNew.ModifiedBy = UserInfo.UserKey;
+
+                        context.TMS_EmployeeLeave.Add(GetEmpLeaveNew);
+                        context.SaveChanges();
+                        useremail.Name = GetEmpLeave.Setup_Employee.FirstName + " " + GetEmpLeave.Setup_Employee.LastName;
+                        useremail.Subject = EmailSubject;
+                        useremail.HREmail=GetEmpLeave.Setup_Employee.LocationId==(int)Constant.Location.Isb?Constant.HRISB:Constant.HRKhi;
+                        useremail.TotalLeaveDays = totalDays;
+                        useremail.LeaveType = Convert.ToInt32(HFLeaveType.Value);
+                        ListUsers.Add(useremail);
+                    }
+                }
+                scope.Complete();
+            }
+            for (int i = 0; i < ListUsers.Count; i++)
+            {
+                if (ListUsers[i].TotalLeaveDays>=3 && ListUsers[i].LeaveType==(int)Constant.TMSLeaveTypes.Sick)
+                {
+                    Email.SendMail(ListUsers[i].HREmail, ListUsers[i].Subject, "", "");
+                }
+                else if (ListUsers[i].LeaveType==(int)Constant.TMSLeaveTypes.Annual)
+                {
+                    Email.SendMail(ListUsers[i].HREmail, ListUsers[i].Subject,"","");
+                }
+            }
+            BindRepeater();
+
+
+            LB_Error.Visible = true;
+            RightContentError.Attributes.Add("class", "okMessage");
+            LB_Error.Text = "Leave Updates Successfully";
+            RightContentError.Visible = true;
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void RepeaterLeaveApprove_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            HiddenField HFstatus = (HiddenField)e.Item.FindControl("HFStatus");
+            RadioButtonList radioStatus = (RadioButtonList)e.Item.FindControl("LeaveStatus");
+            if (radioStatus != null)
+            {
+                radioStatus.SelectedValue = (HFstatus.Value);
+            }
+            if (RepeaterLeaveApprove.Items.Count < 1)
+            {
+                if (e.Item.ItemType == ListItemType.Footer)
+                {
+                    System.Web.UI.HtmlControls.HtmlTableRow trEmptyData = (System.Web.UI.HtmlControls.HtmlTableRow)e.Item.FindControl("trEmptyData");
+                    trEmptyData.Visible = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void Repeater_Odd_Leave_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+            if (Repeater_Odd_Leave.Items.Count < 1)
+            {
+                if (e.Item.ItemType == ListItemType.Footer)
+                {
+                    System.Web.UI.HtmlControls.HtmlTableRow trEmptyData = (System.Web.UI.HtmlControls.HtmlTableRow)e.Item.FindControl("trEmptyData");
+                    trEmptyData.Visible = true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+    protected void LeaveStatus_SelectedIndexChanged(object sender, EventArgs e)
+    {
+
+    }
+}
+public class UserEmail {
+    public string Name { get; set; }
+    public string Subject { get; set; }
+    public string HREmail { get; set; }
+    public int TotalLeaveDays { get; set; }
+    public int LeaveType { get; set; }
+}

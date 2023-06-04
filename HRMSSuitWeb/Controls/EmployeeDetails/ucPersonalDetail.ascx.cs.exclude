@@ -1,0 +1,25 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+public partial class Controls_EmployeeDetails_ucPersonalDetail : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context=new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindUserPersonalDetail(Setup_Employee Employee)
+    {
+        txtPersonalitydetail.Text = Employee.PersonalityDetail;
+    }
+    public void UpdatePersonalDetail(int EmployeeId)
+    {
+        var Employee = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeId).FirstOrDefault();
+        Employee.PersonalityDetail=txtPersonalitydetail.Text.Trim();
+        context.SaveChanges();
+    }
+}

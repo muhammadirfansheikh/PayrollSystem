@@ -1,0 +1,176 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="EmployeeReport.aspx.cs" MasterPageFile="~/MasterPage/AdminMaster.master" Inherits="Pages_Reports_EmployeeReport" %>
+
+
+<%@ Register Src="~/Controls/Shared/PagingAndSorting.ascx" TagPrefix="up" TagName="PagingAndSorting" %>
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div class="row wrapper border-bottom white-bg page-heading">
+        <div class="col-lg-10">
+            <h2>Employee Report</h2>
+            <ol class="breadcrumb">
+                <li>
+                    <a href="/Pages/Default.aspx">Dashboard</a>
+                </li>
+                <li>
+                    <a href="#">Reports</a>
+                </li>
+                <li class="active">
+                    <strong>Employee Report</strong>
+                </li>
+            </ol>
+        </div>
+    </div>
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+            </div>
+            <div class="row" runat="server" id="DivSearchPanel">
+                <div class="col-lg-12" style="margin-top: 11px;">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Search</h3>
+                        </div>
+                        <div class="panel-body">
+                        
+                            <div class="form-group col-lg-2" runat="server" id="divDept">
+                                <label for="exampleInputEmail2" class="">Department</label>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="Search" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlDepartment" InitialValue="0"></asp:RequiredFieldValidator>
+                                <asp:DropDownList ID="ddlDepartment" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span2" style="color: Red; display: none;">*</span>
+                            </div>
+                             <div class="form-group col-lg-2" runat="server" id="div3">
+                                <label for="exampleInputEmail2" class="">Employee Code</label>
+                                <asp:TextBox runat="server" ID="txtEmployeeCode" CssClass="form-control " />
+                                <span id="Span6" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="div4">
+                                <label for="exampleInputEmail2" class="">Employee Name</label>
+                                <asp:TextBox runat="server" ID="txtEmployeeName" CssClass="form-control " />
+                                <span id="Span7" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="wrapper wrapper-content animated fadeInUp">
+
+                        <div class="panel panel-info">
+                            <%--<div class="ibox-title">
+                        <h5></h5>
+                        <div class="ibox-tools">
+
+                            <a href="" class="btn btn-primary btn-xs btnAdd" data-toggle="modal" data-target="#CreateProjectModal">Create new project</a>
+                        </div>
+                    </div>--%>
+                            <div class="panel-heading">
+                                Employee Report
+                            </div>
+
+                            <div class="ibox-content">
+                                <div class="row m-b-sm m-t-sm">
+                                    <div class="col-md-12">
+                                        <%--<a href="AddShifts.aspx" class="btn btn-primary pull-right">Add new</a>--%>
+                                        <input type="button" data-toggle="modal" data-target="#CreateProjectModal" class="openmodal" style="display: none;" />
+                                    </div>
+                                </div>
+                                <div class="project-list">
+
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr style="font-size: x-small;">
+                                                <th>Sr. No. </th>
+                                                <th>EmployeeCode
+                                                </th>
+                                                <th>Employee
+                                                </th>
+                                                <th>Department
+                                                </th>
+                                                <th>Designation 
+                                                </th>
+                                                <th>Manager
+                                                </th>
+                                                <th>HOD 
+                                                </th>
+                                                <th>BusinessUNit 
+                                                </th>
+                                                <th>Sharepoint Portal ID
+                                                </th>
+
+
+                                                <th>City
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <asp:Repeater ID="rpt" runat="server">
+                                                <ItemTemplate>
+                                                    <tr>
+                                                        <td><%#(((RepeaterItem)Container).ItemIndex+1).ToString()%> </td>
+                                                        <td>
+                                                            <%# Eval("EmployeeCode") %>
+                                                        </td>
+                                                        <td>
+                                                            <%# Eval("EmployeeName") %>
+                                                        </td>
+                                                        <td>
+                                                            <%# Eval("DepartmentName") %>
+                                                        </td>
+                                                        <td>
+                                                            <%# Eval("DesignationName") %>
+                                                        </td>
+
+                                                        <td>
+                                                            <%# Eval("Manager") %>
+                                                        </td>
+                                                        <td>
+                                                            <%# Eval("HODName") %>
+                                                        </td>
+                                                        <td>
+                                                            <%# Eval("BusinessUnitName") %>
+                                                        </td>
+
+                                                        <td>
+                                                            <%# Eval("SharepointPortalID") %>
+                                                        </td>
+
+
+                                                        <td>
+                                                            <%# Eval("CityName") %>
+                                                        </td>
+
+                                                    </tr>
+                                                </ItemTemplate>
+                                            </asp:Repeater>
+                                        </tbody>
+                                    </table>
+                                    <div class="pagging">
+                                        <up:PagingAndSorting runat="server" ID="PagingAndSorting" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+         <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:inprogress id="InProgress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+
+</asp:Content>

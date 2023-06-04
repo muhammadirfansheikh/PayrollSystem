@@ -1,0 +1,176 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="TimeAdjustmentRequest.aspx.cs" Inherits="Pages_TMS_Employee_TimeAdjustmentRequest" MasterPageFile="~/MasterPage/AdminMaster.master" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <style>
+        .navbar-static-top
+        {
+            display: none;
+        }
+    </style>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <div>
+        <div id="divSummary" runat="server" visible="false">
+            <asp:Label ID="lblSummary" runat="server"></asp:Label>
+        </div>
+        <asp:ValidationSummary ID="validationSummary" runat="server" EnableClientScript="true"
+            Enabled="true" ValidationGroup="ValGroup" DisplayMode="BulletList" ShowSummary="true"
+            HeaderText="Required Fields" CssClass='validationSummary' />
+    </div>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3>Time Adjustment Request</h3>
+        </div>
+        <div class="panel-body">
+
+     
+        <table width="100%" class="generalTable table table-bordered" align="center">
+  
+            <tr>
+                <td style="width: 40%;">
+                    Request No.
+                </td>
+                <td style="width: 60%;">
+                    <asp:Label ID="lblRequestNo" runat="server" CssClass="legendLabel"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Request Creation Time
+                </td>
+                <td>
+                    <asp:Label ID="lblRequestCreationTime" runat="server" CssClass="legendLabel"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Employee Name
+                </td>
+                <td>
+                    <asp:Label ID="lblEmployeeName" runat="server" CssClass="legendLabel"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Original Time
+                </td>
+                <td>
+                    <asp:Label ID="lblOriginalTime" runat="server" CssClass="legendLabel" ></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Requested Time
+                </td>
+                <td>
+                    
+                    <asp:Label ID="lblRequestedTime" runat="server" Visible="false"></asp:Label>
+                    <asp:TextBox ID="txtRequestTime" runat="server" CssClass="datePicker form-control" TextMode="DateTime" Width="50%"></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="rfvRequestTime" runat="server" ControlToValidate="txtRequestTime"  Display="Dynamic" ErrorMessage="Requested Time" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                    <asp:DropDownList ID="ddlRequestedTimeHour" runat="server" CssClass="form-control" Width="25%">
+                    </asp:DropDownList>
+                    <asp:DropDownList ID="ddlRequestedTimeMinute" runat="server" CssClass="form-control" Width="25%">
+                    </asp:DropDownList>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Current Status
+                </td>
+                <td>
+                    <asp:Label ID="lblCurrentStatus" runat="server"></asp:Label>
+                </td>
+            </tr>
+           
+            <tr>
+                <td>
+                  Reason
+                </td>
+                <td>
+                    <asp:DropDownList ID="ddlReason" runat="server" CssClass="form-control">
+                    </asp:DropDownList>
+                    <asp:RequiredFieldValidator ID="rfvddlReason" runat="server" ControlToValidate="ddlReason"
+                        Display="Dynamic" ErrorMessage="Leave Reason" InitialValue="0" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                </td>
+            </tr>
+             <tr>
+                <td>
+                    Comments
+                </td>
+                <td>
+                    <asp:TextBox ID="txtEmployeeComments" runat="server" TextMode="MultiLine" CssClass="verticalResize form-control" Width="98%" ></asp:TextBox>
+                    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtEmployeeComments"  Display="Dynamic" ErrorMessage="Employee Comments" Text="*" ValidationGroup="ValGroup"></asp:RequiredFieldValidator>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Attachment
+                </td>
+                <td>
+                   <asp:FileUpload ID="FileUpload1" runat="server" multiple="multiple" CssClass="form-control"/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Managed On
+                </td>
+                <td>
+                    <asp:Label ID="lblManagedOn" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Managed By
+                </td>
+                <td>
+                    <asp:Label ID="lblManagedBy" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Manager Comments
+                </td>
+                <td>
+                    <asp:TextBox ID="txtManagerComments" runat="server" TextMode="MultiLine" CssClass="verticalResize" Width="98%"></asp:TextBox>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Day End Processed
+                </td>
+                <td>
+                    <asp:Label ID="lblDayEndProcessed" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    Processed On
+                </td>
+                <td>
+                    <asp:Label ID="lblProcessedOn" runat="server"></asp:Label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center">
+                    <asp:Button ID="btnSend" runat="server" Text="Send" CssClass="button1 btn btn-info" OnClick="btnSend_Click" ValidationGroup="ValGroup" />
+                    <asp:Button ID="btnTakeBack" runat="server" Text="Take Back" CssClass="button1 btn btn-danger" OnClick="btnTakeBack_Click" />
+                    <asp:Button ID="btnCancel" runat="server" Text="Close" CssClass="button1 btn btn-success" OnClientClick="return WidownClose();" />
+                </td>
+            </tr>
+        </table>
+               </div>
+    </div>
+    <script type="text/javascript">
+        function WidownClose() {
+            window.close();
+        } function pageLoad() {
+            var pickerOpts = {
+                changeMonth: true,
+                changeYear: true,
+                yearRange: "-100: +10",
+                dateFormat: "M dd,yy"
+            };
+            $('.datePicker').datepicker(pickerOpts);
+        }
+    </script>
+</asp:Content>

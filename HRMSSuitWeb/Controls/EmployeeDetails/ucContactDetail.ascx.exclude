@@ -1,0 +1,214 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucContactDetail.ascx.cs" Inherits="Controls_EmployeeDetails_ucContactDetail" %>
+<style>
+    .form-control
+    {
+        font-size: 11px;
+    }
+</style>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Personalinfo
+    <asp:HiddenField ID="hfEmpID" runat="server" />
+    </div>
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your contact details.</strong>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Office Email Address : </label>
+            <asp:TextBox ID="txtOfficeemail" placeholder="Office Email Address" runat="server" TextMode="Email" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Personal Email Address: </label>
+            <asp:TextBox ID="txtPersonalemail" placeholder="Personal Email Address" runat="server" TextMode="Email" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Home phone : </label>
+            <asp:TextBox ID="txtHomephone" placeholder="Home phone" runat="server" TextMode="Phone" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Mobile Number : </label>
+            <asp:TextBox ID="txtMobilenumber" placeholder="Mobile Number" runat="server" TextMode="Phone" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Country : </label>
+            <asp:DropDownList ID="ddlCountry" AutoPostBack="true" OnSelectedIndexChanged="ddlCountry_SelectedIndexChanged" placeholder="Country" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">City : </label>
+            <asp:DropDownList ID="ddlCity" placeholder="City" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">Official Mobile Number : </label>
+            <asp:TextBox ID="txtOfficialMobNumber" placeholder="Official Mobile Number " runat="server" TextMode="Phone" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">Permanent Address : </label>
+            <asp:TextBox ID="txtPermanentaddress" placeholder="Permanent Address" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-6">
+            <label for="exampleInputEmail2">Present Address : </label>
+            <asp:TextBox ID="txtPresentaddress" placeholder="Present Address" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Emergency Contact Person
+    </div>
+
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your Contact Person details.</strong>
+        </div>
+        <div class="form-group col-lg-2">
+            <asp:HiddenField ID="hfContactPersonId" runat="server" />
+            <label for="exampleInputEmail2">First Name : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator40" runat="server" ValidationGroup="AddEmergencyperson" Text="*"
+                ErrorMessage="Name" ForeColor="Red" Display="Dynamic" ControlToValidate="txtPersonfirstname" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtPersonfirstname" placeholder="First Name" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Last Name : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="AddEmergencyperson" Text="*"
+                ErrorMessage="Name" ForeColor="Red" Display="Dynamic" ControlToValidate="txtPersonlastname" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox ID="txtPersonlastname" placeholder="Last Name" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Phone No : </label>
+            <asp:TextBox ID="txtpersonphone" placeholder="Phone No" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Cell No : </label>
+            <asp:TextBox ID="txtpersoncellno" placeholder="Cell No" runat="server" CssClass="form-control numeric">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Email Address : </label>
+            <asp:TextBox ID="txtpersonemail" placeholder="Email Address" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Country : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator45" runat="server" ValidationGroup="AddEmergencyperson" Text="*" ErrorMessage="Incharge Job Category" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlPersoncountry" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlPersoncountry" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlPersoncountry_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">City : </label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="AddEmergencyperson" Text="*" ErrorMessage="Incharge Job Category" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlPersoncity" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlPersoncity" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Address: </label>
+            <asp:TextBox ID="txtpersonaddress" placeholder="Address" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-12">
+            <asp:Button Text="Cancel" ID="btnCancel" CssClass="btn btn-warning pull-right" runat="server" OnClick="btnCancel_Click" Style="width: 65px;" />
+            <asp:Button Text="Add" CssClass="btn btn-primary pull-right" ID="btnAdd" OnClick="btnAdd_Click" Style="width: 65px; margin-right: 5px;" ValidationGroup="AddEmergencyperson" runat="server" />
+        </div>
+    </div>
+</div>
+
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Emergency Contact Person Details
+    </div>
+    <div class="panel-body">
+        <asp:Repeater ID="RptEmployeeContactPerson" OnItemCommand="RptEmployeeContactPerson_ItemCommand" runat="server">
+            <HeaderTemplate>
+                <table border="0" cellpadding="0" cellspacing="0" align="center" width="97%" class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Cell Number</th>
+                            <th>Phone Number</th>
+                            <th>Email</th>
+                            <th>Country</th>
+                            <th>City</th>
+                            <th>Address</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+            </HeaderTemplate>
+            <ItemTemplate>
+                <tr>
+
+                    <td>
+
+                        <asp:Label ID="Label7" runat="server" Text='<%# Eval("FirstName") %>'></asp:Label>
+                        <asp:Label ID="lblStatus" runat="server" Text='<%# Eval("LastName") %>'></asp:Label>
+                    </td>
+
+                    <td>
+                        <asp:Label ID="lblSchool" runat="server" Text='<%# Eval("CellNumber") %>'></asp:Label>
+
+                    </td>
+                    <td>
+                        <asp:Label ID="Label1" runat="server" Text='<%# Eval("PhoneNumber") %>'></asp:Label>
+                    </td>
+
+                    <td>
+
+                        <asp:Label ID="Label13" runat="server" Text='<%# Eval("EmailAddress") %>'></asp:Label>
+                    </td>
+                    <td>
+
+                        <asp:Label ID="Label14" runat="server" Text='<%# Eval("CountryName") %>'></asp:Label>
+
+                    </td>
+                    <td>
+                        <asp:Label ID="Label15" runat="server" Text='<%# Eval("CityName") %>'></asp:Label>
+
+                    </td>
+                    <td>
+                        <asp:Label ID="Label16" runat="server" Text='<%# Eval("Address") %>'></asp:Label>
+                    </td>
+                    <td colspan="8" style="text-align: right">
+                        <asp:HyperLink ID="hpl" Style="text-decoration: none;" runat="server">
+                            <asp:ImageButton ID="btnPassportDetailEdit" OnClientClick="return true" CommandName="Edit" CommandArgument='<%#Eval("EmployeeContactId") %>' ImageUrl="/images/edit.png" runat="server" />
+                        </asp:HyperLink>
+                        <asp:HyperLink runat="server" ID="hplDelete">
+                            <asp:ImageButton ImageUrl="/images/close.png" OnClientClick="return DeleteConfirmation();"
+                                ID="imgRemoveEducationSchoolPanel" CommandName="Delete" CommandArgument='<%#Eval("EmployeeContactId") %>'
+                                runat="server" />
+                        </asp:HyperLink>
+                    </td>
+                </tr>
+                <br />
+            </ItemTemplate>
+            <FooterTemplate>
+                </table>
+                <tr align="center">
+                    <td  colspan="5">
+                        <asp:Label ID="lblEmptyData" Style="font-style: normal; color: #000" Text="No Data To Display"
+                            runat="server" Visible="False">
+                        </asp:Label>
+                    </td>
+                </tr>
+                </table>
+            </FooterTemplate>
+        </asp:Repeater>
+    </div>
+</div>

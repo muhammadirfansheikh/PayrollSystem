@@ -1,0 +1,195 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage/AdminMaster.master" AutoEventWireup="true" CodeFile="EmployeeSeperation.aspx.cs" ValidateRequest="true"
+     Inherits="Pages_SeparationWorkFlow_EmployeeSeperation" %>
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+<%@ Register Src="~/Controls/Separation/SeparationDetail.ascx" TagPrefix="uc" TagName="SeparationDetail" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+    <link href="../../js/datetimepicker-master/jquery.datetimepicker.css" rel="stylesheet" />
+    <script src="../../js/datetimepicker-master/jquery.datetimepicker.js"></script>
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+
+    <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+        <ContentTemplate>
+
+            <div class="row wrapper border-bottom white-bg page-heading">
+                <div class="col-lg-10">
+                    <h2>Employee Seperation Form</h2>
+                    <ol class="breadcrumb">
+                        <li>
+                            <a href="/Pages/Default.aspx">Dashboard</a>
+                        </li>
+                        <li>
+
+                            <a href="#">Employee Seperation</a>
+                        </li>
+
+                    </ol>
+                </div>
+            </div>
+
+            <div class="panel panel-danger" id="divError" runat="server" visible="false">
+                <div class="panel-heading" id="lblError" runat="server"></div>
+
+
+            </div>
+
+            <div class="col-lg-12" style="margin-top: 11px;">
+
+                <%-- Applicant Form Start--%>
+
+                <uc:SeparationDetail runat="server" ID="SeparationDetail" />
+
+
+                <%-- Applicant Form End --%>
+
+
+                <div class="panel panel-info ">
+                    <div class="tabbable">
+
+                        <div class="panel panel-info">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">
+                                    <asp:Label runat="server" ID="lblStep" Text=""></asp:Label>
+                                </h3>
+
+                            </div>
+                            <div class="panel-body">
+
+                                <div class="tab-content">
+
+
+                                    <div id="one" class="tab-pane active">
+                                        <div class="project-list">
+
+
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Criteria</th>
+                                                        <th>Decision</th>
+
+
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                                                        <ItemTemplate>
+                                                            <tr style="line-height: 10px !important;">
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+                                                                    <asp:Label runat="server" ID="lblSeperationCriteriaDetail" CssClass="exampleInputEmail2 " Text='<%# Eval("SeperationCriteriaDetail") %>'></asp:Label>
+
+
+                                                                    <input type="hidden" runat="server" id="hfValueTypeId" class="hfValueTypeId" value='<%# Eval("ValueTypeId") %>' />
+
+                                                                    <input type="hidden" runat="server" id="hfTableName" class="hfTableName" value='<%# Eval("TableName") %>' />
+
+                                                                    <input type="hidden" runat="server" id="hfSeperationCriteriaDetailId" class="hfSeperationCriteriaDetailId" value='<%# Eval("SeperationCriteriaDetailId") %>' />
+
+
+                                                                </td>
+
+                                                                <td class="project-title" style="font-size: 11px; font-weight: 600;">
+
+                                                                    <asp:RadioButtonList runat="server" ID="rbtnEvaluationStatus" Width="100px" class="rbtnEvaluationStatus " Visible="false" RepeatDirection="Horizontal" />
+
+                                                                    <asp:DropDownList runat="server" ID="dllEvaluationStatus" Width="100px" class="dllEvaluationStatus form-control" Visible="false" />
+
+                                                                    <asp:RequiredFieldValidator ID="rfvtxtLastWorkingDate" runat="server" ValidationGroup="Save" Text="*" ForeColor="Red" InitialValue ="0"
+                                                                        Display="Dynamic" ControlToValidate="dllEvaluationStatus" CssClass="rfvtxtLastWorkingDate"></asp:RequiredFieldValidator>
+
+                                                                    <asp:TextBox ID="txtComment" TextMode="MultiLine" Style="height: 70px; max-height: 70px;" runat="server" Visible="false" CssClass="form-control">
+                                                                    </asp:TextBox>
+
+                                                                      <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Save" Text="*" ForeColor="Red" 
+                                                                        Display="Dynamic" ControlToValidate="txtComment" CssClass="rfvtxtLastWorkingDate"></asp:RequiredFieldValidator>
+
+                                                                    <asp:TextBox ID="txtDate" Style="height: 70px; max-height: 30px;" runat="server" Visible="false" CssClass="form-control DatePicker">
+                                                                    </asp:TextBox>
+
+                                                                     <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Save" Text="*" ForeColor="Red" 
+                                                                        Display="Dynamic" ControlToValidate="txtDate" CssClass="rfvtxtLastWorkingDate"></asp:RequiredFieldValidator>
+
+                                                                </td>
+
+                                                            </tr>
+
+                                                        </ItemTemplate>
+                                                    </asp:Repeater>
+                                                </tbody>
+                                            </table>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-lg-12">
+
+                                    <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                    <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right btnSearch" OnClick="btnSave_Click" ValidationGroup="Save" />
+
+                                </div>
+                            </div>
+
+
+                        </div>
+
+
+                    </div>
+
+
+                </div>
+
+            </div>
+        </ContentTemplate>
+    </asp:UpdatePanel>
+    <asp:UpdateProgress ID="UpdateProgress1" runat="server">
+        <ProgressTemplate>
+            <uc2:InProgress ID="ucInprogress1" runat="server" />
+        </ProgressTemplate>
+    </asp:UpdateProgress>
+    <script type="text/javascript">
+        function pageLoad() {
+
+            $('.DatePicker').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                //startDate: '+0d',
+                autoclose: true
+            });
+
+
+
+
+        }
+
+        function OpenDialog(a, b, c) {
+            sweetAlert(a, b, c);
+        }
+
+        function OpenRedirectionDialog(a, b, c, Url) {
+
+            sweetAlert(a, b, c),
+            setTimeout(function () {
+
+                if (Url != '#') {
+                    window.location.replace(Url);
+                }
+            }, 2000);
+
+        }
+
+
+    </script>
+
+
+
+
+
+
+</asp:Content>
+

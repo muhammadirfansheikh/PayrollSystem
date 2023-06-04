@@ -1,0 +1,572 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Web.UI.HtmlControls;
+using System.IO;
+using System.Transactions;
+
+public partial class Pages_NewHiring_HODStarter : Base
+{
+    #region Properties
+    public string Candidate_Id
+    {
+        get
+        {
+            return Request.QueryString["CandidateId"];
+        }
+    }
+    #endregion
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    int WorkflowStepDetailId = (int)Constant.WorkflowStepNewHiring.HODStarter, NxtWorkflowStepDetailId = 0;
+    int CriteriaId = (int)Constant.SeperationCriteriaMaster.HODStarterCriteria;
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            if (Candidate_Id != null && Candidate_Id != string.Empty)
+            {
+
+                BindData();
+            }
+        }
+    }
+
+    public void BindData()
+    {
+        int CandidateId = Convert.ToInt32(Candidate_Id);
+
+        int? EmployeeId = context.Setup_Employee.Where(a => a.CandidateId == CandidateId).FirstOrDefault().EmployeeId;
+
+        
+        //int RequisitionId = Convert.ToInt32(Request.QueryString["RequisitionId"]);
+
+        var ListHRMS_Setup_HODStarterCriteria = context.HRMS_Setup_WorkflowFormDetail.Where(a => a.IsActive == true && a.HRMS_Setup_WorkflowFormMaster.FormMasterId == CriteriaId)
+           .Select(c => new
+           {
+               CriteriaDetailId = c.FormDetailId,
+               CriteriaDetail = c.FieldName,
+               //IsTextbox = c.IsTextbox,
+               ValueTypeId = c.ValueTypeId,
+               TableName = c.TableName,
+               SortOrder = c.SortOrder
+
+           }).OrderBy(d => d.SortOrder).ToList();
+
+        rpt.DataSource = ListHRMS_Setup_HODStarterCriteria;
+        rpt.DataBind();
+
+        var listEmployee = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId);
+
+
+        lblEmployeeName.Text = listEmployee.FirstName + "" + listEmployee.MiddleName == null ? "" : listEmployee.MiddleName + "" + listEmployee.LastName;
+        lblContactNo.Text = listEmployee.Phone == null ? "NA" : listEmployee.Phone;
+        //lblManagerSupervisorName.Text = listEmployee.Setup_Employee2 == null ? "" : listEmployee.Setup_Employee2.FirstName + "" + listEmployee.Setup_Employee2 == null ? "" : listEmployee.Setup_Employee2.LastName;
+        lblJoiningDate.Text = listEmployee.JoiningDate == null ? "NA" : Convert.ToString(Convert.ToDateTime(listEmployee.JoiningDate).ToString(Constant.DateFormat2));
+        lblDepartment.Text = listEmployee.Setup_Department.DepartmentName;
+
+        lblDesignation.Text = listEmployee.Setup_Designation.DesignationName;
+        lblRequestedBy.Text = FullName.ToString();
+
+        int candidateId = Convert.ToInt32(listEmployee.CandidateId);
+
+        var RequisitionList = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == candidateId);
+        int RequisitionID = RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.RequisitionId;
+
+        if (RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.IsReplacementRequest)
+        {
+            divReplacment.Visible = true;
+            int? DepartmentId = listEmployee.DepartmentId;
+            int? DesignationId = listEmployee.DesignationId;
+
+            //var listReplacment = context.Setup_Employee.Where(a => a.IsActive == false && a.DepartmentId == DepartmentId && a.DesignationId == DesignationId &&
+            //   a.Setup_Employee13.Where(b => b.EmployeeId == a.ReplacedEmployeeId).Count() == 0
+            //   )
+            //   .Select(c => new
+            //   {
+            //       value = c.FirstName + " " + c.LastName,
+            //       Id = c.EmployeeId
+            //   })
+            //   .ToList();
+
+            //var listReplacment = context.HRMS_RequisitionReplacement.Where(a => a.IsActive == true && a.RequisitionId == RequisitionID 
+            //    && !a.Setup_Employee.ReplacedEmployeeId.HasValue)
+
+            //    .Select(c => new
+            //    {
+            //        value = c.Setup_Employee.FirstName + " " + c.Setup_Employee.LastName,
+            //        Id = c.Setup_Employee.EmployeeId
+
+            //    }).ToList();
+
+            //var listReplacment = context.HRMS_RequisitionReplacement.Where(a => a.IsActive == true && a.RequisitionId == RequisitionID
+            //    && a.Setup_Employee.ReplacedEmployeeId.Value != a.RequisitionReplacementId)
+
+            //    .Select(c => new
+            //    {
+            //        value = c.Setup_Employee.FirstName + " " + c.Setup_Employee.LastName,
+            //        Id = c.Setup_Employee.EmployeeId
+
+            //    }).ToList();
+
+            //var listReplacment = context.Setup_Employee.Where(a => a.IsActive == false && a.DepartmentId == DepartmentId && a.DesignationId == DesignationId &&
+            //  a.HRMS_RequisitionReplacement.Where(b => b.EmployeeID == a.EmployeeId && b.RequisitionId == RequisitionID).Count() > 0
+
+
+            //  //&& a.Setup_Employee2.Where(e => e.ReplacedEmployeeId != a.EmployeeId).Count() == 0
+            //  //&& a.Setup_Employee2.ReplacedEmployeeId != a.EmployeeId
+            //  )              
+            //  .Select(c => new
+            //  {
+            //      value = c.FirstName + " " + c.LastName,
+            //      Id = c.EmployeeId
+            //  })
+            //  .ToList();
+
+            var listReplacment = context.HRMS_GET_ReplaceEmployee(RequisitionID).Select(v => new
+            {
+                Id = v.EMPLOYEEID,
+                Value = v.EmployeeName
+            }).ToList();
+
+            CommonHelper.BindDropDown(dllReplacment, listReplacment, "Value", "Id", true, false);
+
+        }
+        else
+        {
+            divReplacment.Visible = false;
+        }
+    }
+
+    protected void rpt_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+
+            int EmployeeId = Convert.ToInt32(Candidate_Id);
+            int SeperationCriteriaId = (int)Constant.SeperationCriteriaMaster.HODStarterCriteria;
+
+            if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+            {
+                RadioButtonList rbtnEvaluationStatus = (RadioButtonList)e.Item.FindControl("rbtnEvaluationStatus");
+                DropDownList ddlEvaluationStatus = (DropDownList)e.Item.FindControl("dllEvaluationStatus");
+                TextBox txtComment = (TextBox)e.Item.FindControl("txtComment");
+                TextBox txtDate = (TextBox)e.Item.FindControl("txtDate");
+                TextBox txtText = (TextBox)e.Item.FindControl("txtTextBox");
+
+                HtmlInputHidden hfSeperationCriteriaDetailId = (HtmlInputHidden)e.Item.FindControl("hfSeperationCriteriaDetailId");
+                HtmlInputHidden hfTableName = (HtmlInputHidden)e.Item.FindControl("hfTableName");
+                HtmlInputHidden hfValueTypeId = (HtmlInputHidden)e.Item.FindControl("hfValueTypeId");
+
+                int SeperationCriteriaDetailId = Convert.ToInt32(hfSeperationCriteriaDetailId.Value);
+                int ValueTypeId = Convert.ToInt32(hfValueTypeId.Value);
+                string TableName = hfTableName.Value;
+
+                //var list = context.HRMS_Setup_WorkflowFormDetail.FirstOrDefault(a => a.IsActive == true && a.FormDetailId == SeperationCriteriaDetailId);
+
+
+                if ((int)Constant.ValueTypeControl.Textbox == ValueTypeId)
+                {
+                    if (TableName == string.Empty)
+                    {
+                        txtComment.Visible = true;
+                        //txtComment.TextMode = TextBoxMode.Number;
+                    }
+                }
+                else if ((int)Constant.ValueTypeControl.TextboxSimple == ValueTypeId)
+                {
+                    /*if (TableName == string.Empty)
+                    {
+                        txtText.Visible = true;
+
+                        if (SeperationCriteriaDetailId == (int)Constant.CriteriaDetail.RecomendedLoanAmount)
+                        {
+                            int WorkFlowTaskMasterId = CommonHelper.GetWorkflowTaskMasterId(Convert.ToInt32(_EmployeeId), (int)Constant.Workflow.PfLoan);
+
+                            var lst = context.HRMS_PFLoanDetail.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkFlowTaskMasterId && a.FormDetailId == (int)Constant.CriteriaDetail.LoanAmount).FirstOrDefault();
+
+                            txtText.Text = lst.Value;
+                        }
+
+                        if (SeperationCriteriaDetailId == (int)Constant.SeperationCriteriaMaster.PfInitiateLoan)
+                        {
+                            txtText.Attributes.Add("class", "form-control col-lg-2 numeric");
+
+                            //divRadioButton.Attributes.Add("class", "col-lg-4");
+                        }
+                    }*/
+                }
+                else if ((int)Constant.ValueTypeControl.RadioButton == ValueTypeId)
+                {
+                    if (TableName == "HRMS_SetupDetail")
+                    {
+                        //int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        //int StatusNo = (int)Constant.SeperationStatus.No;
+
+                        var rbtlist = context.HRMS_SetupDetail.Where(a => a.IsActive == true && a.SetupMasterId == (int)Constant .RequisitionSetupMaster.YES_No)
+                            .Select(c => new
+                            {
+                                Id = c.SetupDetailId,
+                                Value = c.SetupDetailName,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        rbtnEvaluationStatus.Items[0].Selected = true;
+                    }
+
+                    
+                }
+                else if ((int)Constant.ValueTypeControl.Dropdown == ValueTypeId)
+                {
+                    
+                }
+                else if ((int)Constant.ValueTypeControl.DatePicker == ValueTypeId)
+                {
+                    if (TableName == string.Empty)
+                    {
+                        txtDate.Visible = true;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
+
+            string _Message = ex.InnerException.ToString();
+
+            string PageRedirectUrl = "#";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenRedirectionDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            int SeperationCriteriaId = CriteriaId;
+
+            int CandidateId = Convert.ToInt32(Candidate_Id);
+
+            int? EmployeeId = context.Setup_Employee.Where(a => a.CandidateId == CandidateId).FirstOrDefault().EmployeeId;
+            var RequisitionList = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+            int RequisitionId = RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.RequisitionId;
+
+            using (TransactionScope scope = new TransactionScope())
+            {
+                for (int i = 0; i < rpt.Items.Count; i++)
+                {
+                    HtmlInputHidden hfSeperationCriteriaDetailId = (HtmlInputHidden)rpt.Items[i].FindControl("hfSeperationCriteriaDetailId");
+                    int SeperationCriteriaDetailId = Convert.ToInt32(hfSeperationCriteriaDetailId.Value);
+                    int? StatusId = null;
+                    string Remark = "";
+                    bool? BoolNull = null;
+
+                    RadioButtonList rbtnEvaluationStatus = (RadioButtonList)rpt.Items[i].FindControl("rbtnEvaluationStatus");
+                    DropDownList dllEvaluationStatus = (DropDownList)rpt.Items[i].FindControl("dllEvaluationStatus");
+
+                    TextBox txtComment = (TextBox)rpt.Items[i].FindControl("txtComment");
+                    TextBox txtDate = (TextBox)rpt.Items[i].FindControl("txtDate");
+                    TextBox txtTextBox = (TextBox)rpt.Items[i].FindControl("txtTextBox");
+
+                    if (rbtnEvaluationStatus.Visible == true)
+                    {
+                        StatusId = Convert.ToInt32(rbtnEvaluationStatus.SelectedValue);
+                    }
+                    else if (dllEvaluationStatus.Visible == true)
+                    {
+                        StatusId = Convert.ToInt32(dllEvaluationStatus.SelectedValue);
+                    }
+                    else if (txtComment.Visible == true)
+                    {
+                        Remark = Convert.ToString(txtComment.Text.Trim());
+                    }
+                    else if (txtTextBox.Visible == true)
+                    {
+                        Remark = Convert.ToString(txtTextBox.Text.Trim());
+                    }
+                    else if (txtDate.Visible == true)
+                    {
+                        Remark = Convert.ToString(txtDate.Text.Trim());
+                    }
+
+                    HRMS_HODStarterDetail objHRMS_HODStarterDetail = new HRMS_HODStarterDetail();
+                    objHRMS_HODStarterDetail.RequisitionId = RequisitionId;
+                    objHRMS_HODStarterDetail.EmployeeId = Convert.ToInt32(EmployeeId);
+                    objHRMS_HODStarterDetail.HODStarterCriteriaId = SeperationCriteriaDetailId;
+                    objHRMS_HODStarterDetail.IsActive = true;
+                    objHRMS_HODStarterDetail.CreatedBy = UserKey;
+                    objHRMS_HODStarterDetail.CreatedDate = DateTime.Now;
+                    objHRMS_HODStarterDetail.UserIP = UserIP;
+                    objHRMS_HODStarterDetail.Remarks = Remark;
+                    objHRMS_HODStarterDetail.IsYes = StatusId == null ? BoolNull :
+                        StatusId == (int)Constant.RequisitionSetupDetail.Yes ? true :
+                        StatusId == (int)Constant.RequisitionSetupDetail.No ? false : BoolNull;
+
+                    context.HRMS_HODStarterDetail.Add(objHRMS_HODStarterDetail);
+                    context.SaveChanges();
+                }
+
+                if (RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.IsReplacementRequest)
+                {
+                    var listemployee = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId);
+
+                    listemployee.ReplacedEmployeeId = Convert.ToInt32(dllReplacment.SelectedValue);
+                    context.SaveChanges();
+
+                    var listEmployeeLog = context.Setup_EmployeeLog.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId);
+                    listEmployeeLog.ReplacedEmployeeId = Convert.ToInt32(dllReplacment.SelectedValue);
+                    context.SaveChanges();
+                }
+
+                Task();
+
+                scope.Complete();
+            }
+
+            string _Message = "Saved Successfully";
+
+            string PageRedirectUrl = "/Pages/TaskListing.aspx";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }
+
+        /*try
+        {
+            int CandidateId = Convert.ToInt32(Candidate_Id);
+
+            int? EmployeeId = context.Setup_Employee.Where(a => a.CandidateId == CandidateId).FirstOrDefault().EmployeeId;
+
+            //int RequisitionId = Convert.ToInt32(Request.QueryString["RequisitionId"]);
+            // int ReplacementPersonId = Convert.ToInt32(dllReplacment.SelectedValue);
+            var RequisitionList = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+            int RequisitionId = RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.RequisitionId;
+
+
+            for (int i = 0; i < rpt.Items.Count; i++)
+            {
+                HtmlInputHidden hfHRStarterCriteriaId = (HtmlInputHidden)rpt.Items[i].FindControl("hfHRStarterCriteriaId");
+
+                HRMS_HODStarterDetail objHRMS_HODStarterDetail = new HRMS_HODStarterDetail();
+                objHRMS_HODStarterDetail.RequisitionId = RequisitionId;
+                objHRMS_HODStarterDetail.EmployeeId = Convert.ToInt32(EmployeeId);
+                objHRMS_HODStarterDetail.HODStarterCriteriaId = Convert.ToInt32(hfHRStarterCriteriaId.Value);
+                objHRMS_HODStarterDetail.IsActive = true;
+                objHRMS_HODStarterDetail.CreatedBy = UserKey;
+                objHRMS_HODStarterDetail.CreatedDate = DateTime.Now;
+                objHRMS_HODStarterDetail.UserIP = UserIP;
+
+
+                HtmlInputHidden hfIsTextbox = (HtmlInputHidden)rpt.Items[i].FindControl("hfIsTextbox");
+
+                bool IsTextbox = Convert.ToBoolean(hfIsTextbox.Value);
+
+
+                if (IsTextbox)
+                {
+                    TextBox Comment = (TextBox)rpt.Items[i].FindControl("txtComment");
+                    objHRMS_HODStarterDetail.Remarks = Convert.ToString(Comment.Text.Trim());
+                }
+                else
+                {
+                    //DropDownList ddlIsRequired = (DropDownList)rpt.Items[i].FindControl("ddlIsRequired");
+                    //objHRMS_HODStarterDetail.IsYes = ddlIsRequired.SelectedValue == "1" ? true : false;
+
+                    RadioButtonList ddlIsRequired = (RadioButtonList)rpt.Items[i].FindControl("ddlIsRequired");
+                    bool IsRequired = Convert.ToBoolean(ddlIsRequired.SelectedValue);
+
+                    objHRMS_HODStarterDetail.IsYes = IsRequired;
+                }
+
+                context.HRMS_HODStarterDetail.Add(objHRMS_HODStarterDetail);
+                context.SaveChanges();
+            }
+
+            //var RequisitionList = context.HRMS_CandidateInfo.FirstOrDefault(a => a.IsActive == true && a.CandidateId == CandidateId);
+            //   int RequisitionID = RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.RequisitionId;
+
+            if (RequisitionList.HRMS_ApplicantApplication.HRMS_Requisition.IsReplacementRequest)
+            {
+                var listemployee = context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId);
+
+                listemployee.ReplacedEmployeeId = Convert.ToInt32(dllReplacment.SelectedValue);
+                context.SaveChanges();
+
+                var listEmployeeLog = context.Setup_EmployeeLog.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId);
+                listEmployeeLog.ReplacedEmployeeId = Convert.ToInt32(dllReplacment.SelectedValue);
+                context.SaveChanges();
+
+
+            }
+
+            Task();
+
+            // ScriptManager.RegisterStartupScript(this, GetType(), "OpenDialog('success','Data Submitted Successfully','success')", "OpenDialog('success','Data Submitted Successfully','success');", true);
+
+            //string PageRedirectUrl = "/Pages/TaskListing.aspx";
+            //string _Message = "Data Submitted Successfully";
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "SweetAlert('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenRedirectionDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+
+            string _Message = "Saved Successfully";
+
+            string PageRedirectUrl = "/Pages/TaskListing.aspx";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenDialog('Success','" + _Message + "','success','" + PageRedirectUrl + "');", true);
+        }
+        catch (Exception ex)
+        {
+            lblError.Text = ex.Message;
+            divError.Visible = true;
+        }*/
+    }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        Response.Redirect("/Pages/TaskListing.aspx");
+    }
+
+    private void Task()
+    {
+        int EmployeeId = Convert.ToInt32(Candidate_Id);
+        bool IsEmailRequired = false;
+        int NxtWorkflowStepDetailId = 0;
+        int WorkflowTaskMasterId = context.HRMS_WorkFlowTaskMaster.Where(a => a.IsActive == true &&
+                            a.WorkflowMasterId == (int)Constant.Workflow.NewHiringWorkflow && a.WorkflowItemId == EmployeeId).FirstOrDefault().WorkflowTaskMasterId;
+
+        var lstWorkflowTaskDetail = context.HRMS_WorkflowTaskDetail.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkflowTaskMasterId &&
+            a.WorkflowStepDetailId == WorkflowStepDetailId).ToList();
+
+        if (lstWorkflowTaskDetail != null && lstWorkflowTaskDetail.Count > 0)
+        {
+            int WorkflowTaskDetailIdApproved = 0;
+
+            for (int i = 0; i < lstWorkflowTaskDetail.Count; i++)
+            {
+                int WorkflowTaskDetailId = lstWorkflowTaskDetail[i].WorkflowTaskDetailId;
+
+                HRMS_WorkflowTaskDetail td = context.HRMS_WorkflowTaskDetail.Where(a => a.WorkflowTaskDetailId == WorkflowTaskDetailId).FirstOrDefault();
+
+                td.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Completed;
+                td.ModifiedBy = UserKey;
+                td.ModifiedDate = DateTime.Now;
+                td.UserIP = UserIP;
+
+                if (td.AssigneeID == UserKey)
+                {
+                    td.EndDate = DateTime.Now;
+                    //td.Remarks = txtComments.Text;
+
+                    WorkflowTaskDetailIdApproved = WorkflowTaskDetailId;
+                }
+                context.SaveChanges();
+            }
+        }
+
+        var lstWorkflowNxtStep = context.HRMS_WorkflowStepActionDetail.Where(a => a.IsActive == true && a.WorkflowStepDetailId == WorkflowStepDetailId).ToList();
+
+        if (lstWorkflowNxtStep != null && lstWorkflowNxtStep.Count > 0)
+        {
+            for (int ii = 0; ii < lstWorkflowNxtStep.Count; ii++)
+            {
+                IsEmailRequired = lstWorkflowNxtStep[ii].HRMS_Setup_WorkflowStepDetail.IsEmailRequired == null ? false : Convert.ToBoolean(lstWorkflowNxtStep[ii].HRMS_Setup_WorkflowStepDetail.IsEmailRequired);
+                NxtWorkflowStepDetailId = lstWorkflowNxtStep[ii].NextWorkflowStepDetailId;
+
+                var lst = context.HRMS_WorkflowMemberDetail.Where(a => a.IsActive == true)
+           .Where(a => a.WorkflowStepDetailId == NxtWorkflowStepDetailId)
+           .Where(a => a.MemberCategoryId == (int)Constant.WorkflowMemberCategory.Management).ToList();
+
+                if (lst.Count > 0 && lst != null)
+                {
+                    for (int i = 0; i < lst.Count; i++)
+                    {
+                        int MemberCategoryId = lst[i].MemberCategoryId;
+                        int DeptId = lst[i].DepartmentId;
+
+                        var lstAssignee = context.HRMS_Setup_WorkFlowMemberDetail.Where(a => a.IsActive == true && a.MemberCategoryId == MemberCategoryId && a.DepartmentID == DeptId)
+                            .Select(a => new
+                            {
+                                AssigneeId = a.EmployeeID
+                            })
+                            .ToList();
+
+
+                        for (int j = 0; j < lstAssignee.Count; j++)
+                        {
+                            int AssigneeId = lstAssignee[j].AssigneeId;
+
+                            HRMS_WorkflowTaskDetail taskDetail = new HRMS_WorkflowTaskDetail();
+
+                            taskDetail.WorkflowTaskMasterId = WorkflowTaskMasterId;
+                            taskDetail.AssigneeID = AssigneeId;
+                            taskDetail.IsDelegated = false;
+                            taskDetail.WorkflowStepDetailId = NxtWorkflowStepDetailId;
+                            taskDetail.StartDate = DateTime.Now;
+                            taskDetail.WorkflowTaskStatusId = (int)Constant.WorkflowTaskStatus.Pending;
+                            //taskDetail.Remarks = txtComments.Text;
+                            taskDetail.IsActive = true;
+                            taskDetail.CreatedBy = UserId;
+                            taskDetail.CreatedDate = DateTime.Now;
+                            taskDetail.UserIP = UserIP;
+
+                            context.HRMS_WorkflowTaskDetail.Add(taskDetail);
+                            context.SaveChanges();
+
+                            if (IsEmailRequired) // send email
+                            {
+                                //NewHiring/HRStarter.aspx?EmployeeId=" + WorkflowItemId
+
+                                string ToEmail = context.Setup_Employee.Where(a => a.EmployeeId == AssigneeId).FirstOrDefault().OfficeEmailAddress;
+                                string MsgHeader = "";
+
+                                if (NxtWorkflowStepDetailId == (int)Constant.WorkflowStepNewHiring.ITStarter)
+                                {
+                                    MsgHeader = "IT Starter Task. \n";
+                                }
+                                else if (NxtWorkflowStepDetailId == (int)Constant.WorkflowStepNewHiring.AdminStarter)
+                                {
+                                    MsgHeader = "Admin Starter Task. \n";
+                                }
+
+                                string Msg = MsgHeader +
+                                    "<html>  <a href='" + CommonHelper.URL + "Pages/NewHiring/Approval.aspx?id=" + EmployeeId + "&WorkflowStepDetailId=" + WorkflowStepDetailId +
+                                    "&WorkflowMasterId=" + Convert.ToString((int)Constant.Workflow.NewHiringWorkflow) + "'>Click Here</a>  </html>";
+
+                                //NewHiring/Approval.aspx?id=" + WorkflowItemId + "&WorkflowStepDetailId=" + WorkflowStepDetailId + "&WorkflowMasterId=" + WorkflowMasterId
+
+                                CommonHelper.GenerateWorkflowEmail(ToEmail, "", WorkflowStepDetailId, Msg);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    bool IsAssign = CommonHelper.AssignTaskToHR(WorkflowTaskMasterId, NxtWorkflowStepDetailId, DateTime.Now);
+
+                    if (IsAssign)
+                    {
+                        ScriptManager.RegisterStartupScript(this, GetType(), "Alert", "alert('No Mapping Exist Against this Workflow Step, The Task is assigned to HRMS Admin');", true);
+                    }
+                }
+            }
+        }
+    }
+}

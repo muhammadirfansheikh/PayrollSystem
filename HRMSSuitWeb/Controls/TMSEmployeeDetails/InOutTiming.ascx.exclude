@@ -1,0 +1,228 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="InOutTiming.ascx.cs" Inherits="controls_InOutTiming" %>
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc2" %>
+
+<style>
+    .divLabel label
+    {
+        font-weight: normal;
+    }
+</style>
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3>Search</h3>
+    </div>
+    <div class="panel-body">
+        <asp:UpdatePanel runat="server">
+            <ContentTemplate>
+                <div class="form-group col-lg-12">
+                    <div id="tdEmployeeControl" runat="server" visible="false">
+                        <div class="form-group col-lg-2" id="tdDepartmentControl" runat="server">
+                            <div id="tdDepartmentCaption">
+                                <label for="exampleInputEmail2" class="Label">Department Name</label>
+                            </div>
+                            <div id="tdDepartmentControl1">
+                                <asp:DropDownList ID="ddlDepartment" runat="server" AutoPostBack="true" CssClass="form-control" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-2">
+                            <div>
+                                <label for="exampleInputEmail2" class="Label">Employee Name</label>
+                            </div>
+                            <div>
+                                <asp:DropDownList ID="ddlEmployee" CssClass="form-control" runat="server">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-4">
+                        <div>
+                            <label for="exampleInputEmail2" class="Label">Month & Year</label>
+                        </div>
+                        <div>
+                            <div class="col-lg-7" style="padding-left: 0px;">
+                                <asp:DropDownList ID="ddlMonth" runat="server" CssClass="form-control col-lg-6">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="col-lg-5">
+                                <asp:DropDownList ID="ddlYear" runat="server" CssClass="form-control col-lg-6">
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                    </div>
+          
+                    <div class="form-group col-lg-4" style="padding-top:30px;">
+                   
+                        <div>
+                            <asp:RadioButton ID="rbPayrollWise" runat="server" Text="Payroll Wise" GroupName="InOutReport" />
+                            <asp:RadioButton ID="rbMonthWise" runat="server" Text="Month Wise" GroupName="InOutReport" />
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-12">
+                        <asp:Button ID="btnSearch" runat="server" Text="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                    </div>
+                </div>
+             
+            
+                </div>
+                </div>
+                  </ContentTemplate>
+        
+        </asp:UpdatePanel>
+        
+
+    <div class="panel-body" style="background-color:white;">
+    <asp:UpdatePanel ID="updatepanel" runat="server">
+        <ContentTemplate>
+         <asp:Repeater ID="rptInOutTiming" runat="server" OnItemDataBound="rptInOutTiming_ItemDataBound">
+                    <HeaderTemplate>
+                        <table style="width: 100%;" cellpadding="0" cellspacing="0" class="table table-striped">
+                            <thead style="text-align:center">
+                                <tr>
+                                    <th>Sr. No.
+                                    </th>
+                                    <th>Time In
+                                    </th>
+                                    <th>Time Out
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <tr>
+                            <td style="width: 59px;">
+                                <a onclick='OpenDailyActivityPopup("<%# "/pages/TMS/ViewActivityDetail.aspx?daId=" + Eval("DailyActivityId") %>")'>
+                                    <asp:Image ID="imgActivityDetail" runat="server" ImageUrl="~/images/detail.gif" Visible="false" />
+                                </a>
+                                <%#(((RepeaterItem)Container).ItemIndex+1).ToString()%>
+                                <asp:Image ID="imgExpandCollapse" runat="server" ImageUrl="~/images/expand_collapse.png"
+                                    CssClass="ExpandCollapse pointer" Visible="false" />
+                                <asp:HiddenField ID="hfDateValue" runat="server" Value='<%# Eval("DateValue") %>' />
+                                <asp:HiddenField ID="hfCreatedDate" runat="server" Value='<%# Eval("CreatedDate") %>' />
+                                <asp:HiddenField ID="hfStartTime" runat="server" Value='<%# Eval("StartTime") %>' />
+                                <asp:HiddenField ID="hfModifiedDate" runat="server" Value='<%# Eval("ModifiedDate") %>' />
+                                <asp:HiddenField ID="hfEndTime" runat="server" Value='<%# Eval("EndTime") %>' />
+                                <asp:HiddenField ID="hfDailyActivityId" runat="server" Value='<%# Eval("DailyActivityId") %>' />
+                                <asp:HiddenField ID="hfTimeAdjStatusIn" runat="server" Value='<%# Eval("TimeAdjStatusIn") %>' />
+                                <asp:HiddenField ID="hfTimeAdjStatusOut" runat="server" Value='<%# Eval("TimeAdjStatusOut") %>' />
+                                <asp:HiddenField ID="hfIsLateStartTime" runat="server" Value='<%# Eval("IsLate_StartTime") %>' />
+                                <asp:HiddenField ID="hfIsLateEndTime" runat="server" Value='<%# Eval("IsLate_End_Time") %>' />
+                            </td>
+                            <td>
+                                <asp:Label ID="lblTimeIn" runat="server"></asp:Label>
+                                <a onclick='OpenPopup("<%# "/Pages/TMS/Employee/TimeAdjustmentRequest.aspx?daId=" + Eval("DailyActivityId") + "&taId=" + Eval("TimeAdjustmentRequestId") + "&empId=" + Eval("EmployeeId") + "&isInRequest=1" %>")'>
+                                    <asp:Label ID="lblStatusImageIn" runat="server" CssClass='<%# (Eval("TimeAdjStatusIn") == null && Eval("DailyActivityId") != null) ? "edit" : Eval("TimeAdjStatusNameIn") %>'>
+                                    </asp:Label>
+                                </a>
+                            </td>
+                            <td>
+                                <asp:Label ID="lblTimeOut" runat="server"></asp:Label>
+                                <a onclick='OpenPopup("<%# "/Pages/TMS/Employee/TimeAdjustmentRequest.aspx?daId=" + Eval("DailyActivityId") + "&taId=" + Eval("TimeAdjustmentRequestIdOut") + "&empId=" + Eval("EmployeeId") + "&isInRequest=0" %>")'>
+                                    <asp:Label ID="lblStatusImageOut" runat="server" CssClass='<%# (Eval("TimeAdjStatusOut") == null && Eval("DailyActivityId") != null) ? "edit" : Eval("TimeAdjStatusNameOut") %>'>
+                                    </asp:Label>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr id="trMultipleInOut" runat="server" style="display: none" class="hiddenDiv">
+                            <td colspan="3" valign="middle">
+                                <asp:Repeater ID="rptChildMultipleInOut" runat="server" OnItemDataBound="rptChildMultipleInOut_ItemDataBound">
+                                    <HeaderTemplate>
+                                        <table class="list listChild" style="margin-left: 50px;">
+                                    </HeaderTemplate>
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td style="width: 50px;">
+                                                <a onclick='OpenDailyActivityPopup("<%# "/pages/employee/ViewActivityDetail.aspx?daId=" + Eval("DailyActivityId") %>")'>
+                                                    <asp:Image ID="imgActivityDetail" runat="server" ImageUrl="~/images/detail.gif" Visible="false" />
+                                                </a>
+                                                <%#(((RepeaterItem)Container).ItemIndex+1).ToString()%>
+                                                <asp:HiddenField ID="hfDateValue" runat="server" Value='<%# Eval("DateValue") %>' />
+                                                <asp:HiddenField ID="hfCreatedDate" runat="server" Value='<%# Eval("CreatedDate") %>' />
+                                                <asp:HiddenField ID="hfStartTime" runat="server" Value='<%# Eval("StartTime") %>' />
+                                                <asp:HiddenField ID="hfModifiedDate" runat="server" Value='<%# Eval("ModifiedDate") %>' />
+                                                <asp:HiddenField ID="hfEndTime" runat="server" Value='<%# Eval("EndTime") %>' />
+                                                <asp:HiddenField ID="hfDailyActivityId" runat="server" Value='<%# Eval("DailyActivityId") %>' />
+                                                <asp:HiddenField ID="hfTimeAdjStatusIn" runat="server" Value='<%# Eval("TimeAdjStatusIn") %>' />
+                                                <asp:HiddenField ID="hfTimeAdjStatusOut" runat="server" Value='<%# Eval("TimeAdjStatusOut") %>' />
+                                                <asp:HiddenField ID="hfIsLateStartTime" runat="server" Value='<%# Eval("IsLate_StartTime") %>' />
+                                                <asp:HiddenField ID="hfIsLateEndTime" runat="server" Value='<%# Eval("IsLate_End_Time") %>' />
+                                            </td>
+                                            <td>
+                                                <asp:Label ID="lblTimeIn" runat="server"></asp:Label>
+                                                <a onclick='OpenPopup("<%# "/Pages/TMS/Employee/TimeAdjustmentRequest.aspx?daId=" + Eval("DailyActivityId") + "&taId=" + Eval("TimeAdjustmentRequestId") + "&empId=" + Eval("EmployeeId") + "&isInRequest=1" %>")'>
+                                                    <span class='<%# (Eval("TimeAdjStatusIn") == null && Eval("DailyActivityId") != null) ? "edit" : Eval("TimeAdjStatusNameIn") %>'></span></a>
+                                            </td>
+                                            <td>
+                                                <asp:Label ID="lblTimeOut" runat="server"></asp:Label>
+                                                <a onclick='OpenPopup("<%# "/Pages/TMS/Employee/TimeAdjustmentRequest.aspx?daId=" + Eval("DailyActivityId") + "&taId=" + Eval("TimeAdjustmentRequestIdOut") + "&empId=" + Eval("EmployeeId") + "&isInRequest=0" %>")'>
+                                                    <span class='<%# (Eval("TimeAdjStatusOut") == null && Eval("DailyActivityId") != null) ? "edit" : Eval("TimeAdjStatusNameOut") %>'></span></a>
+                                            </td>
+                                        </tr>
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        </table>
+                                    </FooterTemplate>
+                                </asp:Repeater>
+                            </td>
+                        </tr>
+                    </ItemTemplate>
+                    <FooterTemplate>
+                        </tbody> </table>
+                    </FooterTemplate>
+                </asp:Repeater>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+    </div>
+</div>
+               </div>
+          
+        
+        <asp:UpdateProgress runat="server">
+            <ProgressTemplate>
+                <uc2:InProgress ID="InProgress1" runat="server" />
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    
+  
+       
+<script type="text/javascript">
+    function pageLoad() {
+        $('.ExpandCollapse').click(function () {
+            $(this).closest('tr').next('tr').toggle("slow");
+        });
+    }
+    function OpenPopup(url) {
+        var w = 500;
+        var h = 550;
+        var left = (screen.width / 2) - (w / 2);
+        var top = (screen.height / 2) - (h / 2);
+        //        return window.open(url, "Time Adjustment Request", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        window.open(url, "Time Adjustment Request", 'toolbar = no, location = no, directories = no, status = no, menubar = no, scrollbars = no, resizable = no, copyhistory = no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+        //return false;
+    }
+    function OpenDailyActivityPopup(url) {
+        var w = 550;
+        var h = 600;
+        var left = (screen.width / 2) - (w / 2);
+        var top = (screen.height / 2) - (h / 2);
+        //        return window.open(url, "Time Adjustment Request", 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+        window.open(url, "Activity Details", 'toolbar = no, location = no, directories = no, status = no, menubar = no, scrollbars = yes, resizable = no, copyhistory = no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+        //window.open(url, "Activity Details", 'width=' + w + ', height=' + h + ', top=' + top + ', left=' + left); //toolbar = no, location = no, directories = no, status = no, menubar = no, resizable = no, copyhistory = no, 
+        //return false;
+    }
+</script>
+<script>
+    function pageLoad() {
+        $(".numeric").numeric();
+        $('.datetime').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true
+        });
+    }
+</script>

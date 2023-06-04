@@ -1,0 +1,90 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+public partial class Controls_Shift_ucAddNewShift : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    public int DepartmentId { get; set; }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        LB_Error.Visible = false;
+        RightContentError.Visible = false;
+        try
+        {
+            if (Session["ShiftDepartmentId"] != null)
+            {
+                DepartmentId = Convert.ToInt32(Session["ShiftDepartmentId"]);
+            }
+            BindDropdown();
+            ddl_Shift.SelectedValue = Request.Form[ddl_Shift.UniqueID];
+            tb_From.Text = Request.Form[tb_From.UniqueID];
+            //CB_Shift_Status.Checked = (Request.Form[CB_Shift_Status.UniqueID]) == "on" ? true : false;
+            if (CB_Shift_Status.Checked == true)
+            {
+                HF_CB_Shift_Status.Value = "on";
+            }
+            else
+            {
+                HF_CB_Shift_Status.Value = "off";
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+    public void BindDropdown()
+    {
+        try
+        {
+            //var shifts = context.Shifts.Where(p => p.IsActive == true && p.DepartmentId == DepartmentId).OrderBy(s => s.ShiftName).ToList();
+            var shifts = context.TMS_DepartmentShift.Where(c => c.IsActive == true && c.DepartmentId == DepartmentId)
+                .Select(ds => new
+                {
+                    ShiftId = ds.ShiftId,
+                    ShiftName = ds.TMS_Setup_Shift.ShiftName
+                })
+                .OrderBy(c => c.ShiftName).ToList();
+            CommonHelper.BindDropDown(ddl_Shift, shifts, "ShiftName", "ShiftId", true, false);
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+
+
+    protected void CB_Shift_Status_CheckedChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            if (CB_Shift_Status.Checked == true)
+            {
+                HF_CB_Shift_Status.Value = "on";
+            }
+            else
+            {
+                HF_CB_Shift_Status.Value = "off";
+            }
+        }
+        catch (Exception ex)
+        {
+            LB_Error.Visible = true;
+            LB_Error.Text = ex.Message;
+            RightContentError.Attributes.Add("class", "validationSummary");
+            RightContentError.Visible = true;
+        }
+    }
+}

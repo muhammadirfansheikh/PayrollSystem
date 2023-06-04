@@ -1,0 +1,226 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+public partial class Pages_HRMS_Setup_Section : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            BindRepeater();
+        }
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControls();
+        BindRepeater();
+    }
+    protected void lbEdit_Click(object sender, EventArgs e)
+    {
+        LinkButton btnEdit = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnEdit.NamingContainer;
+        int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfId")).Value);
+        var section = context.HRMS_Setup_Section.Where(x => x.SectionId == Id).FirstOrDefault();
+        if (section != null)
+        {
+            hfSectionId.Value = Id.ToString();
+            txtPrefixAdd.Text = section.SectionCode;
+            txtTitleAdd.Text = section.SectionTitle;
+            OpenPopup();
+        }
+    }
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            LinkButton btnDelete = (LinkButton)sender;
+            RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+            int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfId")).Value);
+
+            divError.Visible = false;
+            HRMS_Setup_Section obj = context.HRMS_Setup_Section.FirstOrDefault(j => j.SectionId == Id);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Section has been deleted successfully.", MessageType.Success);
+            Success("Section has been deleted successfully.");
+            ClosePopup();
+            BindRepeater();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+        }
+    }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        if (hfSectionId.Value == string.Empty)
+            Add();
+        else
+            Update();
+    }
+    #region Custom Methods
+    private void BindRepeater()
+    {
+
+        string title = txtTitleSearch.Text.Trim();
+        string code = txtprefixSearch.Text;
+
+        var List = context.HRMS_Setup_Section.Where(c => c.IsActive == true
+                && (c.SectionTitle.Contains(title) || title == string.Empty)
+                && (c.SectionCode.Contains(code) || code == string.Empty)
+
+            ).Select(c => new
+            {
+                _Id = c.SectionId,
+                _title = c.SectionTitle,
+                _code = c.SectionCode
+
+
+            }).ToList();
+        rpt.DataSource = List;
+        rpt.DataBind();
+    }
+    private void Add()
+    {
+        DateTime dt = DateTime.Now;
+        HRMS_Setup_Section obj = new HRMS_Setup_Section();
+
+
+        obj.SectionTitle = txtTitleAdd.Text.Trim();
+
+        obj.CreatedBy = UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.SectionCode = txtPrefixAdd.Text;
+        obj.SectionGuidId = "";
+        //obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        bool checkIsExist = CheckAlreadyNameExists(txtTitleAdd.Text.Trim());
+
+        if (!checkIsExist)
+        {
+            context.HRMS_Setup_Section.Add(obj);
+            context.SaveChanges();
+            //MessageCtrl.showMessageBox("Section has been added successfully.", MessageType.Success);
+            Success("Section has been added successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //ShowMessage("");
+            //MessageCtrl.showMessageBox("Section Title Already Exist.", MessageType.Validation);
+            Error("Section Title Already Exist.");
+            ClosePopup();
+
+        }
+
+
+
+
+        BindRepeater();
+
+        ResetControls();
+    }
+    public bool CheckAlreadyNameExists(string title)
+    {
+
+        int sectionid = 0;
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+        if (hfSectionId.Value != "")
+        {
+            sectionid = Convert.ToInt32(hfSectionId.Value);
+        }
+        else
+        {
+            sectionid = 0;
+        }
+        //City ocity = context.Cities.FirstOrDefault(c => c.CityName == cityname);
+
+        HRMS_Setup_Section obj = context.HRMS_Setup_Section.FirstOrDefault(j => j.SectionTitle == title && j.IsActive == true && j.SectionId != sectionid);
+        if (obj != null)
+        {
+            return true;
+        }
+        return false;
+    }
+    private void Update()
+    {
+        DateTime dt = DateTime.Now;
+
+        int Id = Convert.ToInt32(hfSectionId.Value);
+        HRMS_Setup_Section obj = context.HRMS_Setup_Section.FirstOrDefault(j => j.SectionId == Id);
+        obj.SectionTitle = txtTitleAdd.Text.Trim();
+
+        obj.ModifiedBy = UserKey;
+        obj.ModifiedDate = dt;
+        obj.IsActive = true;
+        obj.SectionCode = txtPrefixAdd.Text.Trim();
+        obj.SectionGuidId = "";
+        //obj.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+        bool checkIsExist = CheckAlreadyNameExists(txtTitleAdd.Text.Trim());
+
+        if (!checkIsExist)
+        {
+
+                context.SaveChanges();
+            //MessageCtrl.showMessageBox("Section has been updated successfully.", MessageType.Success);
+            Success("Section has been updated successfully.");
+            ClosePopup();
+        }
+        else
+        {
+            //ClientScript.RegisterClientScriptBlock(this.GetType(), "alert","Alert('Item Already Exist');",true);
+            //MessageCtrl.showMessageBox("Section Title Already Exist.", MessageType.Validation);
+            Error("Section Title Already Exist.");
+            ClosePopup();
+        }
+
+
+
+        BindRepeater();
+        ResetControls();
+    }
+
+
+    private void ResetControls()
+    {
+        txtprefixSearch.Text = string.Empty;
+        txtTitleSearch.Text = string.Empty;
+        hfSectionId.Value = "";
+    }
+    public void Success(string message)
+    {
+        message = "AlertBox('Success!','" + message + "','success');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void Error(string message)
+    {
+        message = "AlertBox('Error!','" + message + "','error');";
+        ScriptManager.RegisterStartupScript(this, GetType(), message, message, true);
+    }
+    public void ClosePopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "ClosePopup()", "ClosePopup();", true);
+    }
+    public void OpenPopup()
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "OpenPopup()", "OpenPopup();", true);
+    }
+
+    #endregion
+}

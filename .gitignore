@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/HRMSSuitWeb/Uploads/HCMUploads
+/HRMSSuitWeb/Images/TaxCertificate.png
+/HRMSSuitWeb/Uploads/Temp

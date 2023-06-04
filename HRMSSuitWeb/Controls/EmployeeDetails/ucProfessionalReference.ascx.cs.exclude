@@ -1,0 +1,144 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+public partial class Controls_EmployeeDetails_ucProfessionalReference : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base ObjBase = new Base();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindProfessionalReferrence(int EmployeeId)
+    {
+        var ProfessionalReference = context.HRMS_EmployeeProfessionalReference.Where(c => c.IsActive == true
+                                && (c.EmployeeID == EmployeeId)
+            ).Select(c => new
+            {
+
+                Name = c.Name,
+                Institution = c.Institution,
+
+                Email = c.OfficialEmailAddress,
+                Address = c.Address,
+
+                Phone = c.Phone,
+                ProfessionalReferenceID = c.ProfessionalReferenceID
+
+            }).ToList();
+        rptPrfessionalReference.DataSource = ProfessionalReference;
+        rptPrfessionalReference.DataBind();
+
+
+    }
+    protected void rptPrfessionalReference_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlContactPerson();
+            double? DoubleNull = null;
+            int ProfessionalReferenceID = Convert.ToInt32(e.CommandArgument);
+
+            var ProfessionalReference = context.HRMS_EmployeeProfessionalReference.Where(c => c.ProfessionalReferenceID == ProfessionalReferenceID).ToList();
+            if (ProfessionalReference != null)
+            {
+                hfProfRefID.Value = ProfessionalReferenceID.ToString();
+                txtName.Text = ProfessionalReference[0].Name;
+                //txtRelationship.Text = EmployeeInsurance[0].Relationship;
+                txtAddress.Text = ProfessionalReference[0].Address;
+                txtOffice.Text = ProfessionalReference[0].Institution;
+
+
+                //txt_Age.Text = Convert.ToString(EmployeeInsurance[0].Age);
+
+                txtOfficialEmail.Text = ProfessionalReference[0].OfficialEmailAddress;
+                txtPhone.Text = ProfessionalReference[0].Phone;
+
+
+
+                btnAdd.Text = "Update";
+            }
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int ProfessionalReferenceID = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeProfessionalReference obj = context.HRMS_EmployeeProfessionalReference.FirstOrDefault(j => j.ProfessionalReferenceID == ProfessionalReferenceID);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = ObjBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindProfessionalReferrence(EmpID);
+
+        }
+    }
+    public void ResetControlContactPerson()
+    {
+        hfProfRefID.Value = "";
+        txtAddress.Text = "";
+        txtPhone.Text = "";
+        txtOfficialEmail.Text = "";
+        txtName.Text = "";
+        txtOffice.Text = "";
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+    protected void btnAdd_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            DateTime dt = DateTime.Now;
+            if (hfProfRefID.Value == "")
+            {
+                HRMS_EmployeeProfessionalReference empProfRef = new HRMS_EmployeeProfessionalReference();
+                empProfRef.Name = txtName.Text.Trim();
+                empProfRef.Institution = txtOffice.Text.Trim();
+                empProfRef.Address = txtAddress.Text.Trim();
+                empProfRef.Phone = txtPhone.Text.Trim();
+                empProfRef.OfficialEmailAddress = txtOfficialEmail.Text.Trim();
+                empProfRef.IsActive = true;
+                empProfRef.CreatedBy = ObjBase.UserKey;
+                empProfRef.CreatedDate = dt;
+                empProfRef.EmployeeID = EmpID;
+                context.HRMS_EmployeeProfessionalReference.Add(empProfRef);
+                context.SaveChanges();
+                context.INSERT_INTO_AuditLog(empProfRef.ProfessionalReferenceID.ToString(), "HRMS_EmployeeProfessionalReference", (int)Constant.OperationType.INSERT, ObjBase.UserKey);
+            }
+            else
+            {
+                int empProfRefID = Convert.ToInt32(hfProfRefID.Value);
+                HRMS_EmployeeProfessionalReference empProfRef = context.HRMS_EmployeeProfessionalReference.FirstOrDefault(x => x.ProfessionalReferenceID == empProfRefID);
+                empProfRef.Name = txtName.Text.Trim();
+                empProfRef.Institution = txtOffice.Text.Trim();
+                empProfRef.Address = txtAddress.Text.Trim();
+                empProfRef.Phone = txtPhone.Text.Trim();
+                empProfRef.OfficialEmailAddress = txtOfficialEmail.Text.Trim();
+                empProfRef.IsActive = true;
+                empProfRef.ModifiedBy = ObjBase.UserKey;
+                empProfRef.ModifiedDate = dt;
+                context.SaveChanges();
+                btnAdd.Text = "Add";
+                context.INSERT_INTO_AuditLog(empProfRef.ProfessionalReferenceID.ToString(), "HRMS_EmployeeProfessionalReference", (int)Constant.OperationType.UPDATE, ObjBase.UserKey);
+            }
+            BindProfessionalReferrence(EmpID);
+            ResetControlContactPerson();
+        }
+        catch (Exception ex)
+        {
+            lblError.InnerText = "Invalid Record";
+            lblError.Visible = true;
+        }
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControlContactPerson();
+    }
+}

@@ -1,0 +1,669 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+using HRMS;
+
+public partial class Controls_EmployeeDetails_ucCompanyInformation : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            //BindDropdown();
+        }
+    }
+
+    protected void ddlHodjobcategory_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int HodCompanyId = Convert.ToInt32(ddlHodCompany.SelectedValue);
+        int InchargeCategoryId = Convert.ToInt32(ddlHodjobcategory.SelectedValue);
+        var listdesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == InchargeCategoryId && c.Setup_Category.CompanyId == HodCompanyId).OrderBy(c => c.DesignationName).ToList();
+        CommonHelper.BindDropDown(ddlHoddesignation, listdesignation, "DesignationName", "DesignationId", true, false);
+        ddlHoddesignation_SelectedIndexChanged(null, null);
+
+        if (ddlHodjobcategory.SelectedValue == "0")
+        {
+            ddlHoddesignation.Enabled = false;
+        }
+        else
+        {
+            ddlHoddesignation.Enabled = true;
+        }
+    }
+    protected void ddlHoddesignation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int InchargeDesignation = Convert.ToInt32(ddlHoddesignation.SelectedValue);
+        var listEmployee = context.Setup_Employee.Where(c => c.IsActive == true && c.DesignationId == InchargeDesignation).OrderBy(c => c.FirstName)
+           .Select(a => new
+           {
+
+               Name = a.FirstName + " " + a.LastName,
+               EmployeeId = a.EmployeeId
+           }).ToList();
+
+        CommonHelper.BindDropDown(ddlHodname, listEmployee, "Name", "EmployeeId", true, false);
+
+        if (ddlHoddesignation.SelectedValue == "0")
+        {
+
+            ddlHodname.Enabled = false;
+        }
+        else
+        {
+
+            ddlHodname.Enabled = true;
+        }
+    }
+    protected void ddlmanagerjobcategory_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int ManagerCategoryId = Convert.ToInt32(ddlmanagerjobcategory.SelectedValue);
+        var listdesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == ManagerCategoryId).OrderBy(c => c.DesignationName).ToList();
+        CommonHelper.BindDropDown(ddlManagerdesignation, listdesignation, "DesignationName", "DesignationId", true, false);
+        ddlManagerdesignation_SelectedIndexChanged(null, null);
+
+        if (ddlmanagerjobcategory.SelectedValue == "0")
+        {
+            ddlManagerdesignation.Enabled = false;
+        }
+        else
+        {
+            ddlManagerdesignation.Enabled = true;
+        }
+    }
+    protected void ddlManagerdesignation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int ManagerDesignation = Convert.ToInt32(ddlManagerdesignation.SelectedValue);
+        var listEmployee = context.Setup_Employee.Where(c => c.IsActive == true && c.DesignationId == ManagerDesignation).OrderBy(c => c.FirstName)
+           .Select(a => new
+           {
+
+               Name = a.FirstName + " " + a.LastName,
+               EmployeeId = a.EmployeeId
+           }).ToList();
+
+        //var listEmployee = context.Setup_Employee.Where(c => c.IsActive == true && c.DesignationId == InchargeDesignation).OrderBy(c => c.Name).ToList();
+        //CommonHelper.BindDropDown(ddlInchargeInfo, listEmployee, "Name", "EmployeeId", true, false);
+        CommonHelper.BindDropDown(ddlManagername, listEmployee, "Name", "EmployeeId", true, false);
+
+        if (ddlManagerdesignation.SelectedValue == "0")
+        {
+
+            ddlManagername.Enabled = false;
+        }
+        else
+        {
+
+            ddlManagername.Enabled = true;
+        }
+    }
+    protected void ddlInchargejobcategory_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int InchargeCategoryId = Convert.ToInt32(ddlInchargejobcategory.SelectedValue);
+        var listdesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == InchargeCategoryId).OrderBy(c => c.DesignationName).ToList();
+        CommonHelper.BindDropDown(ddlInchargedesignation, listdesignation, "DesignationName", "DesignationId", true, false);
+        ddlInchargedesignation_SelectedIndexChanged(null, null);
+
+        if (ddlInchargejobcategory.SelectedValue == "0")
+        {
+            ddlInchargedesignation.Enabled = false;
+        }
+        else
+        {
+            ddlInchargedesignation.Enabled = true;
+        }
+    }
+    protected void ddlInchargedesignation_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int InchargeDesignation = Convert.ToInt32(ddlInchargedesignation.SelectedValue);
+        var listEmployee = context.Setup_Employee.Where(c => c.IsActive == true && c.DesignationId == InchargeDesignation).OrderBy(c => c.FirstName)
+            .Select(a => new
+            {
+
+                Name = a.FirstName + " " + a.LastName,
+                EmployeeId = a.EmployeeId
+            }).ToList();
+
+        CommonHelper.BindDropDown(ddlInchargename, listEmployee, "Name", "EmployeeId", true, false);
+        //CommonHelper.BindDropDown(ddlHOD, listEmployee, "Name", "EmployeeId", true, false);
+
+        if (ddlInchargedesignation.SelectedValue == "0")
+        {
+            ddlInchargename.Enabled = false;
+            //ddlHOD.Enabled = false;
+        }
+        else
+        {
+            ddlInchargename.Enabled = true;
+            //ddlHOD.Enabled = true;
+        }
+    }
+    #region Custom Methods
+    public void BindUserInfo(Setup_Employee Employees)
+    {
+        hfEmpID.Value = Employees.EmployeeId.ToString();
+        txtSharePointID.Text = Employees.SharepointPortalId == null ? "" : Employees.SharepointPortalId.ToString();
+        txtTMSId.Text = Employees.Setup_User.Count == 0 ? "" : Employees.Setup_User.FirstOrDefault().Login_ID;
+        hidTmsID.Value = txtTMSId.Text;
+        ddlJobCategory.SelectedValue = Employees.CategoryId == null ? "0" : Employees.CategoryId.ToString();
+        ddlJobCategory_SelectedIndexChanged(null, null);
+        ddlDesignation.SelectedValue = Employees.DesignationId == null ? "0" : Employees.DesignationId.ToString();
+        ddlBU.SelectedValue = Employees.BusinessUnitID == null ? "0" : Employees.BusinessUnitID.ToString();
+        ddlBU_SelectedIndexChanged(null, null);
+        ddlDept.SelectedValue = Employees.DepartmentId == null ? "0" : Employees.DepartmentId.ToString();
+        ddlDept_SelectedIndexChanged(null, null);
+        ddlTmsShift.SelectedValue = Employees.TMSShiftId == null ? "0" : Employees.TMSShiftId.ToString();
+        var ListLeave = context.TMS_Setup_LeaveDefinition.Where(c => c.IsActive == true && c.GenderId == Employees.GenderId && c.CompanyId == Employees.CompanyId).OrderBy(c => c.Description).ToList();
+        CommonHelper.BindDropDown(ddlLeaveType, ListLeave, "Description", "LeaveDefId", true, false);
+
+        ddlJobCategory.SelectedValue = Employees.CategoryId == null ? "0" : Employees.CategoryId.ToString();
+        ddlJobCategory_SelectedIndexChanged(null, null);
+
+        ddlLeaveType.SelectedValue = Employees.TMSLeaveId == null ? "0" : Employees.TMSLeaveId.ToString();
+        ddlCostCenter.SelectedValue = Employees.CostCenterId == null ? "0" : Employees.CostCenterId.ToString();
+        ddlEmptype.SelectedValue = Employees.EmployeeTypeId == null ? "0" : Employees.EmployeeTypeId.ToString();
+        txtContractstartdate.Text = Employees.ContractStartDate == null ? string.Empty : Employees.ContractStartDate.Value.ToString(Constant.DateFormat2);
+        txtContractenddate.Text = Employees.ContractEndDate == null ? string.Empty : Employees.ContractEndDate.Value.ToString(Constant.DateFormat2);
+        txtdateofjoin.Text = Employees.JoiningDate == null ? string.Empty : Employees.JoiningDate.Value.ToString(Constant.DateFormat2);
+        txtProbationenddate.Text = Employees.PriodEndDate == null ? string.Empty : Employees.PriodEndDate.Value.ToString(Constant.DateFormat2);
+        lblProbationperioddays.Text = Employees.ProbitionPeriodDays.ToString();
+        txtConfirmationdate.Text = Employees.ConfirmationDate == null ? string.Empty : Employees.ConfirmationDate.Value.ToString(Constant.DateFormat2);
+        ddlRole.SelectedValue = Employees.Setup_User.Count == 0 ? "" : Employees.Setup_User.FirstOrDefault().Setup_ApplicationRoleMapping.Count == 0 ? "" : Employees.Setup_User.FirstOrDefault().Setup_ApplicationRoleMapping.Count == 0 ? "" : Employees.Setup_User.FirstOrDefault().Setup_ApplicationRoleMapping.FirstOrDefault().Setup_Role.Role_Code.ToString();
+        ddlHodname.SelectedValue = Employees.HODID.ToString();
+        txtOfficeext.Text = Employees.Extension.ToString();
+        if (Employees.PriodEndDate != null && Employees.JoiningDate != null)
+        {
+            TimeSpan? difference = Employees.PriodEndDate - Employees.JoiningDate;
+            double days = difference.Value.TotalDays;
+            lblProbationperioddays.Text = days.ToString();
+        }
+        int? HODID = Employees.HODID;
+        if (HODID != null)
+        {
+            ddlHodCompany.SelectedValue = GetCompanyById(HODID);
+            ddlHodjobcategory.SelectedValue = GetJobCategoryById(HODID);
+            ddlHoddesignation.SelectedValue = GetJobDesignationById(HODID);
+            ddlHoddesignation_SelectedIndexChanged(null, null);
+            ddlHodname.SelectedValue = HODID.ToString();
+        }
+
+        int? ManagerID = Employees.ManagerId;
+        if (ManagerID != null)
+        {
+            ddlManagerCompany.SelectedValue = GetCompanyById(ManagerID);
+            ddlmanagerjobcategory.SelectedValue = GetJobCategoryById(ManagerID);
+            ddlmanagerjobcategory_SelectedIndexChanged(null, null);
+            ddlManagerdesignation.SelectedValue = GetJobDesignationById(ManagerID);
+            ddlManagerdesignation_SelectedIndexChanged(null, null);
+            ddlManagername.SelectedValue = ManagerID.ToString();
+        }
+
+        int? InchargeID = Employees.InchargeId;
+        if (InchargeID != null)
+        {
+            ddlInchargeCompany.SelectedValue = GetCompanyById(InchargeID);
+            ddlInchargejobcategory.SelectedValue = GetJobCategoryById(InchargeID);
+            ddlInchargejobcategory_SelectedIndexChanged(null, null);
+            ddlInchargedesignation.SelectedValue = GetJobDesignationById(InchargeID);
+            ddlInchargedesignation_SelectedIndexChanged(null, null);
+            ddlInchargename.SelectedValue = InchargeID.ToString();
+        }
+        if (Employees.LocationId == (int)Constant.Location.Uae)
+        {
+            //RequiredFieldValidator4.Enabled = false;
+            //RequiredFieldValidator5.Enabled = false;
+        }
+        else
+        {
+            //RequiredFieldValidator4.Enabled = true;
+            //RequiredFieldValidator5.Enabled = true;
+        }
+        /*For Inchager*/
+        //int? InchageId = Employees.InchargeId == null ? 0 : Employees.InchargeId;
+
+        //ddlInchargejobcategory.SelectedValue = GetJobCategoryById(Convert.ToInt32(InchageId)).ToString();
+        //int inchargeCatID=Convert.ToInt32(ddlInchargejobcategory.SelectedValue);
+        // var listdesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == inchargeCatID).OrderBy(c => c.DesignationName).ToList();
+        //CommonHelper.BindDropDown(ddlInchargedesignation, listdesignation, "DesignationName", "DesignationId", true, false);
+
+        ////ddlInchargejobcategory_SelectedIndexChanged(null, null);
+        ////lblInchargejobCategoryInfo.Text = ddlInchargeJobCategoryInfo.SelectedValue == "0" ? "N/A" : ddlInchargeJobCategoryInfo.SelectedItem.Text;
+
+        //ddlInchargedesignation.SelectedValue = GetJobDesignationById(Convert.ToInt32(InchageId)).ToString();
+        //int InchargeDesignationID=Convert.ToInt32(ddlInchargedesignation.SelectedValue);
+        ////ddlInchargedesignation_SelectedIndexChanged(null, null);
+        // var listEmployee = context.Setup_Employee.Where(c => c.IsActive == true && c.DesignationId == InchargeDesignationID).OrderBy(c => c.FirstName)
+        //    .Select(a => new
+        //    {
+
+        //        Name = a.FirstName + " " + a.LastName,
+        //        EmployeeId = a.EmployeeId
+        //    }).ToList();
+
+        //CommonHelper.BindDropDown(ddlInchargename, listEmployee, "Name", "EmployeeId", true, false);
+
+        //ddlInchargename.SelectedValue = Employees.InchargeId == null ? "0" : Employees.InchargeId.ToString();
+
+        ///*For HOD*/
+
+        //int? HodId = Employees.HODID == null ? 0 : Employees.HODID;
+
+        //ddlHodjobcategory.SelectedValue = GetJobCategoryById(Convert.ToInt32(HodId)).ToString();
+        //ddlHodjobcategory_SelectedIndexChanged(null, null);
+
+        //ddlHoddesignation.SelectedValue = GetJobDesignationById(Convert.ToInt32(HodId)).ToString();
+        //ddlHoddesignation_SelectedIndexChanged(null, null);
+
+        //ddlHodname.SelectedValue = Employees.HODID == null ? "0" : Employees.HODID.ToString();
+
+        ///*For Manager*/
+
+        //int? ManagerId = Employees.ManagerId == null ? 0 : Employees.ManagerId;
+
+        //ddlmanagerjobcategory.SelectedValue = GetJobCategoryById(Convert.ToInt32(ManagerId)).ToString();
+        //ddlmanagerjobcategory_SelectedIndexChanged(null, null);
+
+        //ddlManagerdesignation.SelectedValue = GetJobDesignationById(Convert.ToInt32(ManagerId)).ToString();
+        //ddlManagerdesignation_SelectedIndexChanged(null, null);
+
+        //ddlManagername.SelectedValue = Employees.ManagerId == null ? "0" : Employees.ManagerId.ToString();
+
+
+        //ddlJobCategory_SelectedIndexChanged(null, null);
+
+    }
+    public void DisableForEmployee()
+    {
+        txtSharePointID.Enabled = false;
+        txtTMSId.Enabled = false;
+        ddlJobCategory.Enabled = false;
+        ddlDesignation.Enabled = false;
+        ddlBU.Enabled = false;
+        ddlDept.Enabled = false;
+        ddlTmsShift.Enabled = false;
+        ddlLeaveType.Enabled = false;
+        ddlCostCenter.Enabled = false;
+        ddlEmptype.Enabled = false;
+        txtContractstartdate.Enabled = false;
+        txtContractenddate.Enabled = false;
+        txtdateofjoin.Enabled = false;
+        txtProbationenddate.Enabled = false;
+        lblProbationperioddays.Enabled = false;
+        txtConfirmationdate.Enabled = false;
+        ddlRole.Enabled = false;
+        ddlHodname.Enabled = false;
+        txtOfficeext.Enabled = false;
+
+        ddlHodCompany.Enabled = false;
+        ddlHodjobcategory.Enabled = false;
+        ddlHoddesignation.Enabled = false;
+
+        ddlManagername.Enabled = false;
+
+        ddlInchargejobcategory.Enabled = false;
+        ddlInchargedesignation.Enabled = false;
+        ddlManagerCompany.Enabled = false;
+        ddlmanagerjobcategory.Enabled = false;
+        ddlManagerdesignation.Enabled = false;
+        ddlInchargeCompany.Enabled = false;
+        ddlInchargename.Enabled = false;
+
+    }
+    private string GetCompanyById(int? EmpID)
+    {
+        var Emp = context.Setup_Employee.Where(c => c.EmployeeId == EmpID).FirstOrDefault();
+        return Emp.CompanyId.ToString();
+    }
+    private string GetJobCategoryById(int? EmpID)
+    {
+        var Emp = context.Setup_Employee.Where(c => c.EmployeeId == EmpID).FirstOrDefault();
+        return Emp.CategoryId.ToString();
+    }
+    private string GetJobDesignationById(int? EmpID)
+    {
+        var Emp = context.Setup_Employee.Where(c => c.EmployeeId == EmpID).FirstOrDefault();
+        return Emp.DesignationId.ToString();
+    }
+    public void UpdateCompanyInfo(int EmployeeID)
+    {
+        DateTime? _JoiningDate = null;
+
+        DateTime? JoinDate_AccessControl = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeID).FirstOrDefault().JoiningDate;
+
+        int? intnull = null;
+        DateTime? dtnull = null;
+        DateTime dt = DateTime.Now;
+        var Employees = context.Setup_Employee.Where(c => c.EmployeeId == EmployeeID).FirstOrDefault();
+        Employees.SharepointPortalId = txtSharePointID.Text.Trim();
+
+        try
+        {
+            Employees.Setup_User.FirstOrDefault().Login_ID = txtTMSId.Text.Trim();
+        }
+        catch
+        { }
+
+        Employees.CategoryId = Convert.ToInt32(ddlJobCategory.SelectedValue);
+        Employees.DesignationId = Convert.ToInt32(ddlDesignation.SelectedValue);
+        Employees.BusinessUnitID = Convert.ToInt32(ddlBU.SelectedValue);
+        Employees.DepartmentId = Convert.ToInt32(ddlDept.SelectedValue);
+        Employees.TMSShiftId = ddlTmsShift.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlTmsShift.SelectedValue);
+        Employees.TMSLeaveId = ddlLeaveType.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlLeaveType.SelectedValue);
+        Employees.CostCenterId = Convert.ToInt32(ddlCostCenter.SelectedValue);
+        Employees.EmployeeTypeId = ddlEmptype.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlEmptype.SelectedValue);
+        Employees.ContractStartDate = txtContractstartdate.Text == string.Empty ? dtnull : Convert.ToDateTime(txtContractstartdate.Text.Trim());
+        Employees.ContractEndDate = txtContractenddate.Text == string.Empty ? dtnull : Convert.ToDateTime(txtContractenddate.Text.Trim());
+        Employees.JoiningDate = txtdateofjoin.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtdateofjoin.Text.Trim());
+
+        if (JoinDate_AccessControl != null)
+        {
+
+        }
+        else
+        {
+            _JoiningDate = txtdateofjoin.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtdateofjoin.Text.Trim());
+        }
+
+        Employees.ConfirmationDate = txtConfirmationdate.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtConfirmationdate.Text.Trim());
+        Employees.HODID = ddlHodname.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlHodname.SelectedValue);
+        Employees.ManagerId = ddlManagername.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlManagername.SelectedValue);
+        Employees.InchargeId = ddlInchargename.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlInchargename.SelectedValue);
+        Employees.Extension = txtOfficeext.Text.Trim() == string.Empty ? intnull : Convert.ToInt32(txtOfficeext.Text.Trim());
+        Employees.PriodEndDate = txtProbationenddate.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtProbationenddate.Text.Trim());
+
+        if (Employees.PriodEndDate != null && Employees.JoiningDate != null)
+        {
+            TimeSpan? difference = Employees.PriodEndDate - Employees.JoiningDate;
+            double days = difference.Value.TotalDays;
+            Employees.ProbitionPeriodDays = Convert.ToInt32(days);
+        }
+
+        Employees.ModifiedBy = objBase.UserKey;
+        Employees.ModifiedDate = dt;
+
+
+
+        context.SaveChanges();
+
+        try
+        {
+            Setup_ApplicationRoleMapping ApplicationRoleMapping = context.Setup_ApplicationRoleMapping.Where(x => x.IsActive == true && x.Setup_User.Setup_Employee.EmployeeId == Employees.EmployeeId).First();
+
+            ApplicationRoleMapping.Role_Code = ddlRole.SelectedValue == "" ? intnull : Convert.ToInt32(ddlRole.SelectedValue);
+            context.SaveChanges();
+        }
+        catch
+        { }
+
+        if (_JoiningDate != null)
+        {
+            SendEmailAccessControlAdmin(Employees.EmployeeCode, Employees.FirstName + " " + Employees.MiddleName + " " + Employees.LastName,
+                       Employees.Setup_Designation == null ? "" : Employees.Setup_Designation.DesignationName,
+                       Employees.Setup_Department == null ? "" : Employees.Setup_Department.DepartmentName, Employees.LocationId, Convert.ToDateTime(_JoiningDate));
+        }
+
+        if (Employees.EmployeeTypeId != null)
+        {
+            if (Employees.Setup_EmployeeType.IsPermenant)
+            {
+                var HCM_PFLog = context.HCM_PFLog.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeID);
+
+                if (HCM_PFLog != null)
+                {
+                    HCM_PFLog.IsActive = false;
+                    HCM_PFLog.ModifiedBy = objBase.UserKey;
+                    HCM_PFLog.ModifiedDate = DateTime.Now;
+
+                    context.SaveChanges();
+                }
+
+                HCM_PFLog objPfLog = new HCM_PFLog();
+
+                objPfLog.CreatedBy = objBase.UserKey;
+                objPfLog.CreatedDate = DateTime.Now;
+                objPfLog.EmployeeId = EmployeeID;
+                objPfLog.IsActive = true;
+                objPfLog.OnHold = HCM_PFLog != null ? HCM_PFLog.OnHold : false;
+
+                context.HCM_PFLog.Add(objPfLog);
+                context.SaveChanges();
+            }
+        }
+
+        ActiveDirectoryClass objADClass = new ActiveDirectoryClass();
+
+        //objADClass.UpdateUserAtAD(Employees.EmployeeCode,Employees.LocationId,Employees.FirstName,
+        string ManagerEmpCode = "";
+        string HODEmpCode = "";
+        if (Employees.ManagerId != null)
+        {
+            //var Manager=context.Setup_Employee.Where(x=>x.EmployeeId==Employees.ManagerId).FirstOrDefault();
+            ManagerEmpCode = context.Setup_Employee.Where(x => x.EmployeeId == Employees.ManagerId).FirstOrDefault().EmployeeCode;
+        }
+        if (Employees.HODID != null)
+        {
+            HODEmpCode = context.Setup_Employee.Where(x => x.EmployeeId == Employees.HODID).FirstOrDefault().EmployeeCode;
+        }
+        //int? ManagerEmpCode=context.Setup_Employee.Where(x=>x.EmployeeId==).Select(x=>x.ManagerId==null
+        if (txtSharePointID.Text.Trim() != string.Empty)
+        {
+            try
+            {
+                //objADClass.UpdateUserAtAD(Employees.EmployeeCode, Employees.LocationId, Employees.FirstName, Employees.LastName, Employees.Setup_Department.DepartmentName, ddlDesignation.SelectedItem.Text, ddlManagername.SelectedItem.Text, Employees.Setup_Country.CountryName, Employees.Setup_City.CityName, Employees.TS_Setup_BusinessUnit.BusinessUnitName, HODEmpCode, ManagerEmpCode, "");
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+    }
+    #endregion
+    protected void txtProbationenddate_TextChanged(object sender, EventArgs e)
+    {
+        //TimeSpan? difference = Convert.ToDateTime(txtProbationenddate.Text) - Convert.ToDateTime(txtdateofjoin.Text);
+        //DateTime dt = DateTime.ParseExact(Convert.ToDateTime(txtProbationenddate.Text).ToShortDateString(), "MM/dd/yyyy", CultureInfo.InvariantCulture);
+        //DateTime dt1 = DateTime.ParseExact(Convert.ToDateTime(txtdateofjoin.Text).ToShortDateString(), "MM/dd/yyyy", CultureInfo.InvariantCulture);
+        //if (dt > dt1)
+        //{
+        //    TimeSpan? difference = dt - dt1;
+        //    double days = difference.Value.TotalDays;
+        //    lblProbationperioddays.Text = days.ToString();
+        //}
+
+        DateTime joingningDate = DateTime.Now;
+        DateTime ProbationperiodEndDate = DateTime.Now;
+        if (txtProbationenddate.Text != "" && txtdateofjoin.Text != "")
+        {
+            ProbationperiodEndDate = Convert.ToDateTime(Convert.ToDateTime(txtProbationenddate.Text).Date.ToString(Constant.DateFormat2));
+            joingningDate = Convert.ToDateTime(Convert.ToDateTime(txtdateofjoin.Text).Date.ToString(Constant.DateFormat2));
+            if (joingningDate <= ProbationperiodEndDate)
+            {
+                double ProbationPeriodDays = (ProbationperiodEndDate - joingningDate).TotalDays;
+                lblProbationperioddays.Text = Convert.ToString(ProbationPeriodDays);
+
+                lblError.InnerText = "";
+                divError.Visible = false;
+            }
+            else
+            {
+                txtProbationenddate.Text = "";
+                lblProbationperioddays.Text = "0";
+                divError.Visible = true;
+                lblError.InnerText = "Date Of Joining must be earlier than Probation end date";
+            }
+            txtTMSId.Text = hidTmsID.Value.ToString();
+        }
+
+    }
+    protected void ddlHodCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int companyId = Convert.ToInt32(ddlHodCompany.SelectedValue);
+
+            var listInchargeCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == companyId).OrderBy(c => c.CategoryName).ToList();
+
+
+            CommonHelper.BindDropDown(ddlHodjobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+            ddlHodjobcategory_SelectedIndexChanged(null, null);
+        }
+        catch (Exception ex) { }
+    }
+    protected void ddlInchargeCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int companyId = Convert.ToInt32(ddlInchargeCompany.SelectedValue);
+            var listInchargeCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == companyId).OrderBy(c => c.CategoryName).ToList();
+            CommonHelper.BindDropDown(ddlInchargejobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+            ddlInchargejobcategory_SelectedIndexChanged(null, null);
+
+        }
+        catch (Exception ex) { }
+    }
+    protected void ddlManagerCompany_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int companyId = Convert.ToInt32(ddlManagerCompany.SelectedValue);
+            var listInchargeCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == companyId).OrderBy(c => c.CategoryName).ToList();
+            CommonHelper.BindDropDown(ddlmanagerjobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+            ddlmanagerjobcategory_SelectedIndexChanged(null, null);
+
+        }
+        catch (Exception ex) { }
+    }
+    public void BindDropdown(int CompanyID, int EmpID)
+    {
+        //int CompanyID = 2000;
+        int? GenderID = context.Setup_Employee.Where(x => x.EmployeeId == EmpID).FirstOrDefault().GenderId;
+        var EmpJobCategory = context.Setup_Category.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.CategoryName).ToList();
+        var listInchargeCategory = context.Setup_Category.Where(c => c.IsActive == true).OrderBy(c => c.CategoryName).ToList();
+        //var EmpDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.DesignationName).ToList();
+        var ListDesignation = context.Setup_Designation.Where(c => c.IsActive == true).OrderBy(c => c.DesignationName).ToList();
+        var listBusinessUnit = context.TS_Setup_BusinessUnit.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.BusinessUnitName).ToList();
+        var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true).OrderBy(c => c.DepartmentName).ToList();
+        var listShift = context.TMS_Setup_Shift.Where(c => c.IsActive == true).OrderBy(c => c.ShiftName).ToList();
+        var ListLeave = context.TMS_Setup_LeaveDefinition.Where(c => c.IsActive == true && c.GenderId == GenderID && c.CompanyId == CompanyID).OrderBy(c => c.Description).ToList();
+        var listCostCenter = context.Setup_CostCenter.Where(c => c.IsActive == true && c.CompanyId == CompanyID).OrderBy(c => c.CostCenterName).ToList();
+        var ListEmployeeType = context.Setup_EmployeeType.Where(c => c.IsActive == true && (c.CompanyId == CompanyID || c.CompanyId == null )).OrderBy(c => c.TypeName).ToList();
+        var ListCompany = context.Setup_Company.Where(x => x.IsActive == true).OrderBy(x => x.CompanyName).ToList();
+        CommonHelper.BindDropDown(ddlJobCategory, EmpJobCategory, "CategoryName", "CategoryId", true, false);
+        CommonHelper.BindDropDown(ddlEmptype, ListEmployeeType, "TypeName", "EmployeeTypeId", true, false);
+        CommonHelper.BindDropDown(ddlLeaveType, ListLeave, "Description", "LeaveDefId", true, false);
+        CommonHelper.BindDropDown(ddlCostCenter, listCostCenter, "CostCenterName", "CostCenterId", true, false);
+        CommonHelper.BindDropDown(ddlTmsShift, listShift, "ShiftName", "ShiftId", true, false);
+        CommonHelper.BindDropDown(ddlDesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        CommonHelper.BindDropDown(ddlManagerdesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        CommonHelper.BindDropDown(ddlBU, listBusinessUnit, "BusinessUnitName", "BusinessUnitID", true, false);
+        CommonHelper.BindDropDown(ddlDept, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+        CommonHelper.BindDropDown(ddlInchargedesignation, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+        CommonHelper.BindDropDown(ddlHodCompany, ListCompany, "CompanyName", "CompanyId", true, false);
+        CommonHelper.BindDropDown(ddlManagerCompany, ListCompany, "CompanyName", "CompanyId", true, false);
+        CommonHelper.BindDropDown(ddlInchargeCompany, ListCompany, "CompanyName", "CompanyId", true, false);
+
+
+
+        var ListRole = context.Setup_Role.Where(c => c.Is_Active == true && c.Role_Code != (int)Constant.Role.SuperAdmin && c.ApplicationId == (int)Constant.Application.HRMS).ToList();
+        CommonHelper.BindDropDown(ddlRole, ListRole, "Role_Name", "Role_Code", true, false);
+
+
+        //ddlHodCompany_SelectedIndexChanged(null, null);
+
+
+
+        CommonHelper.BindDropDown(ddlHodjobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+        ddlHodjobcategory_SelectedIndexChanged(null, null);
+        CommonHelper.BindDropDown(ddlHoddesignation, ListDesignation, "DesignationName", "DesignationId", true, false);
+        ddlHoddesignation_SelectedIndexChanged(null, null);
+
+
+        CommonHelper.BindDropDown(ddlmanagerjobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+        ddlmanagerjobcategory_SelectedIndexChanged(null, null);
+
+        CommonHelper.BindDropDown(ddlInchargejobcategory, listInchargeCategory, "CategoryName", "CategoryId", true, false);
+        ddlInchargejobcategory_SelectedIndexChanged(null, null);
+
+    }
+
+    protected void ddlJobCategory_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        try
+        {
+            int JobCategory = Convert.ToInt32(ddlJobCategory.SelectedValue);
+            if (JobCategory != 0)
+            {
+                var EmpDesignation = context.Setup_Designation.Where(c => c.IsActive == true && c.CategoryId == JobCategory).OrderBy(c => c.DesignationName).ToList();
+                CommonHelper.BindDropDown(ddlDesignation, EmpDesignation, "DesignationName", "DesignationId", true, false);
+                int EmployeeId = Convert.ToInt32(hfEmpID.Value);
+                var ListLeave = context.TMS_Setup_LeaveDefinition.Where(c => c.IsActive == true && c.CategoryId == JobCategory && c.CompanyId == objBase.CompanyId && c.GenderId == context.Setup_Employee.FirstOrDefault(a => a.IsActive == true && a.EmployeeId == EmployeeId).GenderId)
+
+                    .ToList();
+
+
+                CommonHelper.BindDropDown(ddlLeaveType, ListLeave, "Description", "LeaveDefId", true, false);
+
+
+            }
+        }
+        catch { }
+    }
+    protected void ddlBU_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int BuID = Convert.ToInt32(ddlBU.SelectedValue);
+        int? Company = context.TS_Setup_BusinessUnit.FirstOrDefault(x => x.BusinessUnitId == BuID).CompanyId;
+        if (BuID != 0 && Company != null)
+        {
+            var ListDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.BusinessUnitId == BuID && c.CompanyId == Company).OrderBy(c => c.DepartmentName).ToList();
+            CommonHelper.BindDropDown(ddlDept, ListDepartment, "DepartmentName", "DepartmentId", true, false);
+
+        }
+    }
+    protected void ddlDept_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int DeptID = Convert.ToInt32(ddlDept.SelectedValue);
+        if (DeptID != 0)
+        {
+            var listShift = context.TMS_DepartmentShift
+               .Select(rc => new
+               {
+                   ShiftId = rc.TMS_Setup_Shift.ShiftId,
+                   ShiftName = rc.TMS_Setup_Shift.ShiftName,
+                   DepartmentID = rc.DepartmentId,
+                   IsActive = rc.IsActive
+               })
+               .Where(t => t.IsActive == true && t.DepartmentID == DeptID).ToList();
+
+
+            CommonHelper.BindDropDown(ddlTmsShift, listShift, "ShiftName", "ShiftId", true, false);
+
+        }
+
+    }
+
+    private void SendEmailAccessControlAdmin(string EmployeeCode, string Name, string Designation, string Department, int LocationId, DateTime JoinDate)
+    {
+        string EmailTo = "";
+        string EmailText = "<br/>Employee Code : " + EmployeeCode + "<br/>Name : " + Name + "<br/>Designation : " + Designation + "<br/>Department : " + Department
+            + "<br/>Joining Date : " + JoinDate.ToString(Constant.DateFormatMDY);
+
+        EmailText = "<b><u>New Employee Induction</u></b>" + EmailText;
+
+        if (LocationId == (int)Constant.Location.Khi)
+        {
+            EmailTo = System.Configuration.ConfigurationManager.AppSettings["AdminKhiEmail"];
+            Email.SendEmail(EmailTo, "New Employee Induction for Access Control", EmailText, "");
+        }
+        else if (LocationId == (int)Constant.Location.Isb)
+        {
+            EmailTo = System.Configuration.ConfigurationManager.AppSettings["AdminIsbEmail"];
+            Email.SendEmail(EmailTo, "New Employee Induction for Access Control", EmailText, "");
+        }
+    }
+}

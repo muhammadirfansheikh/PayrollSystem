@@ -1,0 +1,335 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Configuration;
+
+public partial class Pages_TMS_Employee_TimeAdjustmentRequest : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    Base b = new Base();
+
+    private long DailyActivityId { get; set; }
+
+    private long TimeAdjustmentId { get; set; }
+
+    private int IsInRequest { get; set; }
+
+    private int EmpId { get; set; }
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(Request.QueryString["daId"]))
+            {
+                DailyActivityId = Convert.ToInt64(Request.QueryString["daId"]);
+            }
+            if (!string.IsNullOrEmpty(Request.QueryString["taId"]))
+            {
+                TimeAdjustmentId = Convert.ToInt64(Request.QueryString["taId"]);
+            }
+            if (!string.IsNullOrEmpty(Request.QueryString["isInRequest"]))
+            {
+                IsInRequest = Convert.ToInt16(Request.QueryString["isInRequest"]);
+            }
+            if (!string.IsNullOrEmpty(Request.QueryString["empId"]))
+            {
+                EmpId = Convert.ToInt32(Request.QueryString["empId"]);
+            }
+            if (!IsPostBack)
+            {
+                BindDropdown();
+                FillData();
+            }
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+
+    private void BindDropdown()
+    {
+        for (int i = 0; i <= 23; i++)
+        {
+            ddlRequestedTimeHour.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+        }
+        for (int i = 0; i <= 59; i++)
+        {
+            ddlRequestedTimeMinute.Items.Add(new ListItem(i.ToString("D2"), i.ToString("D2")));
+        }
+
+        var listReasons = context.TMS_AdjustmentReason.Where(c => c.IsActive == true).ToList();
+        CommonHelper.BindDropDown(ddlReason, listReasons, "AdjustmentReason", "AdjustmentReasonId", true, false);
+    }
+
+    private void FillData()
+    {
+        if (TimeAdjustmentId != 0)
+        {
+            TMS_TimeAdjustmentRequest timeAdjustment = context.TMS_TimeAdjustmentRequest.FirstOrDefault(t => t.TimeAdjustmentRequestId == TimeAdjustmentId);
+
+            lblRequestNo.Text = Convert.ToString(timeAdjustment.TimeAdjustmentRequestId);
+            if (timeAdjustment.CreatedDate != null)
+                lblRequestCreationTime.Text = Convert.ToDateTime(timeAdjustment.CreatedDate).ToString(Constant.DateTimeFormat1);
+            lblEmployeeName.Text = timeAdjustment.TMS_DailyActivity.Setup_Employee.FirstName + " " + timeAdjustment.TMS_DailyActivity.Setup_Employee.LastName;
+            if (timeAdjustment.OriginalDateTime != null)
+                lblOriginalTime.Text = Convert.ToDateTime(timeAdjustment.OriginalDateTime).ToString(Constant.DateTimeFormat1);
+            lblCurrentStatus.Text = timeAdjustment.TMS_Status.StatusName;
+
+            if (timeAdjustment.ApproverId != null)
+            {
+                Setup_Employee empApprover = context.Setup_Employee.FirstOrDefault(emp => emp.EmployeeId == timeAdjustment.ApproverId);
+                if (empApprover != null)
+                {
+                    lblManagedBy.Text = empApprover.FirstName + " " + empApprover.LastName;
+                }
+            }
+            if (timeAdjustment.ApprovedDateTime != null)
+                lblManagedOn.Text = Convert.ToDateTime(timeAdjustment.ApprovedDateTime).ToString(Constant.DateTimeFormat1);
+            lblDayEndProcessed.Text = Convert.ToString(timeAdjustment.DayEndProcess);
+            //lblRequestCreationTime.Text = Convert.ToString(timeAdjustment.CreatedDate);
+            if (timeAdjustment.RequestedDateTime != null)
+                lblRequestedTime.Text = Convert.ToDateTime(timeAdjustment.RequestedDateTime).ToString(Constant.DateTimeFormat1);
+            txtEmployeeComments.Text = timeAdjustment.EmployeeComment;
+            txtManagerComments.Text = timeAdjustment.ApproverComment;
+            ddlReason.SelectedValue = timeAdjustment.AdjustmentReasonId.ToString();
+            lblRequestedTime.Visible = true;
+            txtRequestTime.Visible = false;
+            rfvRequestTime.Enabled = false;
+            ddlRequestedTimeHour.Visible = false;
+            ddlRequestedTimeMinute.Visible = false;
+            btnSend.Visible = false;
+            if (timeAdjustment.StatusId != (int)Constant.TMSStatus.Pending)
+            {
+                btnTakeBack.Visible = false;
+            }
+        }
+        else
+        {
+            TMS_DailyActivity dailyActivity = context.TMS_DailyActivity.FirstOrDefault(t => t.DailyActivityId == DailyActivityId);
+
+            lblEmployeeName.Text = dailyActivity.Setup_Employee.FirstName;
+            if (IsInRequest == 1)
+            {
+                lblOriginalTime.Text = Convert.ToDateTime(dailyActivity.CreatedDate).ToString(Constant.DateFormat) + " " + Convert.ToString(dailyActivity.StartTime);
+                txtRequestTime.Text = Convert.ToDateTime(lblOriginalTime.Text).ToString(Constant.DateFormat);
+                ddlRequestedTimeHour.SelectedValue = Convert.ToDateTime(lblOriginalTime.Text).Hour.ToString("D2");
+                ddlRequestedTimeMinute.SelectedValue = Convert.ToDateTime(lblOriginalTime.Text).Minute.ToString("D2");
+            }
+            else
+            {
+                if (dailyActivity.ModifiedDate == null)
+                {
+                    dailyActivity.ModifiedDate = dailyActivity.CreatedDate;
+                }
+                lblOriginalTime.Text = Convert.ToDateTime(dailyActivity.ModifiedDate).ToString(Constant.DateFormat) + " " + Convert.ToString(dailyActivity.EndTime);
+                txtRequestTime.Text = Convert.ToDateTime(lblOriginalTime.Text).ToString(Constant.DateFormat);
+                if (dailyActivity.EndTime != null)
+                {
+                    ddlRequestedTimeHour.SelectedValue = Convert.ToDateTime(lblOriginalTime.Text).Hour.ToString("D2");
+                    ddlRequestedTimeMinute.SelectedValue = Convert.ToDateTime(lblOriginalTime.Text).Minute.ToString("D2");
+                }
+                else
+                {
+                    ddlRequestedTimeHour.SelectedValue = dailyActivity.ShiftEndTime.Value.Hours.ToString("D2");
+                    ddlRequestedTimeMinute.SelectedValue = dailyActivity.ShiftEndTime.Value.Minutes.ToString("D2");
+                }
+            }
+            lblCurrentStatus.Text = "Not Send";
+
+            btnTakeBack.Visible = false;
+        }
+    }
+
+    protected void btnSend_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            TMS_DailyActivity da = context.TMS_DailyActivity.FirstOrDefault(a => a.DailyActivityId == DailyActivityId);
+            DateTime dtRequestedDateTime = Convert.ToDateTime(txtRequestTime.Text + " " + ddlRequestedTimeHour.SelectedValue + ":" + ddlRequestedTimeMinute.SelectedValue);
+
+            if (da.Processed == true)
+            {
+                ClientScript.RegisterStartupScript(GetType(), "Processed", "alert('Cannot apply adjustment because the current month payroll process has been completed.'); window.close();", true);
+                return;
+            }
+            if (!CanUpdate(da))
+            {
+                ClientScript.RegisterStartupScript(GetType(), "CannotUpdate", "alert('Cannot Apply For Time Adjustment After " + b.RoleTats + " Hours'); window.close();", true);
+                return;
+            }
+
+            if (IsInRequest == 0)
+            {
+                DateTime dtShiftStart = new DateTime(da.CreatedDate.Value.Year, da.CreatedDate.Value.Month, da.CreatedDate.Value.Day
+                    , da.ShiftStartTime.Value.Hours, da.ShiftStartTime.Value.Minutes, da.ShiftStartTime.Value.Seconds);
+                if (dtRequestedDateTime <= dtShiftStart)
+                {
+                    ClientScript.RegisterStartupScript(GetType(), "ShiftGreaterCheck", "alert('Requested DateTime must be greater than Shift Start Time.');", true);
+                    return;
+                }
+            }
+
+            TMS_TimeAdjustmentRequest timeAdjustment = new TMS_TimeAdjustmentRequest();
+
+            timeAdjustment.DailyActivityId = DailyActivityId;
+            timeAdjustment.AdjustmentReasonId = Convert.ToInt32(ddlReason.SelectedValue);
+            timeAdjustment.DayEndProcess = false;
+            timeAdjustment.EmployeeComment = txtEmployeeComments.Text.Trim();
+            timeAdjustment.EmployeeId = EmpId;
+            timeAdjustment.IsTimeOutRequest = (IsInRequest == 0 ? true : false);
+            timeAdjustment.OriginalDateTime = Convert.ToDateTime(lblOriginalTime.Text);
+            timeAdjustment.RequestedDateTime = dtRequestedDateTime;
+            timeAdjustment.StatusId = (int)Constant.TMSStatus.Pending;
+            timeAdjustment.CreatedBy = UserKey;
+            timeAdjustment.CreatedDate = DateTime.Now;
+            timeAdjustment.IsActive = true;
+            timeAdjustment.UserIP = UserIP;
+            timeAdjustment.SiteId = Convert.ToInt16(ConfigurationManager.AppSettings["SiteId"]);
+
+
+            Setup_Employee emp = context.Setup_Employee.FirstOrDefault(p => p.IsActive == true && p.EmployeeId == EmpId);
+
+            if (emp != null)
+            {
+                timeAdjustment.ApproverId = (int)emp.InchargeId;
+                timeAdjustment.CompanyId = Convert.ToInt32(emp.CompanyId);
+            }
+
+            context.TMS_TimeAdjustmentRequest.Add(timeAdjustment);
+            context.SaveChanges();
+
+            long timeadjreqid = timeAdjustment.TimeAdjustmentRequestId;
+
+
+
+            ClientScript.RegisterStartupScript(typeof(Page), "closePage", "window.opener.location.reload(); window.close();", true);
+
+            UploadFile(timeadjreqid);
+
+            //ScriptManager.RegisterStartupScript(this, GetType(), "Window Close", "WindowClose();", true);
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+
+    private void UploadFile(long TimeAdjReqId)
+    {
+        if (FileUpload1.HasFile)
+        {
+            try
+            {
+                string tempPath = "", fileName = "";// fileNameCommaSeparated = ""
+                HttpFileCollection hfc = Request.Files;
+
+                for (int i = 0; i < hfc.Count; i++)
+                {
+                    HttpPostedFile hpf = hfc[i];
+                    if (hpf.ContentLength > 0)
+                    {
+                        fileName = System.IO.Path.GetFileName(hpf.FileName).Replace(" ", "%20");
+
+                        if (System.IO.File.Exists(Server.MapPath(".\\AdjustmentFiles\\") + "" + fileName))
+                        {
+                            fileName = Guid.NewGuid().ToString() + "_" + fileName;
+                        }
+
+                        tempPath = Server.MapPath("~/AdjustmentFiles/" + fileName);
+
+                        //if (!System.IO.File.Exists(tempPath))
+                        //{
+                        hpf.SaveAs(tempPath);
+                        // }
+                        AdjustmentAttachment objattreq = new AdjustmentAttachment();
+
+                        objattreq.FileName = fileName;
+                        objattreq.FilePath = "/AdjustmentFiles/" + fileName;
+                        objattreq.TimeAdjustmentRequestId = TimeAdjReqId;
+                        objattreq.CreatedBy = UserKey;
+                        objattreq.CreatedDate = DateTime.Now;
+                        objattreq.IsActive = true;
+                        objattreq.UserIP = UserIP;
+                        context.AdjustmentAttachments.Add(objattreq);
+                        context.SaveChanges();
+                        // tempPath = @"D:\Development\TimeManagmentSystem\TimeManagementSystem\TMSWeb\TMSWeb\AdjustmentFiles\" + fileName;
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // Master.ShowMessage("", "ERROR: " + ex.Message.ToString());
+                ShowMessage(ex.Message.ToString());
+            }
+        }
+    }
+
+    public void ShowMessage(string Message)
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "importingdone", "alert('" + Message + "');", true);
+    }
+
+    protected void btnTakeBack_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            TMS_TimeAdjustmentRequest timeAdjustment = context.TMS_TimeAdjustmentRequest.FirstOrDefault(t => t.TimeAdjustmentRequestId == TimeAdjustmentId);
+
+            timeAdjustment.ModifiedBy = UserKey;
+            timeAdjustment.ModifiedDate = DateTime.Now;
+            timeAdjustment.IsActive = false;
+
+            context.SaveChanges();
+
+            ClientScript.RegisterStartupScript(typeof(Page), "closePage", "window.opener.location.reload(); window.close();", true);
+        }
+        catch (Exception ex)
+        {
+            lblSummary.Text = ex.Message;
+            divSummary.Attributes.Add("class", "validationSummary");
+            divSummary.Visible = true;
+        }
+    }
+
+    private bool CanUpdate(TMS_DailyActivity da)
+    {
+        if (da != null)
+        {
+            TimeSpan ts = new TimeSpan();
+            DateTime dt = new DateTime();
+            if (IsInRequest == 1)
+            {
+                dt = Convert.ToDateTime(Convert.ToDateTime(da.CreatedDate).ToString("MM/dd/yyyy") + " " + da.StartTime);
+            }
+            else
+            {
+                dt = da.ModifiedDate != null
+                    ? Convert.ToDateTime(Convert.ToDateTime(da.ModifiedDate).ToString("MM/dd/yyyy") + " " + da.EndTime)
+                    : Convert.ToDateTime(Convert.ToDateTime(da.CreatedDate).ToString("MM/dd/yyyy") + " " + da.StartTime);
+            }
+
+            int offHours = CommonHelper.GetTotalOffHours(dt, DateTime.Now, EmpId);
+
+            ts = (TimeSpan)(DateTime.Now - dt);
+
+            if (ts.TotalHours < (Convert.ToInt16(b.RoleTats) + offHours))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}

@@ -1,0 +1,490 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucLifeInsurance : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindDropDown()
+    {
+        var ListRelationship = context.HRMS_Setup_Relationship.Where(c => c.IsActive == true).OrderBy(c => c.RelationshipTitle).ToList();
+        var ListWitness = context.Setup_Employee.Where(c => c.IsActive == true && (c.DepartmentId == (int)Constant.Department.HumanResources || c.DepartmentId == (int)Constant.Department.HumanResourcesTS)).Select(c => new { EmployeeId = c.EmployeeId, EmployeeName = c.FirstName + " " + c.LastName }).ToList();
+        CommonHelper.BindDropDown(ddlWitness, ListWitness, "EmployeeName", "EmployeeId", true, false);
+        CommonHelper.BindDropDown(ddlpfWitness, ListWitness, "EmployeeName", "EmployeeId", true, false);
+        CommonHelper.BindDropDown(ddlNomineerelationship, ListRelationship, "RelationshipTitle", "RelationshipId", true, false);
+        CommonHelper.BindDropDown(ddlpfNomineerelationship, ListRelationship, "RelationshipTitle", "RelationshipId", true, false);
+        CommonHelper.BindDropDown(ddlMedicalInsuranceRelationship, ListRelationship, "RelationshipTitle", "RelationshipId", true, false);
+
+    }
+    public void BindLifeInsuranceRepeater(int EmpID)
+    {
+        var InsuranceDetail = context.HRMS_EmployeeGroupInsurance.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmpID)
+            ).Select(c => new
+            {
+                EmployeeInsuranceId = c.EmployeeInsuranceId,
+                EmployeeId = c.EmployeeId,
+                NomineeName = c.NomineeName,
+                NomineeCNIC = c.NomineeCNIC,
+                NomineeAddress = c.NomineeAddress,
+                NomineeNameforMinor = c.NomineeNameforMinor,
+                NomineeAddressforMonor = c.NomineeAddressforMonor,
+                NomineeRelationship = c.HRMS_Setup_Relationship.RelationshipTitle,
+                IsMinor = c.IsMinor == true ? "YES" : "NO",
+                Percentage = c.SharePercentage,
+                Witness = c.Setup_Employee1 == null ? "" : c.Setup_Employee1.FirstName + " " + c.Setup_Employee1.LastName,
+                Age = c.Age
+
+            }).ToList();
+        RptInsuranceDetail.DataSource = InsuranceDetail;
+        RptInsuranceDetail.DataBind();
+
+        BindRepeaterPFDetail(EmpID);
+        BindMedicalRepeaterInsuranceDetail(EmpID);
+    }
+    private void BindRepeaterPFDetail(int EmployeeId)
+    {
+        var PFDetail = context.HRMS_EmployeeProvidentFundDetail.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmployeeId)
+            ).Select(c => new
+            {
+                EmployeeInsuranceId = c.EmployeeProvidentFundId,
+                EmployeeId = c.EmployeeId,
+                NomineeName = c.NomineeName,
+                NomineeCNIC = c.NomineeCNIC,
+                NomineeAddress = c.NomineeAddress,
+                NomineeNameforMinor = c.NomineeNameforMinor,
+                NomineeAddressforMonor = c.NomineeAddressforMonor,
+                NomineeRelationship = c.NomineeRelationship,
+                IsMinor = c.IsMinor == true ? "YES" : "NO",
+                Percentage = c.SharePercentage,
+                Witness = c.Setup_Employee1 == null ? "" : c.Setup_Employee1.FirstName + " " + c.Setup_Employee1.LastName,
+                Age = c.Age
+            }).ToList();
+        RptPFDetail.DataSource = PFDetail;
+        RptPFDetail.DataBind();
+    }
+    protected void RptInsuranceDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetInsuranceDetail();
+
+            int EmployeeInsuranceId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeInsurance = context.HRMS_EmployeeGroupInsurance.Where(c => c.EmployeeInsuranceId == EmployeeInsuranceId).ToList();
+            if (EmployeeInsurance != null)
+            {
+                HfEmployeeInsuranceId.Value = EmployeeInsuranceId.ToString();
+                txtNomineename.Text = EmployeeInsurance[0].NomineeName;
+                txtNomineeAddress.Text = EmployeeInsurance[0].NomineeAddress;
+                txtNomineenic.Text = EmployeeInsurance[0].NomineeCNIC == null ? "" : EmployeeInsurance[0].NomineeCNIC.ToString();
+                ddlNomineerelationship.SelectedValue = EmployeeInsurance[0].RelationshipId == null ? "0" : Convert.ToString(EmployeeInsurance[0].RelationshipId);
+                ddlWitness.SelectedValue = EmployeeInsurance[0].WitnessId == null ? "0" : EmployeeInsurance[0].WitnessId.ToString();
+                txtNomineeMinorName.Text = EmployeeInsurance[0].NomineeNameforMinor;
+                txtNomineeisMinorAddress.Text = EmployeeInsurance[0].NomineeAddressforMonor;
+                chkIsMinor.Checked = Convert.ToBoolean(EmployeeInsurance[0].IsMinor);
+                txtNomineepercentage.Text = EmployeeInsurance[0].SharePercentage == null ? "0" : Convert.ToString(EmployeeInsurance[0].SharePercentage);
+                txtNomineeMinorAge.Text = EmployeeInsurance[0].Age.ToString();
+                btnLIAdd.Text = "Update";
+            }
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeInsuranceId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeGroupInsurance obj = context.HRMS_EmployeeGroupInsurance.FirstOrDefault(j => j.EmployeeInsuranceId == EmployeeInsuranceId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindLifeInsuranceRepeater(EmpID);
+        }
+    }
+    public void ResetInsuranceDetail()
+    {
+        HfEmployeeInsuranceId.Value = "";
+        txtNomineeAddress.Text = "";
+        txtNomineeisMinorAddress.Text = "";
+        txtNomineeMinorName.Text = "";
+        txtNomineename.Text = "";
+        txtNomineenic.Text = "";
+        txtNomineepercentage.Text = "";
+        txtNomineeMinorAge.Text = "";
+        chkIsMinor.Checked = false;
+    }
+    public void ResetControlPFDetail()
+    {
+        hfEmployeePFId.Value = "";
+        txtpfNomineeaddress.Text = "";
+        txtpfNomineeisminoraddress.Text = "";
+        txtpfNomineeMinorName.Text = "";
+        txtpfNomineename.Text = "";
+        txtpfNomineenic.Text = "";
+        txtpfNomineepercentage.Text = "";
+        txtpfNomineeMinorAge.Text = "";
+        chkpfIsminor.Checked = false;
+    }
+
+    protected void btnLIAdd_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+        int? intnull = null;
+        long? longnull = null;
+        double? doublenull = null;
+        if (HfEmployeeInsuranceId.Value == "")
+        {
+            HRMS_EmployeeGroupInsurance empGroupIns = new HRMS_EmployeeGroupInsurance();
+            empGroupIns.NomineeName = txtNomineename.Text.Trim();
+            empGroupIns.NomineeAddress = txtNomineeAddress.Text.Trim();
+            empGroupIns.NomineeCNIC = txtNomineenic.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtNomineenic.Text.Trim());
+            empGroupIns.RelationshipId = ddlNomineerelationship.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlNomineerelationship.SelectedValue);
+            empGroupIns.WitnessId = ddlWitness.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlWitness.SelectedValue);
+            if (chkIsMinor.Checked)
+            {
+                empGroupIns.IsMinor = chkIsMinor.Checked;
+                empGroupIns.NomineeNameforMinor = txtNomineeMinorName.Text.Trim();
+                empGroupIns.NomineeAddressforMonor = txtNomineeisMinorAddress.Text.Trim();
+                empGroupIns.Age = txtNomineeMinorAge.Text.Trim() == string.Empty ? intnull : Convert.ToInt32(txtNomineeMinorAge.Text.Trim());
+            }
+            empGroupIns.SharePercentage = Convert.ToDouble(txtNomineepercentage.Text.Trim());
+            empGroupIns.IsActive = true;
+            empGroupIns.CreatedBy = objBase.UserKey;
+            empGroupIns.CreatedDate = dt;
+            empGroupIns.EmployeeId = EmpID;
+            context.HRMS_EmployeeGroupInsurance.Add(empGroupIns);
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(empGroupIns.EmployeeInsuranceId.ToString(), "HRMS_EmployeeGroupInsurance", (int)Constant.OperationType.INSERT, objBase.UserKey);
+        }
+        else
+        {
+            int InsuranceID = Convert.ToInt32(HfEmployeeInsuranceId.Value);
+            HRMS_EmployeeGroupInsurance empGroupIns = context.HRMS_EmployeeGroupInsurance.FirstOrDefault(x => x.EmployeeInsuranceId == InsuranceID);
+            empGroupIns.NomineeName = txtNomineename.Text.Trim();
+            empGroupIns.NomineeAddress = txtNomineeAddress.Text.Trim();
+            empGroupIns.NomineeCNIC = txtNomineenic.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtNomineenic.Text.Trim());
+            empGroupIns.RelationshipId = ddlNomineerelationship.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlNomineerelationship.SelectedValue);
+            empGroupIns.WitnessId = ddlWitness.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlWitness.SelectedValue);
+            if (chkIsMinor.Checked)
+            {
+                empGroupIns.IsMinor = chkIsMinor.Checked;
+                empGroupIns.NomineeNameforMinor = txtNomineeMinorName.Text.Trim();
+                empGroupIns.NomineeAddressforMonor = txtNomineeisMinorAddress.Text.Trim();
+                empGroupIns.Age = txtNomineeMinorAge.Text.Trim() == string.Empty ? intnull : Convert.ToInt32(txtNomineeMinorAge.Text.Trim());
+            }
+            else
+            {
+                empGroupIns.IsMinor = false;
+                empGroupIns.NomineeNameforMinor = string.Empty;
+                empGroupIns.NomineeAddressforMonor = string.Empty;
+                empGroupIns.Age = intnull;
+            }
+            empGroupIns.SharePercentage = txtNomineepercentage.Text.Trim() == string.Empty ? doublenull : Convert.ToDouble(txtNomineepercentage.Text.Trim());
+            empGroupIns.IsActive = true;
+            empGroupIns.ModifiedBy = objBase.UserKey;
+            empGroupIns.ModifiedDate = dt;
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(empGroupIns.EmployeeInsuranceId.ToString(), "HRMS_EmployeeGroupInsurance", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+        }
+        BindLifeInsuranceRepeater(EmpID);
+        ResetInsuranceDetail();
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+
+    protected void RptPFDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlPFDetail();
+
+            int EmployeeProvidentFundId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeInsurance = context.HRMS_EmployeeProvidentFundDetail.Where(c => c.EmployeeProvidentFundId == EmployeeProvidentFundId).ToList();
+            if (EmployeeInsurance != null)
+            {
+                hfEmployeePFId.Value = EmployeeProvidentFundId.ToString();
+                txtpfNomineename.Text = EmployeeInsurance[0].NomineeName;
+                txtpfNomineeaddress.Text = EmployeeInsurance[0].NomineeAddress;
+                txtpfNomineenic.Text = EmployeeInsurance[0].NomineeCNIC == null ? "" : EmployeeInsurance[0].NomineeCNIC.ToString();
+                ddlpfNomineerelationship.SelectedValue = EmployeeInsurance[0].RelationshipId == null ? "0" : Convert.ToString(EmployeeInsurance[0].RelationshipId);
+                ddlpfWitness.SelectedValue = EmployeeInsurance[0].WitnessId == null ? "0" : EmployeeInsurance[0].WitnessId.ToString();
+                txtpfNomineeMinorName.Text = EmployeeInsurance[0].NomineeNameforMinor;
+                txtpfNomineeisminoraddress.Text = EmployeeInsurance[0].NomineeAddressforMonor;
+                chkpfIsminor.Checked = Convert.ToBoolean(EmployeeInsurance[0].IsMinor);
+                txtpfNomineepercentage.Text = EmployeeInsurance[0].SharePercentage == null ? "0" : Convert.ToString(EmployeeInsurance[0].SharePercentage);
+                txtpfNomineeMinorAge.Text = EmployeeInsurance[0].Age == null ? "" : Convert.ToString(EmployeeInsurance[0].Age);
+
+                btnpfAdd.Text = "Update";
+            }
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeProvidentFundId = Convert.ToInt32(e.CommandArgument);
+
+            HRMS_EmployeeProvidentFundDetail obj = context.HRMS_EmployeeProvidentFundDetail.FirstOrDefault(j => j.EmployeeProvidentFundId == EmployeeProvidentFundId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterPFDetail(EmpID);
+        }
+    }
+    protected void btnpfAdd_Click(object sender, EventArgs e)
+    {
+        DateTime dt = DateTime.Now;
+        long? longnull = null;
+        int? intnull = null;
+        double? doublenull = null;
+        if (hfEmployeePFId.Value == "")
+        {
+            HRMS_EmployeeProvidentFundDetail obj = new HRMS_EmployeeProvidentFundDetail();
+
+            obj.NomineeName = txtpfNomineename.Text.Trim();
+            obj.NomineeAddress = txtpfNomineeaddress.Text.Trim();
+            obj.NomineeCNIC = txtpfNomineenic.Text.Trim() == string.Empty ? longnull : Convert.ToInt64(txtpfNomineenic.Text.Trim());
+            obj.RelationshipId = ddlpfNomineerelationship.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlpfNomineerelationship.SelectedValue);
+            obj.WitnessId = ddlpfWitness.SelectedValue == "0" ? intnull : Convert.ToInt32(ddlpfWitness.SelectedValue);
+            if (chkpfIsminor.Checked)
+            {
+                obj.IsMinor = chkpfIsminor.Checked;
+                obj.NomineeNameforMinor = txtpfNomineeMinorName.Text.Trim();
+                obj.NomineeAddressforMonor = txtpfNomineeisminoraddress.Text.Trim();
+                obj.Age = txtpfNomineeMinorAge.Text.Trim() == string.Empty ? intnull : Convert.ToInt32(txtpfNomineeMinorAge.Text.Trim());
+            }
+            obj.SharePercentage = txtpfNomineepercentage.Text.Trim() == string.Empty ? doublenull : Convert.ToDouble(txtpfNomineepercentage.Text.Trim());
+            obj.IsActive = true;
+            obj.CreatedBy = objBase.UserKey;
+            obj.CreatedDate = dt;
+            obj.EmployeeId = EmpID;
+            context.HRMS_EmployeeProvidentFundDetail.Add(obj);
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(obj.EmployeeProvidentFundId.ToString(), "HRMS_EmployeeProvidentFundDetail", (int)Constant.OperationType.INSERT, objBase.UserKey);
+
+        }
+        else
+        {
+            int PFID = Convert.ToInt32(hfEmployeePFId.Value);
+            HRMS_EmployeeProvidentFundDetail obj = context.HRMS_EmployeeProvidentFundDetail.FirstOrDefault(x => x.EmployeeProvidentFundId == PFID);
+
+            obj.NomineeName = txtpfNomineename.Text.Trim();
+            obj.NomineeAddress = txtpfNomineeaddress.Text.Trim();
+            obj.NomineeCNIC = Convert.ToInt64(txtpfNomineenic.Text.Trim());
+            obj.RelationshipId = Convert.ToInt32(ddlpfNomineerelationship.SelectedValue);
+            obj.WitnessId = Convert.ToInt32(ddlpfWitness.SelectedValue);
+            if (chkpfIsminor.Checked)
+            {
+                obj.IsMinor = chkpfIsminor.Checked;
+                obj.NomineeNameforMinor = txtpfNomineeMinorName.Text.Trim();
+                obj.NomineeAddressforMonor = txtpfNomineeisminoraddress.Text.Trim();
+                obj.Age = Convert.ToInt32(txtpfNomineeMinorAge.Text.Trim());
+            }
+            else
+            {
+                obj.IsMinor = false;
+                obj.NomineeNameforMinor = string.Empty;
+                obj.NomineeAddressforMonor = string.Empty;
+                obj.Age = 0;
+            }
+            obj.SharePercentage = Convert.ToDouble(txtpfNomineepercentage.Text.Trim());
+            obj.IsActive = true;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+            context.INSERT_INTO_AuditLog(obj.EmployeeProvidentFundId.ToString(), "HRMS_EmployeeProvidentFundDetail", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+
+        }
+        ResetControlPFDetail();
+        BindRepeaterPFDetail(EmpID);
+    }
+    protected void btnAddMedInsurance_Click(object sender, EventArgs e)
+    {
+        if (hfMedicalInsuranceID.Value == string.Empty)
+        {
+            AddMedicalInsurance();
+        }
+        else
+        {
+            UpdateMedicalInsurance();
+        }
+    }
+    protected void rptMedicalInsuranceDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            //ResetControlContactPerson();
+            double? DoubleNull = null;
+            int? Null = null;
+            int EmployeeMedicalInsuranceId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeInsurance = context.HRMS_EmployeeMedicalInsurance.Where(c => c.EmployeeMedicalInsuranceId == EmployeeMedicalInsuranceId).ToList();
+            if (EmployeeInsurance != null)
+            {
+                hfMedicalInsuranceID.Value = EmployeeMedicalInsuranceId.ToString();
+                txtDependentName.Text = EmployeeInsurance[0].DependentName;
+
+                ddlMedicalInsuranceRelationship.SelectedValue = EmployeeInsurance[0].RelationshipId == null ? "0" : Convert.ToString(EmployeeInsurance[0].RelationshipId);
+                txtDateOfBirth.Text = EmployeeInsurance[0].DateOfBirth == null ? "" : EmployeeInsurance[0].DateOfBirth.Value.ToString(Constant.DateFormat2);
+
+                txt_Cnic.Text = EmployeeInsurance[0].CNIC;
+                txtoccupation.Text = EmployeeInsurance[0].Occupation;
+
+                btnAddMedInsurance.Text = "Update";
+            }
+
+
+
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeMEdicalInsuranceId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeMedicalInsurance obj = context.HRMS_EmployeeMedicalInsurance.FirstOrDefault(j => j.EmployeeMedicalInsuranceId == EmployeeMEdicalInsuranceId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindMedicalRepeaterInsuranceDetail(EmpID);
+        }
+    }
+    private void BindMedicalRepeaterInsuranceDetail(int EmployeeId)
+    {
+        var MedicalInsuranceDetail = context.HRMS_EmployeeMedicalInsurance.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmployeeId)
+            ).Select(c => new
+            {
+                EmployeeMedicalInsuranceId = c.EmployeeMedicalInsuranceId,
+                EmployeeId = c.EmployeeId,
+                DependentName = c.DependentName,
+
+                Relationship = c.HRMS_Setup_Relationship.RelationshipTitle,
+                DateOfBirth = c.DateOfBirth,
+                //Age = c.Age,
+                CNIC = c.CNIC,
+                Occupation = c.Occupation,
+                Child = c.Setup_Employee.NoOfChildren,
+                Remarks = c.Remarks
+
+            }).ToList();
+        rptMedicalInsuranceDetail.DataSource = MedicalInsuranceDetail;
+        rptMedicalInsuranceDetail.DataBind();
+    }
+
+    private void AddMedicalInsurance()
+    {
+        long? IntNull = null;
+        int? IntNull32 = null;
+        DateTime? dtnull = null;
+        double? DoubleNull = null;
+        DateTime dt = DateTime.Now;
+        int EmployeeId = EmpID;
+        HRMS_EmployeeMedicalInsurance obj = new HRMS_EmployeeMedicalInsurance();
+        obj.EmployeeId = EmpID;
+        obj.DependentName = txtDependentName.Text.Trim();
+        obj.CNIC = txt_Cnic.Text.Trim() == "" ? null : Convert.ToString(txt_Cnic.Text.Trim());
+        obj.RelationshipId = ddlMedicalInsuranceRelationship.SelectedValue == "0" ? IntNull32 : Convert.ToInt32(ddlMedicalInsuranceRelationship.SelectedValue.Trim());
+        obj.DateOfBirth = txtDateOfBirth.Text.Trim() == string.Empty ? dtnull : Convert.ToDateTime(txtDateOfBirth.Text.Trim());
+        //obj.Remarks = txtRemarks.Text.Trim();
+        obj.Occupation = txtoccupation.Text.Trim();
+
+        obj.CreatedBy = objBase.UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = objBase.UserIP;
+
+        context.HRMS_EmployeeMedicalInsurance.Add(obj);
+        context.SaveChanges();
+
+
+
+        BindMedicalRepeaterInsuranceDetail(EmpID);
+        ResetMedicalControls();
+        context.INSERT_INTO_AuditLog(obj.EmployeeMedicalInsuranceId.ToString(), "HRMS_EmployeeMedicalInsurance", (int)Constant.OperationType.INSERT, objBase.UserKey);
+
+    }
+    private void UpdateMedicalInsurance()
+    {
+        long? IntNull = null;
+        int? IntNull32 = null;
+        double? DoubleNull = null;
+        DateTime dt = DateTime.Now;
+        int EmployeeId = EmpID;
+        int MedicalEmployeeInsuranceId = Convert.ToInt32(hfMedicalInsuranceID.Value);
+        HRMS_EmployeeMedicalInsurance obj = context.HRMS_EmployeeMedicalInsurance.FirstOrDefault(j => j.EmployeeMedicalInsuranceId == MedicalEmployeeInsuranceId);
+        obj.DependentName = txtDependentName.Text.Trim();
+        obj.CNIC = txt_Cnic.Text.Trim() == "" ? null : Convert.ToString(txt_Cnic.Text.Trim());
+        obj.RelationshipId = Convert.ToInt32(ddlMedicalInsuranceRelationship.SelectedValue.Trim());
+        //obj.Relationship = txtRelationship.Text.Trim();
+        obj.DateOfBirth = Convert.ToDateTime(txtDateOfBirth.Text.Trim());
+        //obj.Remarks = txtRemarks.Text.Trim();
+        obj.Occupation = txtoccupation.Text.Trim();
+        //obj.Age = txt_Age.Text == "" ? IntNull32 : Convert.ToInt32(txt_Age.Text);
+        obj.ModifiedBy = objBase.UserKey;
+        obj.ModifiedDate = dt;
+
+        //obj.UserIP = UserIP;
+
+
+        context.SaveChanges();
+
+        //Setup_Employee Emp = context.Setup_Employee.FirstOrDefault(a => a.EmployeeId == EmployeeId && a.IsActive == true);
+
+        //Emp.NoOfChildren = Convert.ToInt32(txtNoOfChildren.Text);
+
+        //context.SaveChanges();
+
+        BindMedicalRepeaterInsuranceDetail(EmpID);
+        ResetMedicalControls();
+        btnAddMedInsurance.Text = "Add";
+        hfMedicalInsuranceID.Value = "";
+        context.INSERT_INTO_AuditLog(obj.EmployeeMedicalInsuranceId.ToString(), "HRMS_EmployeeMedicalInsurance", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+    }
+
+    private void ResetMedicalControls()
+    {
+        txt_Cnic.Text = "";
+        txtoccupation.Text = "";
+        txtDateOfBirth.Text = "";
+        txtDependentName.Text = "";
+        ddlMedicalInsuranceRelationship.SelectedValue = "0";
+        //txtRelationship.Text = "";
+    }
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetInsuranceDetail();
+    }
+    protected void btnCancelMedInsurance_Click(object sender, EventArgs e)
+    {
+        ResetMedicalControls();
+    }
+    protected void btnpfCancel_Click(object sender, EventArgs e)
+    {
+        ResetControlPFDetail();
+    }
+}

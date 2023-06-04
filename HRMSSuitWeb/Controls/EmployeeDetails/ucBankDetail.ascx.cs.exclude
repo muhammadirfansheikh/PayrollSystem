@@ -1,0 +1,178 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Controls_EmployeeDetails_ucBankDetail : System.Web.UI.UserControl
+{
+    Base objBase = new Base();
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    public void BindDropDown()
+    {
+        var ListBank = context.HRMS_Setup_Bank.Where(c => c.IsActive == true).OrderBy(c => c.BankDescription).ToList();
+        CommonHelper.BindDropDown(ddlBank, ListBank, "BankDescription", "BankId", true, false);
+
+        var ListPaymentMode = context.HRMS_Setup_PayMode.Where(c => c.IsActive == true).OrderBy(c => c.PayMode).ToList();
+        CommonHelper.BindDropDown(ddlPaymentMode, ListPaymentMode, "PayMode", "PayModeId", true, false);
+
+        var ListAccountType = context.HRMS_Setup_AccountType.Where(c => c.IsActive == true).OrderBy(c => c.AccountType).ToList();
+        CommonHelper.BindDropDown(ddlAccountType, ListAccountType, "AccountType", "AccountTypeId", true, false);
+
+        if (objBase.IsEmployee)
+        {
+            chkDefault.Enabled = false;
+        }
+        else
+        {
+            chkDefault.Enabled = true;
+        }
+    }
+    public void BindRepeaterEmployeeBankDetail(int EmpID)
+    {
+        var EmployeeBankDetail = context.HRMS_EmployeeBank.Where(c => c.IsActive == true
+                                && (c.EmployeeId == EmpID)
+            ).Select(c => new
+            {
+                EmployeeBankId = c.EmployeeBankId,
+                EmployeeId = c.EmployeeId,
+                AccountNumber = c.AccountNumber,
+                BankId = c.BankId,
+                BankDescription = c.HRMS_Setup_Bank.BankDescription,
+                Default = c.DefaultBank,
+                AccountTypeId = c.AccountTypeId,
+                PayModeId = c.PayModeId,
+                AccountType = c.HRMS_Setup_AccountType.AccountType,
+                PayMode = c.HRMS_Setup_PayMode.PayMode,
+            }).ToList();
+        RptEmployeeBankDetail.DataSource = EmployeeBankDetail;
+        RptEmployeeBankDetail.DataBind();
+    }
+
+    protected void RptEmployeeBankDetail_ItemCommand(object source, RepeaterCommandEventArgs e)
+    {
+        if (e.CommandName == "Edit")
+        {
+
+            ResetControlBankDetail();
+
+            int EmployeeBankId = Convert.ToInt32(e.CommandArgument);
+
+            var EmployeeBank = context.HRMS_EmployeeBank.Where(c => c.EmployeeBankId == EmployeeBankId).ToList();
+            if (EmployeeBank != null)
+            {
+                hfBankDetailId.Value = EmployeeBankId.ToString();
+                txtAccountno.Text = EmployeeBank[0].AccountNumber;
+                ddlBank.SelectedValue = EmployeeBank[0].BankId == null ? "0" : EmployeeBank[0].BankId.ToString();
+                chkDefault.Checked = EmployeeBank[0].DefaultBank == null ? false : Convert.ToBoolean(EmployeeBank[0].DefaultBank);
+                ddlAccountType.SelectedValue = EmployeeBank[0].AccountTypeId == null ? "0" : EmployeeBank[0].AccountTypeId.ToString();
+                ddlPaymentMode.SelectedValue = EmployeeBank[0].PayModeId == null ? "0" : EmployeeBank[0].PayModeId.ToString();
+
+                btnAddBank.Text = "Update";
+            }
+
+        }
+        else if (e.CommandName == "Delete")
+        {
+            int EmployeeBankId = Convert.ToInt32(e.CommandArgument);
+
+
+            HRMS_EmployeeBank obj = context.HRMS_EmployeeBank.FirstOrDefault(j => j.EmployeeBankId == EmployeeBankId);
+
+            DateTime dt = DateTime.Now;
+            obj.IsActive = false;
+            obj.ModifiedBy = objBase.UserKey;
+            obj.ModifiedDate = dt;
+            context.SaveChanges();
+
+            BindRepeaterEmployeeBankDetail(EmpID);
+        }
+    }
+    private void AddBankDetail()
+    {
+        DateTime dt = DateTime.Now;
+        HRMS_EmployeeBank obj = new HRMS_EmployeeBank();
+        obj.EmployeeId = Convert.ToInt32(EmpID);
+        obj.BankId = Convert.ToInt32(ddlBank.SelectedValue);
+        obj.AccountNumber = txtAccountno.Text.Trim();
+        obj.PayModeId = Convert.ToInt32(ddlPaymentMode.SelectedValue);
+        obj.AccountTypeId = Convert.ToInt32(ddlAccountType.SelectedValue);
+
+        obj.CreatedBy = objBase.UserKey;
+        obj.CreatedDate = dt;
+        obj.IsActive = true;
+        obj.UserIP = objBase.UserIP;
+        obj.DefaultBank = chkDefault.Checked;
+        context.HRMS_EmployeeBank.Add(obj);
+        context.SaveChanges();
+
+        BindRepeaterEmployeeBankDetail(EmpID);
+        ResetControlBankDetail();
+        context.INSERT_INTO_AuditLog(obj.BankId.ToString(), "HRMS_EmployeeBank", (int)Constant.OperationType.INSERT, objBase.UserKey);
+
+    }
+
+    private void UpdateBankDetail()
+    {
+        DateTime dt = DateTime.Now;
+        int EmployeeBankId = Convert.ToInt32(hfBankDetailId.Value);
+
+
+        HRMS_EmployeeBank obj = context.HRMS_EmployeeBank.FirstOrDefault(j => j.EmployeeBankId == EmployeeBankId);
+
+        obj.BankId = Convert.ToInt32(ddlBank.SelectedValue);
+        obj.AccountNumber = txtAccountno.Text.Trim();
+        obj.IsActive = true;
+        obj.ModifiedBy = objBase.UserKey;
+        obj.ModifiedDate = dt;
+        obj.DefaultBank = chkDefault.Checked;
+        obj.PayModeId = Convert.ToInt32(ddlPaymentMode.SelectedValue);
+        obj.AccountTypeId = Convert.ToInt32(ddlAccountType.SelectedValue);
+        obj.ModifiedBy = objBase.UserKey;
+        obj.ModifiedDate = dt;
+        obj.IsActive = true;
+       
+        context.SaveChanges();
+
+        BindRepeaterEmployeeBankDetail(EmpID);
+        ResetControlBankDetail();
+        context.INSERT_INTO_AuditLog(obj.BankId.ToString(), "HRMS_EmployeeBank", (int)Constant.OperationType.UPDATE, objBase.UserKey);
+
+    }
+    public void ResetControlBankDetail()
+    {
+        ddlBank.SelectedValue = "0";
+        txtAccountno.Text = "";
+        chkDefault.Checked = false;
+        ddlAccountType.SelectedValue = "0";
+        ddlPaymentMode.SelectedValue = "0";
+    }
+    protected void btnAddBank_Click(object sender, EventArgs e)
+    {
+        if (hfBankDetailId.Value == string.Empty)
+        {
+            AddBankDetail();
+        }
+        else
+        {
+            UpdateBankDetail();
+        }
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+        ResetControlBankDetail();
+    }
+    public void HideBankForEmployee()
+    {
+        divBankForm.Visible = true;
+        divBankRepeater.Visible = true;
+    }
+}

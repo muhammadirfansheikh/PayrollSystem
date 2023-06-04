@@ -1,0 +1,264 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/MasterPage/AdminMaster.master" CodeFile="LeaveApproval.aspx.cs" Inherits="Pages_TMS_Incharge_LeaveApproval" %>
+
+
+<%@ Register Src="~/Controls/Shared/InProgress.ascx" TagName="InProgress" TagPrefix="uc" %>
+
+
+<asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="Server">
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="Server">
+    <div>
+        <div class="row wrapper border-bottom white-bg page-heading">
+            <div class="col-lg-10">
+                <h2>Leave Approval</h2>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="/Pages/Default.aspx">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="/Pages/Default.aspx">TMS</a>
+                    </li>
+                    <li class="active">
+                        <strong>Leave Approval</strong>
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <asp:UpdatePanel ID="UpdatePanel1" runat="server">
+            <ContentTemplate>
+                <div class="col-lg-12 white-bg" style="margin-top: 11px; padding: 0;" runat="server" id="divSearch">
+                    <div class="panel panel-info" style="margin-bottom: 0px;">
+                        <div class="panel-body">
+
+                            <div id="RightContentError" runat="server" visible="false">
+                                <asp:Label ID="LB_Error" runat="server" />
+                            </div>
+                            <div class="form-group col-lg-3" runat="server" id="divGroup">
+                                <label for="exampleInputEmail2" class="">Group</label>
+                                <asp:DropDownList ID="ddlGroup" AutoPostBack="true" OnSelectedIndexChanged="ddlGroup_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span1" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-3" runat="server" id="divCompany">
+                                <label for="exampleInputEmail2" class="">Company</label>
+                                <asp:DropDownList ID="ddlCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlCompany_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span3" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-2" runat="server" id="divLocation">
+                                <label for="exampleInputPassword2">Location</label>
+                                <asp:DropDownList ID="ddlLocation" runat="server" CssClass="form-control" OnSelectedIndexChanged="ddlLocation_SelectedIndexChanged" AutoPostBack="true">
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="Company" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlLocation" InitialValue="0"></asp:RequiredFieldValidator>
+                            </div>
+                            <div class="form-group col-lg-3" runat="server" id="divDept">
+                                <label for="exampleInputEmail2" class="">Department</label>
+                                <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="Search" Text="*" ErrorMessage="Location" ForeColor="Red"
+                                    Display="Dynamic" ControlToValidate="ddlDepartment" InitialValue="0"></asp:RequiredFieldValidator>
+                                <asp:DropDownList ID="ddlDepartment" AutoPostBack="true" OnSelectedIndexChanged="ddlDepartment_SelectedIndexChanged" CssClass="form-control col-lg-12" runat="server">
+                                </asp:DropDownList>
+                                <span id="Span2" style="color: Red; display: none;">*</span>
+                            </div>
+                            <div class="form-group col-lg-3" runat="server" id="divEmployee">
+                                <label for="exampleInputEmail2" class="Label">Employee Name</label>
+                                <asp:DropDownList ID="ddlEmployee" runat="server" CssClass="form-control" AutoPostBack="true"
+                                    OnSelectedIndexChanged="ddlEmployee_SelectedIndexChanged">
+                                </asp:DropDownList>
+                            </div>
+                            <div class="form-group col-lg-12">
+                                <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+                                <asp:Button ID="btnSearch" runat="server" Text="Search" ValidationGroup="Search" CssClass="btn btn-primary pull-right" OnClick="btnSearch_Click" />
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wrapper wrapper-content" runat="server" id="divEmployeeDetails">
+                    <div class="col-lg-12 white-bg" style="margin-top: 11px; padding: 0px;">
+                        <div class="panel panel-info" style="margin: 0;">
+                            <div class="panel-heading">Leave Details</div>
+                            <div class="panel-body">
+
+                                <asp:Repeater ID="RepeaterLeaveApprove" runat="server" OnItemDataBound="RepeaterLeaveApprove_ItemDataBound">
+                                    <HeaderTemplate>
+                                        <table style="width: 100%;" cellpadding="0" cellspacing="0" class="list artistList">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee
+                                                    </th>
+                                                    <th>Reason
+                                                    </th>
+                                                    <th>Type
+                                                    </th>
+                                                    <th>From Date
+                                                    </th>
+                                                    <th>To Date
+                                                    </th>
+                                                    <th>Days
+                                                    </th>
+                                                    <th>Remarks
+                                                    </th>
+                                                    <th>Action
+                                                    </th>
+                                                </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td>
+                                                <%# Eval("object1")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object2")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object3")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object4")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object5")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object6")%>
+                                            </td>
+                                            <td>
+                                                <asp:TextBox ID="Remarks" TextMode="MultiLine" Enabled="false" runat="server" Height="100"
+                                                    CssClass="form-contol verticalResize" Width="98%" Wrap="True" Text='<%# DataBinder.Eval(Container.DataItem, "object7") %>'></asp:TextBox>
+                                                <asp:RequiredFieldValidator ID="RequiredFieldValidatorForRemarks" Enabled="false"
+                                                    Display="Dynamic" runat="server" ControlToValidate="Remarks" ErrorMessage="Must Enter Remarks "
+                                                    ForeColor="Red"></asp:RequiredFieldValidator>
+                                            </td>
+                                            <td style="width: 100px">
+                                                <asp:HiddenField ID="HFStatus" Value='<%# DataBinder.Eval(Container.DataItem, "object8") %>'
+                                                    runat="server" />
+                                                <asp:HiddenField ID="HFLaeaveID" Value='<%# DataBinder.Eval(Container.DataItem, "object9") %>'
+                                                    runat="server" />
+                                                <asp:HiddenField ID="HFLeaveType" Value='<%# DataBinder.Eval(Container.DataItem, "object10") %>'
+                                                    runat="server" />
+                                                <asp:RadioButtonList runat="server" ID="LeaveStatus" CssClass="radioButton" OnSelectedIndexChanged="LeaveStatus_SelectedIndexChanged"
+                                                    AutoPostBack="true" ClientIDMode="AutoID">
+                                                    <asp:ListItem Value="1">Pending</asp:ListItem>
+                                                    <asp:ListItem Value="2">Approve</asp:ListItem>
+                                                    <asp:ListItem Value="3">Reject</asp:ListItem>
+                                                </asp:RadioButtonList>
+                                            </td>
+                                        </tr>
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        <tr id="trEmptyData" runat="server" visible="false">
+                                            <td colspan="8">
+                                                <asp:Label ID="lblEmptyData" Text="No record found." runat="server"></asp:Label>
+                                            </td>
+                                        </tr>
+                                        </thead></table>
+                                    </FooterTemplate>
+                                </asp:Repeater>
+                                <br />
+                                <div style="padding-top: 5px;">
+                                    <asp:Button ID="SaveAllStat" Text="Save" runat="server" CssClass="button1 right"
+                                        OnClick="SaveAllStat_Click" OnClientClick="return confirm('Are you sure you want to save?')" />
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="wrapper wrapper-content" runat="server" id="div1">
+                    <div class="col-lg-12 white-bg" style="margin-top: 11px; padding: 0px;">
+                        <div class="panel panel-info" style="margin: 0;">
+                            <div class="panel-heading">Requests That are not Accepted/Rejected within 62 (Working) Days</div>
+                            <div class="panel-body">
+                                <asp:Repeater ID="Repeater_Odd_Leave" runat="server" OnItemDataBound="Repeater_Odd_Leave_ItemDataBound">
+                                    <HeaderTemplate>
+                                        <table style="width: 100%;" cellpadding="0" cellspacing="0" class="list artistList">
+                                            <thead>
+                                                <tr>
+                                                    <th>Employee
+                                                    </th>
+                                                    <th>Reason
+                                                    </th>
+                                                    <th>Type
+                                                    </th>
+                                                    <th>From Date
+                                                    </th>
+                                                    <th>To Date
+                                                    </th>
+                                                    <th>Days
+                                                    </th>
+                                                    <th>Remarks
+                                                    </th>
+                                                    <th>Action
+                                                    </th>
+                                                </tr>
+                                    </HeaderTemplate>
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td>
+                                                <%# Eval("object1")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object2")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object3")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object4")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object5")%>
+                                            </td>
+                                            <td>
+                                                <%# Eval("object6")%>
+                                            </td>
+                                            <td>
+                                                <asp:TextBox ID="Remarks" TextMode="MultiLine" Enabled="false" runat="server" Height="100"
+                                                    CssClass="form-contol verticalResize" Width="98%" Wrap="True" Text='<%# DataBinder.Eval(Container.DataItem, "object7") %>'></asp:TextBox>
+                                            </td>
+                                            <td style="width: 100px">
+                                                <asp:RadioButtonList runat="server" ID="Old_LeaveStatus" Enabled="false">
+                                                    <asp:ListItem Value="1">Pending</asp:ListItem>
+                                                    <asp:ListItem Value="2">Approve</asp:ListItem>
+                                                    <asp:ListItem Value="3">Reject</asp:ListItem>
+                                                </asp:RadioButtonList>
+                                            </td>
+                                        </tr>
+                                    </ItemTemplate>
+                                    <FooterTemplate>
+                                        <tr id="trEmptyData" runat="server" visible="false">
+                                            <td colspan="8">
+                                                <asp:Label ID="lblEmptyData" Text="No record found." runat="server"></asp:Label>
+                                            </td>
+                                        </tr>
+                                        </thead></table>
+                                    </FooterTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
+        <asp:UpdateProgress ID="UPProgress" runat="server">
+            <ProgressTemplate>
+                <uc:InProgress ID="InProgress" runat="server" />
+            </ProgressTemplate>
+        </asp:UpdateProgress>
+    </div>
+    <script>
+        function pageLoad() {
+            $('.datetime').datepicker({
+                todayBtn: "linked",
+                keyboardNavigation: false,
+                forceParse: false,
+                calendarWeeks: true,
+                autoclose: true,
+                format: 'dd/mm/yyyy'
+                //format: 'mm/dd/yyyy'
+            });
+        }
+    </script>
+</asp:Content>

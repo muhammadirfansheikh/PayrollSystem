@@ -1,0 +1,97 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class Controls_Charts_ucBarChart : System.Web.UI.UserControl
+{
+    public string Labelstring = "[\"January\",\"February\",\"March\",\"April\",\"May\",\"June\"]";
+    public string Datastring = "364,504,605";
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+
+    public void SetChart(List<ListData> lstLabels, List<ListData> lstData, string controlName, List<ListData> colorcode, string Label)
+    {
+        StringBuilder sb = new StringBuilder();
+        //var Productstatus = context.ProductStatus().ToList();
+        sb.Append("[");
+        for (int i = 0; i < lstLabels.Count; i++)
+        {
+            //sb.Append("'" + Productstatus[i].ProductStatus + "'");
+            sb.Append("\"" + lstLabels[i].Data + "\"");
+            if (i == lstLabels.Count - 1)
+            {
+                sb.Append("]");
+            }
+            else if (i < lstLabels.Count)
+            {
+                sb.Append(",");
+            }
+        }
+
+
+
+        StringBuilder sbColor = new StringBuilder();
+        //var Productstatus = context.ProductStatus().ToList();
+        sbColor.Append("[");
+        for (int i = 0; i < lstLabels.Count; i++)
+        {
+            //sb.Append("'" + Productstatus[i].ProductStatus + "'");
+            sbColor.Append("\"" + colorcode[i].Data + "\"");
+            if (i == lstLabels.Count - 1)
+            {
+                sbColor.Append("]");
+            }
+            else if (i < lstLabels.Count)
+            {
+                sbColor.Append(",");
+            }
+        }
+
+        StringBuilder sbData = new StringBuilder();
+        //sbData.Append("[\"");
+        ////var Productstatus = context.ProductStatus().ToList();
+        //for (int i = 0; i < lstData.Count; i++)
+        //{
+        //    //sb.Append("'" + Productstatus[i].ProductStatus + "'");
+        //    sbData.Append("\"" + lstData[i].Data + "\"");
+        //    if (i == lstData.Count - 1)
+        //    {
+        //        sbData.Append("]");
+        //    }
+        //    else if (i < lstData.Count)
+        //    {
+        //        sbData.Append(",");
+        //    }
+        //}
+        //sbData.Append("\"");
+
+
+        sbData.Append("[");
+        for (int i = 0; i < lstData.Count; i++)
+        {
+            //sb.Append("'" + Productstatus[i].ProductStatus + "'");
+            sbData.Append("\"" + lstData[i].Data + "\"");
+            if (i == lstData.Count - 1)
+            {
+                sbData.Append("]");
+            }
+            else if (i < lstData.Count)
+            {
+                sbData.Append(",");
+            }
+        }
+        PopulateValues(sb.ToString(), sbData.ToString(), controlName, sbColor.ToString(), Label);
+        //hfLabels.Value =sb.ToString();
+    }
+    public void PopulateValues(Object Datastring, Object Labelstring, string controlName, string colorcode, string Label)
+    {
+        ScriptManager.RegisterStartupScript(this, GetType(), "PopulateBarValues(" + Datastring + "," + Labelstring + ",'" + controlName + "','" + colorcode + "','" + Label + "')", "PopulateBarValues(" + Datastring + "," + Labelstring + ",'" + controlName + "','" + colorcode + "','" + Label + "');", true);
+    }
+}

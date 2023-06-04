@@ -1,0 +1,80 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.IO;
+
+public partial class Controls_EmployeeDetails_ucDocumentsNew : System.Web.UI.UserControl
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+
+    }
+    #region Custom Methods
+    public void BindAttachmentRepeater(int EmpID)
+    {
+        var Attachments = context.HRMS_EmployeeAttachments.Where(x => x.IsActive == true)
+            .Where(x => x.TargetId == EmpID)
+            .Select(x => new
+            {
+                ID = x.FileId,
+                OriginalName = x.FileOriginalName,
+                FileName = x.Filename,
+                FileComments = x.Filecomments
+            })
+            .ToList();
+        rptAttachments.DataSource = Attachments;
+        rptAttachments.DataBind();
+    }
+    public void Upload(int EmpID)
+    {
+        Base objBase = new Base();
+        Random rnd = new Random();
+        DateTime dt = DateTime.Now;
+        foreach (HttpPostedFile postedFile in fuAttachments.PostedFiles)
+        {
+            HRMS_EmployeeAttachments att = new HRMS_EmployeeAttachments();
+            att.Filecomments = txtComments.Text.Trim();
+            string fileName = Path.GetFileName(postedFile.FileName);
+            att.FileOriginalName = fileName;
+            string ImageName = dt.ToString("ddMMyyy") + "-" + rnd.Next(999999).ToString() + "-" + EmpID + fileName;
+            att.TargetId = EmpID;
+            att.Filename = ImageName;
+            att.IsActive = true;
+            att.CreatedBy = objBase.UserKey;
+            att.CreatedDate = dt;
+            postedFile.SaveAs(Server.MapPath("/Uploads/") + ImageName);
+            context.HRMS_EmployeeAttachments.Add(att);
+            context.SaveChanges();
+        }
+    }
+    #endregion
+    protected void lbDelete_Click(object sender, EventArgs e)
+    {
+        Base objBase = new Base();
+        DateTime dt = DateTime.Now;
+
+        LinkButton btnDelete = (LinkButton)sender;
+        RepeaterItem rptItem = (RepeaterItem)btnDelete.NamingContainer;
+
+        int Id = int.Parse(((System.Web.UI.HtmlControls.HtmlInputHidden)rptItem.FindControl("hfId")).Value);
+        var Att = context.HRMS_EmployeeAttachments.Where(x => x.FileId == Id).FirstOrDefault();
+        Att.IsActive = false;
+        Att.ModifiedBy = objBase.UserKey;
+        Att.ModifiedDate = dt;
+        context.SaveChanges();
+        BindAttachmentRepeater(EmpID);
+    }
+    public int EmpID { get { return Convert.ToInt32(hfEmpID.Value); } set { hfEmpID.Value = value.ToString(); } }
+
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+        Upload(EmpID);
+        BindAttachmentRepeater(EmpID);
+       
+    }
+}

@@ -1,0 +1,363 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RequisitionApproval.ascx.cs" Inherits="Controls_RequisitionWorkflow_RequisitionApproval" %>
+
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Requisition Approval
+    </div>
+
+    <div class="panel-body">
+
+        <div class="panel panel-danger" id="divError" runat="server" visible="false">
+            <div class="panel-heading" id="lblError" runat="server"></div>
+        </div>
+
+        <input type="hidden" runat="server" id="hfRequisitionId" class="hfRequisitionId" value="0" />
+        <input type="hidden" runat="server" id="hfWorkflowTaskDetailId" class="hfWorkflowTaskDetailId" value="0" />
+        <input type="hidden" runat="server" id="hfWorkflowStepDetailId" class="hfWorkflowStepDetailId" value="0" />
+        <input type="hidden" runat="server" id="hfIsControlInitialize" class="hfIsControlInitialize" value="false" />
+        <input type="hidden" runat="server" id="hfTotalLastVacancy" class="hfTotalLastVacancy" value="0" />
+
+        <%--<div class="row">
+
+
+            <div class="form-group col-lg-2" runat="server" id="dvApplyDate" visible="false">
+                <label for="exampleInputPassword2">Last Apply Date</label>
+                <asp:TextBox ID="txtLastApplyDate" runat="server" CssClass="form-control datetime "> </asp:TextBox>
+
+                <asp:RequiredFieldValidator ID="RequiredFieldValidator8" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Last Apply Date" ForeColor="Red"
+                    Display="Dynamic" ControlToValidate="txtLastApplyDate"></asp:RequiredFieldValidator>
+            </div>
+             </div>--%>
+
+        <div class="form-group col-lg-2">
+
+            <div class="col-lg-12">
+                <%--<asp:RadioButton ID="rdbtnApprove" runat="server" Text="Approve" GroupName="AppRej" Checked="true" />
+
+                <asp:RadioButton ID="rdbtnReject" runat="server" Text="Reject" GroupName="AppRej" />--%>
+
+                <asp:RadioButtonList ID="rdbtnlstDecision" runat="server" CssClass="rdbtnlstDecision"></asp:RadioButtonList>
+            </div>
+
+        </div>
+
+        <div class="form-group col-lg-2" runat="server" id="dvApprovedVacancy" visible="false">
+            <label for="exampleInputPassword2">Approved Vacancies</label>
+            <asp:TextBox ID="txtTotalVacancies" runat="server" CssClass="form-control numeric txtTotalVacancies" Text="0" Enabled="true"></asp:TextBox>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Total Vacancies" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtTotalVacancies"></asp:RequiredFieldValidator>
+        </div>
+
+
+
+        <div class="form-group col-lg-8">
+            <label for="exampleInputPassword2">Comments</label>
+            <asp:TextBox ID="txtComments" runat="server" TextMode="MultiLine" CssClass="form-control"> </asp:TextBox>
+
+
+        </div>
+
+
+
+        <div class="project-list" id="divReplacement" runat="server">
+
+            <div class="row m-b-sm m-t-sm" style="margin: 0px;">
+                <div class="col-md-12 panel-default">
+                    <div class="panel-heading" style="padding-top: 0px; padding-bottom: 0px;">
+                        <h2 class="panel-title" style="font-size: x-large; text-align: center;">Replacement
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee Name</th>
+                        <th>Employee Code</th>
+                        <th style="width: 170px; text-align: center;">
+                            <asp:CheckBox ID="chkSelectAll" runat="server" Checked="false" CssClass="form-control i-checks" Text="Select" Enabled="false" />
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="tbody">
+                    <asp:Repeater ID="rpt" runat="server" OnItemDataBound="rpt_ItemDataBound">
+                        <ItemTemplate>
+                            <tr>
+                                <td class="project-title">
+                                    <input type="hidden" runat="server" id="hfEmployeeId" class="hfEmployeeId" value='<%# Eval("EmployeeId") %>' />
+                                    <%# Eval("EmployeeName") %>
+                                </td>
+                                <td class="project-completion">
+                                    <%# Eval("EmployeeCode") %>
+                                </td>
+                                <td class="project-actions">
+                                    <asp:CheckBox ID="chkIsSelect" runat="server" Checked='  <%# Convert.ToBoolean (Eval("IsApproved")) %>' CssClass="form-control i-checks chkIsReplacement" Enabled="false" />
+                                </td>
+                            </tr>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </tbody>
+            </table>
+
+        </div>
+
+        <div class="form-group col-lg-12">
+            <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default pull-right" OnClick="btnCancel_Click" />
+            <asp:Button ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary pull-right btnSearch" OnClick="btnSave_Click" ValidationGroup="Save" />
+
+            <asp:CustomValidator ID="customValidatorUpload" runat="server" ErrorMessage="" ValidationGroup="Save"
+                ClientValidationFunction="Validate" EnableClientScript="true" />
+
+            <asp:CustomValidator ID="customValidatorReplacement" runat="server" ErrorMessage="" ValidationGroup="Save"
+                ClientValidationFunction="ValidateReplacement" EnableClientScript="true" />
+
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+    function pageLoad() {
+
+        RadioButtonClick();
+
+    }
+
+    function OpenDialog(a, b, c, Url) {
+
+        sweetAlert(a, b, c),
+        setTimeout(function () {
+
+            if (Url != '#') {
+                window.location.replace(Url);
+            }
+        }, 2000);
+
+    }
+
+    function Validate(source, args) {
+        //debugger;
+        //var decisionId = $('.rdbtnlstDecision input').find('input:radio:checked').not('input:radio[value=0]').val();
+
+        //alert($('.hfWorkflowStepDetailId').val());
+        //debugger;
+        if ($('.hfWorkflowStepDetailId').val() > 0) {
+
+            var stepDetailId = $('.hfWorkflowStepDetailId').val();
+            var decisionId = $('.rdbtnlstDecision').find('input:radio:checked').not('input:radio[value=0]').val();
+
+            //alert(decisionId);
+            var approveVacancy = $('.txtTotalVacancies').val();
+            var totalVacancy = $('.hfTotalLastVacancy').val();
+
+            //alert(stepDetailId);
+
+            if (stepDetailId != 7) {
+                if (decisionId == 93 || decisionId == 95) {
+
+                    if (totalVacancy >= approveVacancy) {
+
+                        if (approveVacancy > 0) {
+
+                            if (decisionId == 95) {
+                                if (totalVacancy > approveVacancy) {
+                                    args.IsValid = true;
+                                    return;
+                                }
+                                else {
+                                    alert("Negotiated Vacancies should not be more than or Equal to Total Vacancies");
+                                    args.IsValid = false;
+                                    return;
+                                }
+                            }
+                            else if (decisionId == 93) {
+                                if (totalVacancy == approveVacancy) {
+                                    args.IsValid = true;
+                                    return;
+                                }
+                                else {
+                                    alert("Approved Vacancies should be Equal to Total Vacancies");
+                                    args.IsValid = false;
+                                    return;
+                                }
+                            }
+
+                        }
+                        else {
+
+                            alert("Approved Vacancies should be greater than Zero");
+                            args.IsValid = false;
+                            return;
+                        }
+
+                    }
+                    else {
+
+                        if (stepDetailId == 9 || stepDetailId == 7) {
+                            args.IsValid = true;
+                            return;
+                        }
+                        else {
+                            alert("Approved Vacancies should not be more than Total Vacancies");
+                            args.IsValid = false;
+                            return;
+                        }
+                    }
+                }
+                else {
+
+                    if (decisionId == 94) {
+                        if (approveVacancy == 0) {
+                            args.IsValid = true;
+                            return;
+                        }
+                        else {
+
+                            alert("Rejected Vacancies should not be Equal to Zero");
+                            args.IsValid = false;
+                            return;
+                        }
+                    }
+                    //args.IsValid = true;
+                    //return;
+                }
+            }
+            else {
+                args.IsValid = true;
+                return;
+            }
+
+
+        } else {
+            args.IsValid = true;
+            return;
+        }
+    }
+
+    function Validate1(source, args) {
+        //debugger;
+        //var decisionId = $('.rdbtnlstDecision input').find('input:radio:checked').not('input:radio[value=0]').val();
+
+        //alert($('.hfWorkflowStepDetailId').val());
+        //debugger;
+        //if ($('.hfWorkflowStepDetailId').val() > 0) {
+        var decisionId = $('.rdbtnlstDecision').find('input:radio:checked').not('input:radio[value=0]').val();
+
+        //alert(decisionId);
+        var approveVacancy = $('.hfTotalLastVacancy').val();
+        var totalVacancy = $('.txtTotalVacancies').val();
+
+        if (decisionId == 95) {
+
+            if (totalVacancy < approveVacancy) {
+                if (totalVacancy > 0) {
+                    args.IsValid = true;
+                    return;
+                }
+                else {
+                    alert("Negotiated Vacancies should be more than Zero");
+                    args.IsValid = false;
+                    return;
+                }
+            }
+            else {
+                alert("Negotiated Vacancies should not be equal to Total Vacancies");
+                args.IsValid = false;
+                return;
+            }
+        }
+        else {
+            args.IsValid = true;
+            return;
+        }
+        //} else {
+        //    args.IsValid = true;
+        //    return;
+        //}
+    }
+
+    function ValidateReplacement(source, args) {
+        //debugger;
+        if ($('.hfWorkflowStepDetailId').val() == 7) {
+
+            var decisionId = $('.rdbtnlstDecision').find('input:radio:checked').not('input:radio[value=0]').val();
+
+            if ($('.chkIsReplacement').find('input:checkbox').is(':checked')) {
+
+                var allCheckedCount = $('.tbody').find('input:checkbox:checked').not('input:checkbox[value=0]').size();
+                var totalVacancy = $('.txtTotalVacancies').val();
+
+                if ($('.hfWorkflowStepDetailId').val() > 0) {
+                    totalVacancy = $('.txtTotalVacancies').val();
+                    //alert(totalVacancy);
+                }
+
+                if (allCheckedCount == totalVacancy) {
+                    //alert("A");
+                    args.IsValid = true;
+                    return;
+                }
+                else {
+
+                    if (decisionId == 94) {
+                        args.IsValid = true;
+                        return;
+                    }
+                    else {
+                        alert("Total Vacancies and Replacement are not equal");
+                        args.IsValid = false;
+                        return;
+                    }
+                }
+            }
+            else {
+                //alert("C");
+                args.IsValid = true;
+                return;
+            }
+        }
+        else {
+            args.IsValid = true;
+            return;
+        }
+    }
+
+    function RadioButtonClick() {
+
+        var stepDetailId = $('.hfWorkflowStepDetailId').val();
+
+        if (stepDetailId != 7) {
+            $('.rdbtnlstDecision input').change(function () {
+
+                //alert($(this).val());
+
+                if ($(this).val() == 93) {
+
+                    //txtTotalVacancies
+                    //$('.txtTotalVacancies')
+                    $('.txtTotalVacancies').val($('.hfTotalLastVacancy').val());
+                    //alert($('.hfWorkflowStepDetailId').val());
+                    if ($('.hfWorkflowStepDetailId').val() != 9) {
+                        //$('.txtTotalVacancies').prop('disabled', true);
+                        $('.txtTotalVacancies').prop('disabled', false);
+                    }
+                    else {
+                        $('.txtTotalVacancies').prop('disabled', false);
+                    }
+                }
+                else if ($(this).val() == 94) {
+
+                    $('.txtTotalVacancies').val(0);
+                    //$('.txtTotalVacancies').prop('disabled', true);
+                    $('.txtTotalVacancies').prop('disabled', false);
+                }
+                else if ($(this).val() == 95) {
+
+                    $('.txtTotalVacancies').prop('disabled', false);
+                }
+            });
+        }
+    }
+
+</script>

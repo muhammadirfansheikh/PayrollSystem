@@ -1,0 +1,347 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Globalization;
+
+public partial class controls_InOutTiming : System.Web.UI.UserControl
+{
+    public int EmployeeId { get; set; }
+    public DateTime DateFrom { get; set; }
+    public DateTime DateTo { get; set; }
+    public bool IsIncharge { get; set; }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    Base baseClass = new Base();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+            if (baseClass.IsSuperAdmin)
+            {
+                tdDepartmentControl.Visible = true;
+                tdEmployeeControl.Visible = true;
+            }
+            else if (baseClass.RoleCode == roleAdmin)
+            {
+                tdEmployeeControl.Visible = IsIncharge;
+            }
+
+            if (!IsPostBack)
+            {
+                BindDropdown();
+                if (DateTime.Now.Day >= 22)
+                    rbMonthWise.Checked = true;
+                else
+                    rbPayrollWise.Checked = true;
+                BindRepeater();
+            }
+        }
+        catch (Exception ex) { }
+    }
+
+  
+    private void BindDropdown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+        var ts_dept = context.TS_EmployeeDepartmentHirerarchy(baseClass.UserKey);
+
+        //if (baseClass.IsSuperAdmin || (baseClass.RoleCode == roleAdmin))
+        //{
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", true, false);
+        //}
+        //else
+        //{
+        //  int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+        var employees = context.Setup_Employee.Where(e => e.IsActive == true && (e.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin))) //|| (baseClass.RoleCode == roleAdmin && e.CompanyId == baseClass.CompanyId)
+            .OrderBy(e => e.EmployeeCode)
+            .Select(e => new
+            {
+                EmployeeId = e.EmployeeId,
+                Name = e.EmployeeCode + " - " + e.FirstName + " " + e.LastName
+            })
+            .ToList();
+
+        CommonHelper.BindDropDown(ddlEmployee, employees, "Name", "EmployeeId", true, false);
+
+        //}
+
+
+
+
+        for (int i = 2010; i <= DateTime.Now.Year; i++)
+        {
+            ddlYear.Items.Add(new ListItem(i.ToString(), i.ToString()));
+        }
+        ddlYear.SelectedValue = DateTime.Now.Year.ToString();
+
+        for (int i = 1; i <= 12; i++)
+        {
+            ddlMonth.Items.Add(new ListItem(CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i), i.ToString()));
+        }
+        ddlMonth.SelectedValue = DateTime.Now.Month.ToString();
+    }
+
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex) { }
+    }
+
+    private void BindRepeater()
+    {
+        if (IsIncharge)
+            EmployeeId = Convert.ToInt32(ddlEmployee.SelectedValue);
+        else
+            EmployeeId = baseClass.UserKey;
+
+        if (rbMonthWise.Checked)
+        {
+            DateFrom = Convert.ToDateTime(ddlMonth.SelectedValue + "/1/" + ddlYear.SelectedValue);
+            DateTo = Convert.ToDateTime(ddlMonth.SelectedValue + "/" + DateTime.DaysInMonth(DateFrom.Year, DateFrom.Month) + "/" + ddlYear.SelectedValue + " 23:59:59");
+        }
+        if (rbPayrollWise.Checked)
+        {
+            TMS_MonthEndParameter parameter = context.TMS_MonthEndParameter.FirstOrDefault();
+
+            int month = Convert.ToInt16(ddlMonth.SelectedValue) == 1 ? 13 : Convert.ToInt16(ddlMonth.SelectedValue);
+            int year = Convert.ToInt16(ddlMonth.SelectedValue) == 1 ? (Convert.ToInt16(ddlYear.SelectedValue) - 1) : Convert.ToInt16(ddlYear.SelectedValue);
+
+            DateFrom = Convert.ToDateTime(Convert.ToString((month - 1)) + "/" + parameter.MonthEnd_StartDate.ToString() + "/" + year.ToString());
+            DateTo = Convert.ToDateTime(ddlMonth.SelectedValue + "/" + parameter.MonthEnd_EndDate.ToString() + "/" + ddlYear.SelectedValue + " 23:59:59");
+        }
+
+        var timeAdjustment = context.TMS_usp_TimeAdjustmentList(DateFrom, DateTo, EmployeeId, false).ToList();
+
+        rptInOutTiming.DataSource = timeAdjustment;
+        rptInOutTiming.DataBind();
+    }
+
+    protected void rptInOutTiming_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+            HiddenField hfDateValue = (HiddenField)e.Item.FindControl("hfDateValue");
+            HiddenField hfCreatedDate = (HiddenField)e.Item.FindControl("hfCreatedDate");
+            HiddenField hfStartTime = (HiddenField)e.Item.FindControl("hfStartTime");
+            HiddenField hfModifiedDate = (HiddenField)e.Item.FindControl("hfModifiedDate");
+            HiddenField hfEndTime = (HiddenField)e.Item.FindControl("hfEndTime");
+            HiddenField hfDailyActivityId = (HiddenField)e.Item.FindControl("hfDailyActivityId");
+            HiddenField hfTimeAdjStatusIn = (HiddenField)e.Item.FindControl("hfTimeAdjStatusIn");
+            HiddenField hfTimeAdjStatusOut = (HiddenField)e.Item.FindControl("hfTimeAdjStatusOut");
+            HiddenField hfIsLateStartTime = (HiddenField)e.Item.FindControl("hfIsLateStartTime");
+            HiddenField hfIsLateEndTime = (HiddenField)e.Item.FindControl("hfIsLateEndTime");
+
+            Label lblTimeIn = (Label)e.Item.FindControl("lblTimeIn");
+            Label lblTimeOut = (Label)e.Item.FindControl("lblTimeOut");
+
+            DateTime dtDateValue = Convert.ToDateTime(hfDateValue.Value);
+
+            if (string.IsNullOrEmpty(hfDailyActivityId.Value))
+            {
+                lblTimeIn.Text = Convert.ToDateTime(hfDateValue.Value).ToString(Constant.DateFormat1);
+
+                int day = dtDateValue.Day;
+                int month = dtDateValue.Month;
+                int year = dtDateValue.Year;
+
+                var daCheck = context.TMS_usp_DailyActivityCheck(day, month, year, EmployeeId).FirstOrDefault();
+
+                if (daCheck != null)
+                {
+                    //daCheck.CalendarDay
+                    if (daCheck == (int)Constant.TMSDayTypes.Holiday || daCheck == (int)Constant.TMSDayTypes.Off)
+                    {
+                        lblTimeOut.Text = "Off Day";
+                    }
+                    else
+                    {
+                        TMS_LeaveApplied leaveApplied = context.TMS_LeaveApplied
+                            .FirstOrDefault(la => la.FromDate <= dtDateValue && la.ToDate >= dtDateValue && la.EmployeeId == EmployeeId && la.IsActive == true); //&& la.LeaveStatusId == (int)Constant.TMSStatus.Approved
+
+                        if (leaveApplied != null)
+                        {
+                            lblTimeOut.Text = "<a style='text-decoration: underline;' onclick='OpenPopup(\"/pages/tms/employee/ViewAppliedLeave.aspx?LeaveID=" + Convert.ToString(leaveApplied.LeaveAppliedId) + "\")'>" + leaveApplied.TMS_Setup_LeaveTypes.LeaveName + " Leave " + (Constant.TMSStatus)leaveApplied.LeaveStatusId + "</a>";
+                            //lblTimeOut.Text = "<a href='/pages/ViewAppliedLeave.aspx?LeaveID=" + Convert.ToString(leaveApplied.LeaveAppliedId) + "'>" + leaveApplied.LeaveType.LeaveName + " Leave " + (Constant.TMSStatus)leaveApplied.LeaveStatusId + "</a>";
+                        }
+                        else
+                            lblTimeOut.Text = "Absent";
+                    }
+                }
+            }
+            else
+            {
+                if (hfIsLateStartTime.Value.ToLower() == "true") //hfTimeAdjStatusIn.Value != Convert.ToString((int)Constant.TMSStatus.Approved) && 
+                {
+                    lblTimeIn.CssClass = "red";
+                }
+
+                lblTimeIn.Text = string.IsNullOrEmpty(hfCreatedDate.Value)
+                    ? Convert.ToDateTime(hfDateValue.Value).ToString(Constant.DateFormat1)
+                    : Convert.ToDateTime(hfCreatedDate.Value).ToString(Constant.DateFormat1) + " " + hfStartTime.Value;
+
+                if (hfIsLateEndTime.Value.ToLower() == "true") //hfTimeAdjStatusOut.Value != Convert.ToString((int)Constant.TMSStatus.Approved) && 
+                {
+                    lblTimeOut.CssClass = "red";
+                }
+
+                lblTimeOut.Text = string.IsNullOrEmpty(hfModifiedDate.Value) ? "" : Convert.ToDateTime(hfModifiedDate.Value).ToString(Constant.DateFormat1) + " " + hfEndTime.Value;
+
+
+                Image imgActivityDetail = (Image)e.Item.FindControl("imgActivityDetail");
+                if (imgActivityDetail != null)
+                {
+                    imgActivityDetail.Visible = true;
+                }
+
+                Repeater rptChildMultipleInOut = (Repeater)e.Item.FindControl("rptChildMultipleInOut");
+                if (rptChildMultipleInOut != null)
+                {
+                    var timeAdjustment = context.TMS_usp_TimeAdjustmentList(dtDateValue, dtDateValue, EmployeeId, true).ToList();
+
+                    if (timeAdjustment.Count > 1)
+                    {
+                        rptChildMultipleInOut.DataSource = timeAdjustment;
+                        rptChildMultipleInOut.DataBind();
+
+                        //System.Web.UI.HtmlControls.HtmlTableRow trMultipleInOut = (System.Web.UI.HtmlControls.HtmlTableRow)e.Item.FindControl("trMultipleInOut");
+                        Image imgExpandCollapse = (Image)e.Item.FindControl("imgExpandCollapse");
+                        if (imgExpandCollapse != null)
+                        {
+                            imgExpandCollapse.Visible = true;
+                        }
+
+                        Label lblStatusImageIn = (Label)e.Item.FindControl("lblStatusImageIn");
+                        Label lblStatusImageOut = (Label)e.Item.FindControl("lblStatusImageOut");
+
+                        if (lblStatusImageIn != null && lblStatusImageOut != null)
+                        {
+                            lblStatusImageIn.Visible = false;
+                            lblStatusImageOut.Visible = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected void rptChildMultipleInOut_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+        {
+            HiddenField hfDateValue = (HiddenField)e.Item.FindControl("hfDateValue");
+            HiddenField hfCreatedDate = (HiddenField)e.Item.FindControl("hfCreatedDate");
+            HiddenField hfStartTime = (HiddenField)e.Item.FindControl("hfStartTime");
+            HiddenField hfModifiedDate = (HiddenField)e.Item.FindControl("hfModifiedDate");
+            HiddenField hfEndTime = (HiddenField)e.Item.FindControl("hfEndTime");
+            HiddenField hfDailyActivityId = (HiddenField)e.Item.FindControl("hfDailyActivityId");
+            HiddenField hfTimeAdjStatusIn = (HiddenField)e.Item.FindControl("hfTimeAdjStatusIn");
+            HiddenField hfTimeAdjStatusOut = (HiddenField)e.Item.FindControl("hfTimeAdjStatusOut");
+            HiddenField hfIsLateStartTime = (HiddenField)e.Item.FindControl("hfIsLateStartTime");
+            HiddenField hfIsLateEndTime = (HiddenField)e.Item.FindControl("hfIsLateEndTime");
+
+            Label lblTimeIn = (Label)e.Item.FindControl("lblTimeIn");
+            Label lblTimeOut = (Label)e.Item.FindControl("lblTimeOut");
+
+            DateTime dtDateValue = Convert.ToDateTime(hfDateValue.Value);
+
+            if (string.IsNullOrEmpty(hfDailyActivityId.Value))
+            {
+                lblTimeIn.Text = Convert.ToDateTime(hfDateValue.Value).ToString(Constant.DateFormat1);
+
+                int day = dtDateValue.Day;
+                int month = dtDateValue.Month;
+                int year = dtDateValue.Year;
+
+                var daCheck = context.TMS_usp_DailyActivityCheck(day, month, year, EmployeeId).FirstOrDefault();
+
+                if (daCheck != null)
+                {
+                    //daCheck.CalendarDay
+                    if (daCheck == (int)Constant.TMSDayTypes.Holiday || daCheck == (int)Constant.TMSDayTypes.Off)
+                    {
+                        lblTimeOut.Text = "Off Day";
+                    }
+                    else
+                    {
+                        TMS_LeaveApplied leaveApplied = context.TMS_LeaveApplied
+                            .FirstOrDefault(la => la.FromDate <= dtDateValue && la.ToDate >= dtDateValue && la.EmployeeId == EmployeeId && la.IsActive == true); //&& la.LeaveStatusId == (int)Constant.TMSStatus.Approved
+
+                        if (leaveApplied != null)
+                        {
+                            lblTimeOut.Text = "<a style='text-decoration: underline;' onclick='OpenPopup(\"/pages/ViewAppliedLeave.aspx?LeaveID=" + Convert.ToString(leaveApplied.LeaveAppliedId) + "\")'>" + leaveApplied.TMS_Setup_LeaveTypes.LeaveName + " Leave " + (Constant.TMSStatus)leaveApplied.LeaveStatusId + "</a>";
+                            //lblTimeOut.Text = "<a href='/pages/ViewAppliedLeave.aspx?LeaveID=" + Convert.ToString(leaveApplied.LeaveAppliedId) + "'>" + leaveApplied.LeaveType.LeaveName + " Leave " + (Constant.TMSStatus)leaveApplied.LeaveStatusId + "</a>";
+                        }
+                        else
+                            lblTimeOut.Text = "Absent";
+                    }
+                }
+            }
+            else
+            {
+                if (hfIsLateStartTime.Value.ToLower() == "true") //hfTimeAdjStatusIn.Value != Convert.ToString((int)Constant.TMSStatus.Approved) && 
+                {
+                    lblTimeIn.CssClass = "red";
+                }
+
+                lblTimeIn.Text = string.IsNullOrEmpty(hfCreatedDate.Value)
+                    ? Convert.ToDateTime(hfDateValue.Value).ToString(Constant.DateFormat1)
+                    : Convert.ToDateTime(hfCreatedDate.Value).ToString(Constant.DateFormat1) + " " + hfStartTime.Value;
+
+                if (hfIsLateEndTime.Value.ToLower() == "true") //hfTimeAdjStatusOut.Value != Convert.ToString((int)Constant.TMSStatus.Approved) && 
+                {
+                    lblTimeOut.CssClass = "red";
+                }
+
+                lblTimeOut.Text = string.IsNullOrEmpty(hfModifiedDate.Value) ? "" : Convert.ToDateTime(hfModifiedDate.Value).ToString(Constant.DateFormat1) + " " + hfEndTime.Value;
+
+                Image imgActivityDetail = (Image)e.Item.FindControl("imgActivityDetail");
+                if (imgActivityDetail != null)
+                {
+                    imgActivityDetail.Visible = true;
+                }
+            }
+        }
+    }
+
+    protected void ddlDepartment_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+        var employees = context.Setup_Employee.Where(a => a.IsActive == true && a.DepartmentId == departmentId && (a.InchargeId == baseClass.UserKey || baseClass.IsSuperAdmin == true || (baseClass.RoleCode == roleAdmin))) //|| (baseClass.RoleCode == roleAdmin && a.CompanyId == baseClass.CompanyId)
+           .OrderBy(b => b.EmployeeCode)
+           .Select(c => new
+           {
+               EmployeeId = c.EmployeeId,
+               Name = c.EmployeeCode + " - " + c.FirstName + " " + c.LastName
+           })
+           .ToList();
+
+        CommonHelper.BindDropDown(ddlEmployee, employees, "Name", "EmployeeId", true, false);
+
+
+    }
+}

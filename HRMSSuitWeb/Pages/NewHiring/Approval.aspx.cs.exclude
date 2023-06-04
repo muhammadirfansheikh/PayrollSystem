@@ -1,0 +1,101 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+
+public partial class Pages_NewHiring_Approval : Base
+{
+    #region Properties
+    public string Id
+    {
+        get
+        {
+            return Request.QueryString["id"];
+        }
+    }
+    public string WorkflowStepDetailId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowStepDetailId"];
+        }
+    }
+    public string WorkflowMasterId
+    {
+        get
+        {
+            return Request.QueryString["WorkflowMasterId"];
+        }
+    }
+    #endregion
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        try
+        {
+            if (!IsPostBack)
+            {
+                if (Id != "" && Id != "0")
+                {
+                    int WorkflowItemId = Convert.ToInt32(Id);
+                    int WorkflowStepDetailId_INT = Convert.ToInt32(WorkflowStepDetailId);
+                    bool IsApprovalTask = false;
+
+                    //if (CommonHelper.CheckTask(Convert.ToInt32(WorkflowMasterId), WorkflowStepDetailId_INT, UserKey))
+                    //{
+
+                    //}
+
+                    var lst = context.HRMS_WorkflowStepActionDetail.Where(a => a.IsActive == true && a.WorkflowStepDetailId == WorkflowStepDetailId_INT).ToList();
+
+                    if (lst != null)
+                    {
+                        for (int i = 0; i < lst.Count; i++)
+                        {
+                            if (lst[i].IsApproved == false)
+                            {
+                                IsApprovalTask = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (WorkflowStepDetailId_INT == (int)Constant.WorkflowStepNewHiring.NadraVerisys)
+                    {
+                        IsApprovalTask = true;
+                    }
+
+                    ucTask.IsControlInitialize = true;
+                    ucTask.WorkflowItemId = WorkflowItemId;
+                    ucTask.IsApprovalTask = IsApprovalTask;
+                    ucTask.WorkflowStepDetailId = WorkflowStepDetailId_INT;
+                    ucTask.WorkflowMasterId = Convert.ToInt32(WorkflowMasterId);
+
+                    if (WorkflowStepDetailId_INT == (int)Constant.WorkflowStepNewHiring.ITStarter)
+                    {
+                        ucTask.IsApprovalTask = true;
+                        ucITStarterReview.Visible = true;
+                        ucITStarterReview.IsControlInitialize = true;
+                        ucITStarterReview.WorkflowItemId = WorkflowItemId;
+                    }
+                }
+
+            }
+
+
+        }
+        catch (Exception ex)
+        {
+
+
+            lblError.InnerText = ex.ToString();
+            divError.Visible = true;
+        }
+
+    }
+}

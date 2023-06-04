@@ -1,0 +1,57 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucAddNewShift.ascx.cs" Inherits="Controls_Shift_ucAddNewShift" %>
+
+<br />
+<div id="RightContentError" runat="server" visible="false">
+    <asp:Label ID="LB_Error" runat="server" />
+</div>
+<div class="form-group col-lg-4">
+    <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+        Shift</label>
+    <asp:DropDownList ID="ddl_Shift" runat="server" CssClass="form-control">
+    </asp:DropDownList>
+    <asp:RequiredFieldValidator ID="rfvEmployee" runat="server" ControlToValidate="ddl_Shift"
+        Display="Dynamic" ErrorMessage="Shift" InitialValue="0" Text="*" ValidationGroup="validGroup1"></asp:RequiredFieldValidator>
+</div>
+<div class="form-group col-lg-4">
+    <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+        From</label>
+    <asp:TextBox ID="tb_From" runat="server" CssClass="form-control datetime"></asp:TextBox>
+    <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="tb_From"
+        Display="Dynamic" ErrorMessage="From" Text="*" ValidationGroup="validGroup1"></asp:RequiredFieldValidator>
+</div>
+<div class="form-group col-lg-4">
+    <label for="exampleInputEmail2" class="col-lg-12" style="padding-left: 0px;">
+        Active</label>
+    <asp:CheckBox ID="CB_Shift_Status" runat="server" CssClass="CB_Stat form-control" Checked="true" Style="margin-top: 19px;" />
+    <asp:HiddenField ID="HF_CB_Shift_Status" runat="server" Value="on" />
+</div>
+
+<%--<table class="list">
+    <tr>
+        <th></th>
+        <th>Shift
+        </th>
+        <th>From    
+        </th>
+        <th>Active / Inactive
+        </th>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+</table>--%>
+<script>
+    function pageLoad() {
+        $(".numeric").numeric();
+        $('.datetime').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true
+        });
+    }
+</script>

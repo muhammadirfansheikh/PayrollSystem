@@ -1,0 +1,187 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Data;
+using System.Data.SqlClient;
+
+public partial class Pages_Reports_EmployeeReport : Base
+{
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+                BindDropDown();
+        }
+        PagingHandler();
+    }
+     #region PAGING
+    private void PagingHandler()
+    {
+        PagingAndSorting.ImgNext.Click += ImgNext_Click;
+        PagingAndSorting.ImgPrevious.Click += ImgPrevious_Click;
+        PagingAndSorting.DdlPage.SelectedIndexChanged += DdlPage_SelectedIndexChanged;
+        PagingAndSorting.DdlPageSize.SelectedIndexChanged += DdlPageSize_SelectedIndexChanged;
+    }
+
+    void DdlPageSize_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void DdlPage_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgNext_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    void ImgPrevious_Click(object sender, ImageClickEventArgs e)
+    {
+        BindRepeater();
+    }
+    #endregion
+
+    private void BindDropDown()
+    {
+        string roleAdmin = Convert.ToString((int)Constant.Role.Admin);
+
+
+        var department = context.Setup_Department.Where(e => e.IsActive == true)
+            .OrderBy(e => e.DepartmentId)
+        .Select(e => new
+        {
+            DepartmentId = e.DepartmentId,
+            DepartmentName = e.DepartmentName
+        }).OrderBy(a => a.DepartmentName)
+        .ToList();
+
+        CommonHelper.BindDropDown(ddlDepartment, department, "DepartmentName", "DepartmentId", department.Count > 1 ? true : false, false);
+
+
+
+
+        var listDepartment = context.Setup_Department.Where(c => c.IsActive == true && c.CompanyId == CompanyId).OrderBy(c => c.DepartmentName).ToList();
+        CommonHelper.BindDropDown(ddlDepartment, listDepartment, "DepartmentName", "DepartmentId", listDepartment.Count() > 1 ? true : false, false);
+
+        int departmentId = Convert.ToInt32(ddlDepartment.SelectedValue);
+        Base UserInfo = new Base();
+
+        //var listEmplyee = context.Setup_Employee.Where(e => e.IsActive == true && e.DepartmentId == departmentId && (e.InchargeId == UserInfo.UserKey || UserInfo.IsSuperAdmin == true || (UserInfo.RoleCode == roleAdmin && e.CompanyId == UserInfo.CompanyId)))
+        //    .OrderBy(e => e.FirstName)
+        //    .Select(e => new
+        //    {
+        //        EmployeeId = e.EmployeeId,
+        //        Name = e.FirstName + " - " + e.EmployeeCode
+        //    })
+        //    .ToList();
+        ////.OrderBy("Name").ToList();
+        //CommonHelper.BindDropDown(ddlEmployee, listEmplyee, "Name", "EmployeeId", true, false);
+    }
+ 
+
+
+
+
+    private void BindRepeater()
+    {
+
+        int pageSize = 50;
+        int pageNumber = 1;
+        if (PagingAndSorting.DdlPageSize.SelectedValue.toInt() > 0)
+        {
+            pageSize = PagingAndSorting.DdlPageSize.SelectedValue.toInt();
+        }
+        if (PagingAndSorting.DdlPage.Items.Count > 0)
+        {
+            pageNumber = PagingAndSorting.DdlPage.SelectedValue.toInt();
+        }
+
+        int skip = pageNumber * pageSize - pageSize;
+
+
+        string connstr = context.Database.Connection.ConnectionString;
+        DataTable dt = new DataTable();
+        int? DepartmentID = null;
+        int? DesigantionID = null;
+        if (ddlDepartment.SelectedValue != "0")
+        {
+            DepartmentID = Convert.ToInt32(ddlDepartment.SelectedValue);
+
+        }
+        //if (ddlDesignation.SelectedValue != "0")
+        //{
+        //    DesigantionID = Convert.ToInt32(ddlDesignation.SelectedValue);
+
+        //}
+        string EmployeeCode = txtEmployeeCode.Text.Trim();
+        string Name = txtEmployeeName.Text.Trim();
+
+
+        SqlConnection con = new SqlConnection(connstr);
+        SqlDataAdapter da = new SqlDataAdapter("HRMS_EmployeeReport", con);
+        da.SelectCommand.CommandType = CommandType.StoredProcedure;
+        da.SelectCommand.Parameters.Add("@EmployeeCode", SqlDbType.Int).Value = EmployeeCode == "" ? null : EmployeeCode;
+        da.SelectCommand.Parameters.Add("@DepartmentID", SqlDbType.Int).Value = DepartmentID;
+        da.SelectCommand.Parameters.Add("@DesignationId", SqlDbType.Int).Value = DesigantionID;
+        da.SelectCommand.Parameters.Add("@EmployeeName", SqlDbType.NVarChar).Value = Name == "" ? null : Name;
+        da.Fill(dt);
+        var listName = dt.AsEnumerable().Select(m => new
+        {
+            EmployeeCode = m.Field<string>("EmployeeCode"),
+            EmployeeName = m.Field<string>("EmployeeName"),
+            DepartmentName = m.Field<string>("DepartmentName"),
+            DesignationName = m.Field<string>("DesignationName"),
+            Manager = m.Field<string>("Manager"),
+            HODName = m.Field<string>("HODName"),
+            SharepointPortalID = m.Field<string>("SharepointPortalID"),
+            BusinessUnitName = m.Field<string>("BusinessUnitName"),
+            CityName = m.Field<string>("CityName")
+        }).ToList();
+
+        Session["Rpt"] = listName;
+        var List = listName.OrderByDescending(a => a.EmployeeName).Skip(skip).Take(pageSize).ToList();
+        rpt.DataSource = List;
+        rpt.DataBind();
+        PagingAndSorting.setPagingOptions(listName.Count());
+
+        //if (dt.Rows.Count > 0)
+        //{
+
+        //    rptRespondetnDetailReport.DataSource = dt;
+        //    rptRespondetnDetailReport.DataBind();
+        //}
+
+        //else
+        //{
+        //    rptRespondetnDetailReport.DataSource = null;
+        //    rptRespondetnDetailReport.DataBind();
+        //}
+
+
+    }
+
+
+
+    protected void btnCancel_Click(object sender, EventArgs e)
+    {
+
+    }
+    protected void btnSearch_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            BindRepeater();
+        }
+        catch (Exception ex)
+        {
+            divError.Visible = true;
+            lblError.InnerText = ex.Message;
+
+        }
+    }
+}

@@ -1,0 +1,258 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ucCompanyInformation.ascx.cs" Inherits="Controls_EmployeeDetails_ucCompanyInformation" %>
+<style>
+    .form-control
+    {
+        font-size: 11px;
+    }
+
+    label
+    {
+        font-size: smaller;
+    }
+</style>
+<div class="panel panel-info alert alert-success">
+    <div class="panel-heading">
+        Company Details
+    </div>
+    <asp:HiddenField ID="hfEmpID" runat="server" />
+    <div class="panel-body">
+        <div class="alert alert-warning">
+            <strong>Please provide your Company details...</strong>
+        </div>
+        <div class="panel panel-danger" id="divError" runat="server" visible="false">
+            <div class="panel-heading" id="lblError" runat="server"></div>
+        </div>
+        <div class="alert alert-success alert-dismissable fade in" runat="server" id="divSuccuss" visible="false">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong>Success!</strong> Leave Applied successfully.
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Sharepoint Portal ID : </label>
+            <asp:TextBox runat="server" ID="txtSharePointID" CssClass="form-control" />
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">TMS Login ID : </label>
+            <asp:TextBox runat="server" ID="txtTMSId"  CssClass="form-control" />
+
+        </div>
+          <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Role : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator9" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Role" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlRole" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlRole" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+              <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Cost Center : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator6" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Cost Center" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlCostCenter" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlCostCenter" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+         <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Employee Type : </label>
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator7" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Employee Type" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlEmptype" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlEmptype" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+          <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Office Extension : </label>
+            <asp:TextBox ID="txtOfficeext" runat="server" CssClass="form-control">
+            </asp:TextBox>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Job Cateogry : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator45" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Job Cateogry" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlJobCategory" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlJobCategory" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlJobCategory_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Designation : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Designation" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlDesignation" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlDesignation" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Business Unit : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Business Unit" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlBU" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlBU" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlBU_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Department  : </label>
+
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Department" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlDept" InitialValue="0"></asp:RequiredFieldValidator>
+            <asp:DropDownList ID="ddlDept" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlDept_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">TMS Shift : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator4" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="TMS Shift" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlTmsShift" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlTmsShift" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Leave Type : </label>
+
+            <%--<asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Leave Type" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlLeaveType" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlLeaveType" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+  
+        <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Date Of Joining</label>
+            <asp:RequiredFieldValidator ID="RequiredFieldValidator8" runat="server" ValidationGroup="Save" Text="*"
+                ErrorMessage="Date Of Joining" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="txtdateofjoin" CssClass="rfv"></asp:RequiredFieldValidator>
+            <asp:TextBox runat="server" ID="txtdateofjoin" CssClass="form-control datetime" />
+        </div>
+          <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Confirmation Date : </label>
+            <asp:TextBox runat="server" ID="txtConfirmationdate" CssClass="form-control datetime" />
+        </div>
+         <div class="form-group col-lg-2">
+            <label for="exampleInputPassword2">Probation end Date : </label>
+            <asp:CompareValidator ID="CompareValidator1" runat="server"
+                ControlToCompare="txtdateofjoin" CultureInvariantValues="true"
+                Display="Dynamic" EnableClientScript="true"
+                ControlToValidate="txtProbationenddate"
+                ErrorMessage="DOJ must be earlier than Probation End Date"
+                Type="Date" SetFocusOnError="true" Operator="GreaterThanEqual" ForeColor="Red"
+                Text="*"></asp:CompareValidator>
+            <asp:TextBox runat="server" ID="txtProbationenddate" OnTextChanged="txtProbationenddate_TextChanged" AutoPostBack="true" CssClass="form-control datetime" />
+        </div>
+             
+       
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">ProbationPeriodDays : </label>
+            <asp:Label ID="lblProbationperioddays" runat="server" CssClass="form-control">
+            </asp:Label>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Contract Start Date : </label>
+            <asp:TextBox runat="server" ID="txtContractstartdate" CssClass="form-control datetime" />
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Contract End Date : </label>
+            <asp:CompareValidator ID="CompareValidator2" runat="server"
+                ControlToCompare="txtContractstartdate" CultureInvariantValues="true"
+                Display="Dynamic" EnableClientScript="true"
+                ControlToValidate="txtContractenddate"
+                ErrorMessage="Contract Start date must be earlier than End date"
+                Type="Date" SetFocusOnError="true" Operator="GreaterThanEqual" ForeColor="Red"
+                Text="*"></asp:CompareValidator>
+            <asp:TextBox runat="server" ID="txtContractenddate" CssClass="form-control txtProbationenddate datetime" />
+        </div>
+  
+      <asp:HiddenField id="hidTmsID" runat="server" />
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">HOD Company : </label>
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator19" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="HOD Company" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlHodCompany" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlHodCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlHodCompany_SelectedIndexChanged" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">HOD Job Category : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator10" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="HOD Job Category" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlHodjobcategory" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlHodjobcategory" AutoPostBack="true" OnSelectedIndexChanged="ddlHodjobcategory_SelectedIndexChanged" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">HOD Designation : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator11" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="HOD Designation" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlHoddesignation" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlHoddesignation" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlHoddesignation_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">HOD Name : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator12" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="HOD Name" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlHodname" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlHodname" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Manager Company : </label>
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator20" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Manager Company" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlManagerCompany" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlManagerCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlManagerCompany_SelectedIndexChanged" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Manager Job Category : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator13" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Manager Job Category" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlmanagerjobcategory" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlmanagerjobcategory" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlmanagerjobcategory_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Manager Designation : </label>
+
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator18" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Manager Designation" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlManagerdesignation" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlManagerdesignation" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlManagerdesignation_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+
+            <label for="exampleInputEmail2">Manager Name : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator14" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Manager Name" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlManagername" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlManagername" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Incharge Company : </label>
+           <%-- <asp:RequiredFieldValidator ID="RequiredFieldValidator21" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Incharge Company" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlInchargeCompany" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlInchargeCompany" AutoPostBack="true" OnSelectedIndexChanged="ddlInchargeCompany_SelectedIndexChanged" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+
+            <label for="exampleInputEmail2">Incharge Job Category : </label>
+
+         <%--   <asp:RequiredFieldValidator ID="RequiredFieldValidator15" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Incharge Job Category" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlInchargejobcategory" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlInchargejobcategory" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlInchargejobcategory_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Incharge Designation : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator16" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Incharge Designation" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlInchargedesignation" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlInchargedesignation" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlInchargedesignation_SelectedIndexChanged" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+        <div class="form-group col-lg-2">
+            <label for="exampleInputEmail2">Incharge Name : </label>
+
+          <%--  <asp:RequiredFieldValidator ID="RequiredFieldValidator17" runat="server" ValidationGroup="Save" Text="*" ErrorMessage="Incharge Name" ForeColor="Red"
+                Display="Dynamic" ControlToValidate="ddlInchargename" InitialValue="0"></asp:RequiredFieldValidator>--%>
+            <asp:DropDownList ID="ddlInchargename" runat="server" CssClass="form-control">
+            </asp:DropDownList>
+        </div>
+      
+    </div>
+</div>

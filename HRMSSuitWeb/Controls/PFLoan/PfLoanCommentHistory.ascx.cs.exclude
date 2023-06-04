@@ -1,0 +1,288 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using DAL;
+using System.Web.UI.HtmlControls;
+
+public partial class Controls_PFLoan_PfLoanCommentHistory : System.Web.UI.UserControl
+{
+    public int? _SeperationCriteriaId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfSeperationCriteriaId.Value == string.Empty ? nullint : Convert.ToInt32(hfSeperationCriteriaId.Value);
+        }
+        set { hfSeperationCriteriaId.Value = value.ToString(); }
+    }
+
+    public int? _WorkflowTaskMasterId
+    {
+        get
+        {
+            int? nullint = null;
+            return hfWorkflowTaskMasterId.Value == string.Empty ? nullint : Convert.ToInt32(hfWorkflowTaskMasterId.Value);
+        }
+        set { hfWorkflowTaskMasterId.Value = value.ToString(); }
+    }
+
+    public bool IsControlInitialize
+    {
+        get
+        {
+            return hfIsControlInitialize.Value == string.Empty ? false : Convert.ToBoolean(hfIsControlInitialize.Value);
+        }
+        set { hfIsControlInitialize.Value = value.ToString(); }
+    }
+
+    Sybrid_DatabaseEntities context = new Sybrid_DatabaseEntities();
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (IsControlInitialize)
+        {
+            BindData();
+        }
+    }
+
+    protected void rpt_ItemDataBound(object sender, RepeaterItemEventArgs e)
+    {
+        try
+        {
+
+            int WorkflowTaskMasterId = Convert.ToInt32(_WorkflowTaskMasterId);
+            int SeperationCriteriaId = Convert.ToInt32(_SeperationCriteriaId);
+
+            if (e.Item.ItemType == ListItemType.AlternatingItem || e.Item.ItemType == ListItemType.Item)
+            {
+                RadioButtonList rbtnEvaluationStatus = (RadioButtonList)e.Item.FindControl("rbtnEvaluationStatus");
+                DropDownList ddlEvaluationStatus = (DropDownList)e.Item.FindControl("dllEvaluationStatus");
+                TextBox txtComment = (TextBox)e.Item.FindControl("txtComment");
+                TextBox txtDate = (TextBox)e.Item.FindControl("txtDate");
+                TextBox txtText = (TextBox)e.Item.FindControl("txtTextBox");
+
+                HtmlInputHidden hfSeperationCriteriaDetailId = (HtmlInputHidden)e.Item.FindControl("hfSeperationCriteriaDetailId");
+                HtmlInputHidden hfTableName = (HtmlInputHidden)e.Item.FindControl("hfTableName");
+                HtmlInputHidden hfValueTypeId = (HtmlInputHidden)e.Item.FindControl("hfValueTypeId");
+
+                int SeperationCriteriaDetailId = Convert.ToInt32(hfSeperationCriteriaDetailId.Value);
+                int ValueTypeId = Convert.ToInt32(hfValueTypeId.Value);
+                string TableName = hfTableName.Value;
+
+                int? IntValue = null;
+                string StrValue = string.Empty;
+
+                var lst = context.HRMS_PFLoanDetail.Where(a => a.IsActive == true && a.HRMS_Setup_WorkflowFormDetail.FormMasterId == SeperationCriteriaId &&
+           a.WorkflowTaskMasterId == WorkflowTaskMasterId && a.FormDetailId == SeperationCriteriaDetailId).FirstOrDefault();
+
+                if (lst != null)
+                {
+                    IntValue = lst.StatusId;
+                    StrValue = lst.Value;
+                }
+
+                if ((int)Constant.ValueTypeControl.Textbox == ValueTypeId)
+                {
+                    if (TableName == string.Empty)
+                    {
+                        txtComment.Visible = true;
+                        txtComment.Text = StrValue;
+                    }
+                }
+                else if ((int)Constant.ValueTypeControl.TextboxSimple == ValueTypeId)
+                {
+                    if (TableName == string.Empty)
+                    {
+                        txtText.Visible = true;
+                        txtText.Text = StrValue;
+
+                        if (SeperationCriteriaDetailId == (int)Constant.CriteriaDetail.RecomendedLoanAmount)
+                        {
+                            //int WorkFlowTaskMasterId = GetWorkflowTaskMasterId();
+
+                            //var lst = context.HRMS_PFLoanDetail.Where(a => a.IsActive == true && a.WorkflowTaskMasterId == WorkFlowTaskMasterId && a.FormDetailId == (int)Constant.CriteriaDetail.LoanAmount).FirstOrDefault();
+
+                            //txtText.Text = lst.Value;
+                        }
+                    }
+                }
+                else if ((int)Constant.ValueTypeControl.RadioButton == ValueTypeId)
+                {
+                    if (TableName == "HRMS_Setup_SeprationStatus")
+                    {
+                        int StatusYes = (int)Constant.SeperationStatus.Yes;
+                        int StatusNo = (int)Constant.SeperationStatus.No;
+
+                        var rbtlist = context.HRMS_Setup_SeprationStatus.Where(a => a.IsActive == true && (a.SeperationStatusId == StatusYes || a.SeperationStatusId == StatusNo))
+                            .Select(c => new
+                            {
+                                Id = c.SeperationStatusId,
+                                Value = c.SeperationStatus,
+
+                            }).ToList();
+
+                        CommonHelper.BindRadioButtonList(rbtnEvaluationStatus, rbtlist, "Value", "Id", false, false);
+                        rbtnEvaluationStatus.Visible = true;
+                        //rbtnEvaluationStatus.Items[0].Selected = true;
+
+                        rbtnEvaluationStatus.SelectedValue = Convert.ToString(IntValue);
+                    }
+
+                }
+                else if ((int)Constant.ValueTypeControl.Dropdown == ValueTypeId)
+                {
+
+                }
+                else if ((int)Constant.ValueTypeControl.DatePicker == ValueTypeId)
+                {
+                    if (TableName == string.Empty)
+                    {
+                        txtDate.Visible = true;
+                        txtDate.Text = StrValue;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            string _Message = ex.InnerException.ToString();
+
+            string PageRedirectUrl = "#";
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "SweetAlert", "OpenRedirectionDialog('error','" + _Message + "','error','" + PageRedirectUrl + "');", true);
+
+        }
+    }
+
+    public void BindData()
+    {
+        int SeperationCriteriaId = Convert.ToInt32(_SeperationCriteriaId);
+        int WorkflowMasterId = (int)Constant.Workflow.PfLoan;
+
+        var ListHRStarterCriteria = context.HRMS_Setup_WorkflowFormDetail.Where(a => a.IsActive == true && a.FormMasterId == SeperationCriteriaId && a.HRMS_Setup_WorkflowFormMaster.WorkflowMasterId == WorkflowMasterId)
+           .Select(c => new
+           {
+               SeperationCriteriaDetailId = c.FormDetailId,
+               SeperationCriteriaDetail = c.FieldName,
+               ValueTypeId = c.ValueTypeId,
+               TableName = c.TableName,
+           }).ToList();
+
+        rpt.DataSource = ListHRStarterCriteria;
+        rpt.DataBind();
+
+    }
+
+    private void DownloadFiles( string[] files, string Path)
+    {
+        foreach (string file in files)
+        {
+            string attachmentName = file;
+            if (!string.IsNullOrEmpty(attachmentName))
+            {
+                //string filePath = Server.MapPath(".\\Attachments\\" + attachmentName);
+
+                string filePath = Path + attachmentName;
+
+                Response.Redirect(filePath);
+
+                //Response.Clear();
+                //Response.AddHeader("Content-Disposition", "attachment; filename=" + file.Name);
+                //Response.AddHeader("Content-Length", file.Length.ToString());
+                //Response.ContentType = "application/octet-stream";
+                //Response.WriteFile(file.FullName);
+                //Response.End();
+            }
+        }
+
+        /*
+        using (ZipFile zip = new ZipFile())
+        {
+            zip.AlternateEncodingUsage = ZipOption.AsNecessary;
+            zip.AddDirectoryByName("AttachedFiles");
+            foreach (string file in files)
+            {
+                string attachmentName = file;
+                if (!string.IsNullOrEmpty(attachmentName))
+                {
+                    //string filePath = Server.MapPath(".\\Attachments\\" + attachmentName);
+
+                    string filePath = Path + attachmentName;
+
+                    //if (filePath != string.Empty)
+                    if (File.Exists(filePath))
+                    {
+                        zip.AddFile(filePath, "AttachedFiles");
+                    }
+                }
+            }
+            Response.Clear();
+            Response.BufferOutput = false;
+            string zipName = String.Format("AttachedFiles{0}.zip", TargetId);
+            Response.ContentType = "application/zip";
+            Response.AddHeader("content-disposition", "attachment; filename=" + zipName);
+            zip.Save(Response.OutputStream);
+            Response.End();
+
+        }
+        */
+
+    }
+
+    private void Download()
+    {
+        string InCvDownloadlink = Convert.ToString(System.Configuration.ConfigurationManager.AppSettings["InCvDownloadlink"]);
+        int WorkflowTaskMasterId = Convert.ToInt32(_WorkflowTaskMasterId);
+        var lst = context.HRMS_PFLoanDocument.Where(a => a.WorkflowTaskMasterId == WorkflowTaskMasterId).ToList();
+
+        string fileName = "";
+        List<string> filesAttachment = context.HRMS_PFLoanDocument.Where(a => a.WorkflowTaskMasterId == WorkflowTaskMasterId).Select(el => el.Path).ToList();
+        if (filesAttachment.Count > 0)
+        {
+            foreach (string str in filesAttachment)
+            {
+                if (!string.IsNullOrEmpty(str.Trim()))
+                    fileName += str + "/";
+            }
+            fileName = fileName.Substring(0, fileName.Length - 1);
+            string[] files = fileName.Split('/');
+            files = files.Distinct().ToArray();
+
+            DownloadFiles( files, InCvDownloadlink);
+        }
+    }
+
+    //private void BindData()
+    //{
+    //    int WorkflowTaskMasterId = Convert.ToInt32(_WorkflowTaskMasterId);
+    //    int SeperationCriteriaId = Convert.ToInt32(_SeperationCriteriaId);
+
+    //    var lst = context.HRMS_PFLoanDetail.Where(a => a.IsActive == true && a.HRMS_Setup_WorkflowFormDetail.SeperationCriteriaMasterId == SeperationCriteriaId && 
+    //        a.WorkflowTaskMasterId == WorkflowTaskMasterId).ToList(); 
+
+    //    if (lst != null)
+    //    {
+    //        for (int i = 0; i < rpt.Items.Count ; i++)
+    //        {
+    //            RadioButtonList rbtnEvaluationStatus = (RadioButtonList)rpt.Items[i].FindControl("rbtnEvaluationStatus");
+    //            DropDownList ddlEvaluationStatus = (DropDownList)rpt.Items[i].FindControl("dllEvaluationStatus");
+    //            TextBox txtComment = (TextBox)rpt.Items[i].FindControl("txtComment");
+    //            TextBox txtDate = (TextBox)rpt.Items[i].FindControl("txtDate");
+    //            TextBox txtText = (TextBox)rpt.Items[i].FindControl("txtTextBox");
+
+    //            HtmlInputHidden hfSeperationCriteriaDetailId = (HtmlInputHidden)rpt.Items[i].FindControl("hfSeperationCriteriaDetailId");
+    //            HtmlInputHidden hfTableName = (HtmlInputHidden)rpt.Items[i].FindControl("hfTableName");
+    //            HtmlInputHidden hfValueTypeId = (HtmlInputHidden)rpt.Items[i].FindControl("hfValueTypeId");
+
+
+    //        }
+    //    }
+    //}
+    protected void btnDownLoad_Click(object sender, EventArgs e)
+    {
+        Download();
+    }
+}
